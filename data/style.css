@@ -1,0 +1,65 @@
+
+body {
+    
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+    font-size: 25px;
+    transition: background-color 1.3s, color 1.3s;
+  }
+  .dark-mode {
+    background-color: black;
+    color: white;
+  }
+
+
+  
+  .site-version {
+    text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+    flex: 1;
+      vertical-align: top;
+      /*height: var(--dark-mode-button-height);*/
+      width: var(--column-width);
+      /*border-style: solid;
+      border-color: red;*/
+      text-align: left;
+      font-family: "Press Start 2P", system-ui;
+      font-size: var(--font-size-value);
+      font-weight: 100;
+      font-style: normal;
+      margin-top: auto;
+      margin-bottom: auto;
+      margin-left: auto;
+      margin-right: 0;
+  }
+
+.measured_value{
+  padding-top: 1%;
+  padding-left: 1%;
+  padding-right: 2%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  /*border-style: solid;
+  border-color: red;*/
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: 0;
+  margin-left: auto;
+  margin-right: auto;
+  user-select: none;
+}
+
+.measured_value.indoor_temp{
+  color:rgb(236, 104, 104);
+}
+
+
+.measured_value.outdoor_temp{
+  color:rgb(220, 104, 236);
+}
+
+
+
+
+

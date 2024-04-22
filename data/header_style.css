@@ -1,0 +1,93 @@
+:root {
+  --item-width: calc(100vw);
+  --item-height: 160px;
+  --header-text-width: calc(80vw);
+  --dark-mode-button-height:calc(4vw);
+  --dark-mode-button-width:calc(4vw);
+  --dark-mode-icon-size:calc(4vw);
+  --dark-mode-icon-top-padding:calc(10vw*-1);
+  --icon-top-padding:calc(-1*0.5vw);
+  --header-size:calc(3vw);
+  --border-dashed-size:calc(0.7vw);
+  --ghost-size:calc(0.2vw);
+}
+
+.header-text {
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+    flex: 1;
+    vertical-align: top;
+    /*height: var(--dark-mode-button-height);*/
+    width: var(--header-text-width);
+    /*border-style: solid;
+    border-color: red;*/
+    text-align: center;
+    font-family: "Press Start 2P", system-ui;
+    font-size: var(--header-size);
+    font-weight: 400;
+    font-style:inherit;
+    margin-top: 0;
+    margin-bottom: auto;
+    margin-left: auto;
+    margin-right: 0;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
+
+  .header {
+    border: var(--border-dashed-size) dashed;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    display: flex;
+    text-align: center;
+    position:relative;
+    /*border-style: solid;
+    border-color: rgb(16, 212, 52);*/
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1%;
+  }
+
+  .dark-mode-button {
+    transform: rotate(180deg);
+    vertical-align:top;
+    position:relative;
+    left: 0px;
+    top:  var(--icon-top-padding);
+    height: var( --dark-mode-icon-size);
+    width: var( --dark-mode-icon-size);
+    margin-left: 0;
+    margin-right: auto;
+    margin-top: 0;
+    margin-bottom: auto;
+    text-align: center;
+    /*border-style: solid;
+    border-color: rgb(43, 87, 177);*/
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.esp32-button {
+  
+  border: solid;
+  vertical-align:left;
+  top:  var(--icon-top-padding);
+  height: var( --dark-mode-icon-size);
+  width: var( --dark-mode-icon-size);
+  margin-left: 0;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: auto;
+  text-align: center;
+  /*border-style: solid;
+  border-color: rgb(43, 87, 177);*/
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}

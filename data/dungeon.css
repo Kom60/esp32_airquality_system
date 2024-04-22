@@ -1,0 +1,135 @@
+:root {
+  --dungeon-width: vw;
+  --dungeon-line-width: 92vw;
+  --dungeon-font-size-value: calc(1.8vw);
+  --dungen-text-size:calc(2.6vw);
+  --dungeon-padding:calc(1vw);
+}
+
+.dungeon {
+  margin-top: 0.5%;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  padding: var(--dungeon-padding);
+  border: var(--border-dashed-size) dashed;
+  width: var(--dungeon-width);
+  margin-top: 0;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: 0;
+  }
+
+
+.dungeon-header-text
+{
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  vertical-align: top;
+  text-align: center;
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--dungen-text-size);
+  font-weight: 400;
+  font-style: normal;
+  margin-top: 0;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: 0;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  padding-bottom: 1%;
+}
+
+.dungeon-text {
+  /*border: solid;*/
+  padding-top: 1%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--dungeon-font-size-value);
+  font-weight: 100;
+  font-style: normal;
+}
+
+.dungen_value{
+  padding-top: 1%;
+  padding-right: 1%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  /*border-style: solid;
+  border-color: red;*/
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--dungeon-font-size-value);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: auto;
+  user-select: text;
+  width: fit-content;
+  text-align: left;
+}
+
+.dungen_value.site-version{
+  color:chartreuse;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  user-select: none;
+}
+
+.dungeon-line{
+ /* border: solid;*/
+  display: flex;
+}
+
+
+.dungen_value.esp32_ip_adress {
+  color:rgb(111, 245, 133);
+}
+
+.dungen_value.esp32_cpu_freq {
+  color:rgb(77, 151, 235);
+  user-select: none;
+}
+
+.dungen_value.esp32_cpu_temp {
+  color:red;
+  user-select: none;
+}
+
+.dungen_value.esp32_voltage {
+  color:red;
+  user-select: none;
+}
+
+.dungen_value.time{
+  color:red;
+  user-select: none;
+}
+
+dungen_value.date{
+  color:red;
+  user-select: none;
+}
+
+.dungeon-units{
+  width: var( --dungeon-font-size-value);
+  padding-top: 1%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  flex:1;
+  /*border-style: solid;
+  border-color: rgb(142, 212, 227);*/
+  font-family: "Press Start 2P", system-ui;
+  font-size: var( --dungeon-font-size-value);
+  font-weight: 100;
+  font-style: normal;
+  text-align: left;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+}

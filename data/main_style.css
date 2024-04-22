@@ -1,0 +1,133 @@
+:root {
+  --column-width: calc(vw /2);
+  --board-width: calc(vw);
+  --font-size-val: calc(1.9vw);
+  --colum-margin-val: 1%;
+  --header-text-size:calc(2.6vw);
+}
+
+
+.board {
+  margin-top: 0.5%;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  display: flex;
+  padding-bottom: 0.5%;
+}
+
+.column {
+  flex:1;
+  width: var(--column-width);
+  border: var(--border-dashed-size) dashed;
+  padding: var(--colum-margin-val);
+  
+}
+
+.column.column1 {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  margin-right: 0.3%;
+  padding-bottom: 1%;
+  /*border-style: solid;
+    border-color: red;*/
+}
+
+.column.column2 {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  margin-left: 0.3%;
+  padding-bottom: 1%;
+  /*border-style: solid;
+    border-color: red;*/
+}
+
+.line{
+  /*border-style: solid;*/
+  display:flex;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  justify-content: flex-start;
+}
+
+.units{
+  width: var(--font-size-val);
+  padding-top: 3%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  flex:1;
+  /*border-style: solid;
+  border-color: rgb(142, 212, 227);*/
+  text-align: left;
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  text-align: left;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+
+}
+
+.text {
+  /*border-style: solid;*/
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  display:flex;
+    vertical-align: center;
+    /*height: var(--dark-mode-button-height);*/
+    width: var(--column-width);
+    /*border-style: solid;
+    border-color: red;*/
+    text-align: left;
+    font-family: "Press Start 2P", system-ui;
+    font-size: var(--font-size-val);
+    font-weight: 100;
+    font-style: normal;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 0;
+    margin-right: auto;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    padding-top: 3%;
+    padding-left: 3%;
+}
+/*
+.text.indoor_temp {
+  color:hsl(13, 86%, 54%);
+}
+
+.text.outdoor_temp {
+  color:hsl(119, 86%, 54%);
+}
+*/
+.column-header-text
+{
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  padding: 1%;
+  vertical-align: top;
+  text-align: center;
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--header-text-size);
+  font-weight: 400;
+  font-style: normal;
+  margin-top: 0;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: 0;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
