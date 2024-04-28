@@ -195,13 +195,12 @@ void HTU21_prinValues(){
     Serial.print("Humidity(%): "); 
     Serial.println(hum);
 }
-/*
+
 void MS5611_printValues(){
-  MS5611.read();           //  note no error checking => "optimistic".
-  Serial.print("T:\t");
-  Serial.print(MS5611.getTemperature(), 2);
-  Serial.print("\tP:\t");
-  Serial.print(MS5611.getPressure(), 2);
-  Serial.println();
-}*/
+  Serial.print("Temperature [0.01 C]: ");
+  Serial.println(ms5611.readTemperature());
+  Serial.print("Pressure [Pa]: ");
+  Serial.println(ms5611.readPressure());
+  Serial.println("---");
+}
 

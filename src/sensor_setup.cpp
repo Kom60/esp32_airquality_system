@@ -1,5 +1,6 @@
 #include "headers.h"
 
+
 void bme_setup(){
     
     while(!Serial);    // time to get serial running
@@ -25,6 +26,8 @@ void bme_setup(){
     delayTime = 1000;
 
     Serial.println();
+    
+    xTaskCreatePinnedToCore(BME_measurementTaskFunction, "BMEMeasurementTask", 2048, NULL, 1, &BME_measurementTask, 0);
 }
 void htu_setup()
 {
@@ -32,6 +35,7 @@ void htu_setup()
       Serial.println("Check circuit. HTU21D not found!");
       while (1);
   }
+  xTaskCreatePinnedToCore(HTU_measurementTaskFunction, "HTUMeasurementTask", 2048, NULL, 1, &HTU_measurementTask, 0);
 }
 void BH1750_setup()
 {
@@ -40,28 +44,27 @@ void BH1750_setup()
   } else {
     Serial.println(F("Error initialising BH1750"));
   }
+  xTaskCreatePinnedToCore(BH1750_measurementTaskFunction, "BH1750MeasurementTask", 2048, NULL, 1, &BH1750_measurementTask, 0);
 }
-/*void MS5611_setup()
+void MS5611_setup()
 {
-  //while (!Serial);
-  Serial.print("MS5611_LIB_VERSION: ");
-  Serial.println(MS5611_LIB_VERSION);
-  Serial.println();
-
-  if (MS5611.begin() == true)
-  {
-    Serial.println("MS5611 found.");
-  }
-  else
-  {
-    Serial.println("MS5611 not found. halt.");
-    while (1);
-  }
-  Serial.println();
-}*/
+  ms5611.begin(MS5611_HIGH_RES);
+  xTaskCreatePinnedToCore(MS5611_measurementTaskFunction, "MS5611MeasurementTask", 2048, NULL, 1, &MS5611_measurementTask, 0);
+}
 void SCD40_setup()
 {
   //co2.setCalibrationMode(false);
-  //xTaskCreatePinnedToCore(measurementTaskFunction, "MeasurementTask", 2048, NULL, 1, &measurementTask, 0);
+  xTaskCreatePinnedToCore(CO2_measurementTaskFunction, "CO2MeasurementTask", 2048, NULL, 1, &CO2_measurementTask, 0);
+}
+void PMS_setup(){
+  pms.init();
+  xTaskCreatePinnedToCore(PMS_measurementTaskFunction, "PMSMeasurementTask", 2048, NULL, 1, &PMS_measurementTask, 0);
+}
+void CH2O_setup(){
+  xTaskCreatePinnedToCore(CH2O_measurementTaskFunction, "CH2OMeasurementTask", 2048, NULL, 1, &CH2O_measurementTask, 0);
 }
 
+void VEML_setup(){
+  uv.begin(VEML6070_1_T);  // pass in the integration time constant
+  xTaskCreatePinnedToCore(VEML_measurementTaskFunction, "VEMLMeasurementTask", 2048, NULL, 1, &VEML_measurementTask, 0);
+}

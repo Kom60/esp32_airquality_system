@@ -120,7 +120,7 @@ Meteo_data::Meteo_data()
       Indoor_humidity=humidity;
     }
 
-    void  Meteo_data::update_MS5611_data(float pressure)
+    void  Meteo_data::update_MS5611_data(double pressure)
     {
         Indoor_pressure=pressure;
     }

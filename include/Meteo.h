@@ -12,7 +12,7 @@ class Meteo_data
     unsigned int Indoor_PM10{};
 
     float Indoor_temp{};
-    float Indoor_pressure{};
+    double Indoor_pressure{};
     float Indoor_humidity{};
     unsigned int Radiation{};
     float Lighting{};
@@ -27,7 +27,7 @@ class Meteo_data
     void update_bme_data(float temperature, float pressure, float humidity);
     void update_pms_data(unsigned int PM01,unsigned int PM025,unsigned int PM10);
     void update_htu_data(float temperature,float humidity);
-    void update_MS5611_data(float pressure);
+    void update_MS5611_data(double pressure);
     void update_BH1750_data(float Lighting_val);
     void update_CH2O_data(float CH2O_val);
     void update_CO2_data(float CO2_val);
@@ -42,3 +42,4 @@ class Meteo_data
     void update_radiation();*/
 };
 
+extern Meteo_data AIR_data;
