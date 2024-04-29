@@ -139,6 +139,16 @@ Meteo_data::Meteo_data()
     {
         CO2=CO2_val;
     }
+
+    void Meteo_data::update_UV_data(uint16_t UV_val)
+    {
+        Outdoor_UV=UV_val;
+    }
+
+    void Meteo_data::update_noise_data(float noise_val)
+    {
+      Indoor_noise=noise_val;
+    }
 /*
 Meteo_data::Meteo_data()
     {

@@ -120,6 +120,11 @@ function processCommand(event) {
     outdoor_CH2O=Math.floor(outdoor_CH2O/10)+","+ outdoor_CH2O%10;
     document.getElementsByClassName("measured_value outdoor_CH2O")[0].innerHTML=outdoor_CH2O;
   }
+  if (type.localeCompare("outdoor_UV") == 0) {
+    let outdoor_UV = parseInt(obj.value); 
+    outdoor_UV=Math.floor(outdoor_UV);
+    document.getElementsByClassName("measured_value outdoor_UV")[0].innerHTML=outdoor_UV;
+  }
   
 }
 

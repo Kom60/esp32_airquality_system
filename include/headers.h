@@ -8,6 +8,7 @@
 #include <SPIFFS.h>
 #include "esp32/clk.h"
 #include "sensors.h"
+#include "microphone.h"
 
 extern unsigned long delayTime;
 

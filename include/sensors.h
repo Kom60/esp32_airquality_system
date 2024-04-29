@@ -41,8 +41,7 @@ void VEML_setup();
 
 void BME_280_printValues();
 void SCD40_printValues();
-void display_bme();
-void display_indoor();
+
 void display_Info();
 void PME5003_printValues(SerialPM pms);
 void HTU21_prinValues();

@@ -6,6 +6,7 @@ class Meteo_data
     float Outdoor_temp{};
     float Outdoor_pressure{};
     float Outdoor_Humidity{};
+    uint16_t Outdoor_UV{};
 
     unsigned int Indoor_PM1{};
     unsigned int Indoor_PM2{};
@@ -18,6 +19,7 @@ class Meteo_data
     float Lighting{};
     float CO2{};
     float CH2O{};
+    float Indoor_noise{};
 
     Meteo_data();
     void print_values();
@@ -31,6 +33,8 @@ class Meteo_data
     void update_BH1750_data(float Lighting_val);
     void update_CH2O_data(float CH2O_val);
     void update_CO2_data(float CO2_val);
+    void update_UV_data(uint16_t UV_val);
+    void update_noise_data(float noise_val);
     
     //void update_indoor_temp(float temperature, float pressure, float humidity);
     /*void update_indoor_temp();

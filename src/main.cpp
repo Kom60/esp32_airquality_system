@@ -1,6 +1,7 @@
 #include "headers.h"
 #include "main.h"
 
+
 void mic_i2s_reader_task(void *parameter)
 {
   mic_i2s_init();
@@ -46,52 +47,6 @@ void mic_i2s_reader_task(void *parameter)
   }
 }
 
-void INMP441_measurementTaskFunction(void *parameter)
-{
-  while (true)
-  {
-    sum_queue_t q;
-    uint32_t Leq_samples = 0;
-    double Leq_sum_sqr = 0;
-    double Leq_dB = 0;
-    Serial.println("!!!!!!!!!!!!!!!!");
-    // Read sum of samaples, calculated by 'i2s_reader_task'
-    while (xQueueReceive(samples_queue, &q, portMAX_DELAY))
-    {
-      // Calculate dB values relative to MIC_REF_AMPL and adjust for microphone reference
-      double short_RMS = sqrt(double(q.sum_sqr_SPL) / SAMPLES_SHORT);
-      double short_SPL_dB = MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(short_RMS / MIC_REF_AMPL);
-      // In case of acoustic overload or below noise floor measurement, report infinty Leq value
-      if (short_SPL_dB > MIC_OVERLOAD_DB)
-      {
-        Leq_sum_sqr = INFINITY;
-      }
-      else if (isnan(short_SPL_dB) || (short_SPL_dB < MIC_NOISE_DB))
-      {
-        Leq_sum_sqr = -INFINITY;
-      }
-      // Accumulate Leq sum
-      Leq_sum_sqr += q.sum_sqr_weighted;
-      Leq_samples += SAMPLES_SHORT;
-
-      // When we gather enough samples, calculate new Leq value
-      if (Leq_samples >= SAMPLE_RATE * LEQ_PERIOD)
-      {
-        double Leq_RMS = sqrt(Leq_sum_sqr / Leq_samples);
-        Leq_dB = MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(Leq_RMS / MIC_REF_AMPL);
-        Leq_sum_sqr = 0;
-        Leq_samples = 0;
-
-        // Serial output, customize (or remove) as needed
-        Serial.printf("%.1f\n", Leq_dB);
-      }
-      vTaskDelay(pdMS_TO_TICKS(50)); // Check every 50ms
-                                     // Debug only
-                                     // Serial.printf("%u processing ticks\n", q.proc_ticks);
-    }
-    vTaskDelay(pdMS_TO_TICKS(50)); // Check every 50ms
-  }
-}
 
 void setup(void)
 {

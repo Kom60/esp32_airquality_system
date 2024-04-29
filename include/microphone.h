@@ -73,3 +73,4 @@ struct sum_queue_t {
 };
 
 void mic_i2s_init();
+void mic_i2s_reader_task(void *parameter);
