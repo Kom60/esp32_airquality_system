@@ -69,6 +69,8 @@ void display_indoor()
   tft.drawFloat(AIR_data.Lighting,1,75,195);
   tft.drawString("lux",110,195);
   tft.drawString("CO2",15,210);
+  tft.drawFloat(AIR_data.CO2,1,50,210);
+  tft.drawString("[ug/m3]",90,210);
   tft.drawString("CH2O",15,225);
   tft.drawFloat(AIR_data.CH2O,2,47,225);
   tft.drawString("ppm",75,225);

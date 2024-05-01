@@ -72,5 +72,12 @@ struct sum_queue_t {
   uint32_t proc_ticks;
 };
 
+#define MIC_EQUALIZER INMP441 
+extern float samples[SAMPLES_SHORT];
+constexpr double MIC_REF_AMPL = pow(10, double(MIC_SENSITIVITY)/20) * ((1<<(MIC_BITS-1))-1);
+
+extern QueueHandle_t samples_queue;
+
 void mic_i2s_init();
 void mic_i2s_reader_task(void *parameter);
+void INMP441_measurementTaskFunction(void *parameter);
