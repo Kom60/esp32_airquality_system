@@ -1,4 +1,5 @@
 #include "webheaders.h"
+#include "headers.h"
 
 // global variables of the LED selected and the intensity of that LED
 int random_intensity = 5;
@@ -20,8 +21,23 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     Serial.println("Client " + String(num) + " connected");
 
     // send variables to newly connected web client -> as optimization step one could send it just to the new client "num", but for simplicity I left that out here
-    sendJson("random_intensity", String(random_intensity));
-    sendJsonArray("graph_update", sens_vals);
+    sendJson("outdoor_temp", String(AIR_data.Outdoor_temp * 100));
+		sendJson("outdoor_press", String(AIR_data.Outdoor_pressure * 100));
+		sendJson("outdoor_humidity", String(AIR_data.Outdoor_Humidity * 100));
+
+    sendJson("indoor_temp", String(AIR_data.Indoor_temp * 100));
+		sendJson("indoor_humidity", String(AIR_data.Indoor_humidity * 100));
+
+    sendJson("indoor_light", String(AIR_data.Lighting * 10));
+    sendJson("indoor_CH2O", String(AIR_data.CH2O * 10));
+    sendJson("indoor_CO2", String(co2Value));
+    sendJson("indoor_1_0", String(pms.pm01 * 10));
+		sendJson("indoor_pm2_5", String(pms.pm25 * 10));
+		sendJson("indoor_pm10", String(pms.pm10 * 10));
+
+    sendJson("indoor_press", String(AIR_data.Indoor_pressure));
+    sendJson("outdoor_UV", String(AIR_data.Outdoor_UV));
+    sendJson("indoor_noise", String(10.0*AIR_data.Indoor_noise));
 
     break;
   case WStype_TEXT: // if a client has sent data, then type == WStype_TEXT
