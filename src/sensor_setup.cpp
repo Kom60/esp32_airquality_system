@@ -53,7 +53,7 @@ void MS5611_setup()
 }
 void SCD40_setup()
 {
-  //co2.setCalibrationMode(false);
+  co2.setCalibrationMode(false);
   xTaskCreatePinnedToCore(CO2_measurementTaskFunction, "CO2MeasurementTask", 2048, NULL, 1, &CO2_measurementTask, 0);
 }
 void PMS_setup(){

@@ -18,7 +18,7 @@ void CO2_measurementTaskFunction(void *parameter)
 				sendJson("indoor_CO2", String(co2Value));
 				AIR_data.update_CO2_data(co2Value);
 
-				// Serial.printf("CO2: %.0f ppm, Temperature: %.1f °C, Humidity: %.0f %%RH\n", co2Value, temperature, humidity);
+				Serial.printf("CO2: %.0f ppm, Temperature: %.1f °C, Humidity: %.0f %%RH\n", co2Value, temperature, humidity);
 				vTaskDelay(pdMS_TO_TICKS(4750)); // New data available after approximately 5 seconds
 			}
 		}
