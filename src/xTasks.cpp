@@ -6,21 +6,21 @@ TaskHandle_t CO2_measurementTask, BME_measurementTask,
 
 void CO2_measurementTaskFunction(void *parameter)
 {
-	co2.begin();
-	co2.startPeriodicMeasurement();
+	//co2.begin();
+	//co2.startPeriodicMeasurement();
 
 	while (true)
 	{
 		if (co2.isDataReady())
 		{
-			if (co2.readMeasurement(co2Value, temperature, humidity) == 0)
-			{
+			//if (co2.readMeasurement(co2Value, temperature, humidity) != 0)
+			//{
 				sendJson("indoor_CO2", String(co2Value));
 				AIR_data.update_CO2_data(co2Value);
 
 				Serial.printf("CO2: %.0f ppm, Temperature: %.1f °C, Humidity: %.0f %%RH\n", co2Value, temperature, humidity);
 				vTaskDelay(pdMS_TO_TICKS(4750)); // New data available after approximately 5 seconds
-			}
+			//}
 		}
 		vTaskDelay(pdMS_TO_TICKS(50)); // Check every 50ms
 	}

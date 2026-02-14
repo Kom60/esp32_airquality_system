@@ -2,6 +2,8 @@
 #include "microphone.h"
 #include "webheaders.h"
 
+
+
 SCD4X co2;
 double co2Value = 0, temperature = 0, humidity = 0;
 

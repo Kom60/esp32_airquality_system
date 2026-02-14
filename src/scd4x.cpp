@@ -115,8 +115,9 @@ uint8_t SCD4X::readMeasurement(double& co2, double& temperature, double& humidit
 			humidity = (double)100 * (double)((uint16_t)data[6] << 8 | data[7]) / (double)65536;
 
 			// Check if measurements are within range
-			if (inRange(co2, 40000, 0) && inRange(temperature, 60, -10) &&
-				inRange(humidity, 100, 0)) {
+			if (co2 >= 0 && co2 <= 40000 && 
+    			temperature >= -10 && temperature <= 60 && 
+    			humidity >= 0 && humidity <= 100) {
 				return 0;
 			} else {
 				ESP_LOGE("measurement", "out of range");

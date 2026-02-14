@@ -53,8 +53,10 @@ void MS5611_setup()
 }
 void SCD40_setup()
 {
+  co2.begin(Wire, 0x62);
+	co2.startPeriodicMeasurement();
   co2.setCalibrationMode(false);
-  xTaskCreatePinnedToCore(CO2_measurementTaskFunction, "CO2MeasurementTask", 2048, NULL, 1, &CO2_measurementTask, 0);
+  xTaskCreatePinnedToCore(CO2_measurementTaskFunction, "CO2MeasurementTask", 4096, NULL, 1, &CO2_measurementTask, 0);
 }
 void PMS_setup(){
   pms.init();

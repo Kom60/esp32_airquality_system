@@ -8,8 +8,9 @@
 #include <SPIFFS.h>
 #include "esp32/clk.h"
 #include "sensors.h"
+#include <HTTPClient.h>
 
-
+extern SemaphoreHandle_t i2c_mutex;
 extern unsigned long delayTime;
 
 extern TaskHandle_t CO2_measurementTask,BME_measurementTask,
