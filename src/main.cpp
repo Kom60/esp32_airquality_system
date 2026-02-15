@@ -69,12 +69,9 @@ void setup(void)
 {
   Serial.begin(115200);
   htu_setup();
-  
   MS5611_setup();
   bme_setup();
-  SCD40_setup();
   BH1750_setup();
-  
   // pms.init();
   PMS_setup();
   CH2O_setup();
@@ -110,7 +107,7 @@ void setup(void)
 
   webSocket.begin();                 // start websocket
   webSocket.onEvent(webSocketEvent); // define a callback function -> what does the ESP32 need to do when an event from the websocket is received? -> run function "webSocketEvent()"
-
+  SCD40_setup();
   server.begin();
   // Create FreeRTOS queue
   samples_queue = xQueueCreate(8, sizeof(sum_queue_t));
