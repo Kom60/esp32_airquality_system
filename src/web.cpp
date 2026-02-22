@@ -11,38 +11,55 @@ AsyncWebServer server(80);                         // the server uses port 80 (s
 WebSocketsServer webSocket = WebSocketsServer(81); // the websocket uses port 81 (standard port for websockets*/
 
 void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
-{ // the parameters of this callback function are always the same -> num: id of the client who send the event, type: type of message, payload: actual data sent and length: length of payload
+{ 
   switch (type)
-  {                         // switch on the type of information sent
-  case WStype_DISCONNECTED: // if a client is disconnected, then type == WStype_DISCONNECTED
+  {                         
+  case WStype_DISCONNECTED:
     Serial.println("Client " + String(num) + " disconnected");
     break;
-  case WStype_CONNECTED: // if a client is connected, then type == WStype_CONNECTED
+  case WStype_CONNECTED:
     Serial.println("Client " + String(num) + " connected");
 
-    // send variables to newly connected web client -> as optimization step one could send it just to the new client "num", but for simplicity I left that out here
-    sendJson("outdoor_temp", String(AIR_data.Outdoor_temp * 100));
-		sendJson("outdoor_press", String(AIR_data.Outdoor_pressure * 100));
-		sendJson("outdoor_humidity", String(AIR_data.Outdoor_Humidity * 100));
-
-    sendJson("indoor_temp", String(AIR_data.Indoor_temp * 100));
-		sendJson("indoor_humidity", String(AIR_data.Indoor_humidity * 100));
-
-    sendJson("indoor_light", String(AIR_data.Lighting * 10));
-    sendJson("indoor_CH2O", String(AIR_data.CH2O * 10));
-    sendJson("indoor_CO2", String(co2Value));
-    sendJson("indoor_1_0", String(pms.pm01 * 10));
-		sendJson("indoor_pm2_5", String(pms.pm25 * 10));
-		sendJson("indoor_pm10", String(pms.pm10 * 10));
-
-    sendJson("indoor_press", String(AIR_data.Indoor_pressure));
-    sendJson("outdoor_UV", String(AIR_data.Outdoor_UV));
-    sendJson("indoor_noise", String(10.0*AIR_data.Indoor_noise));
+    // send variables to newly connected web client
+    // BME280 sensor data
+    sendJson("bme_temperature", String(AIR_data.bme_temperature * 100));
+    sendJson("bme_pressure", String(AIR_data.bme_pressure * 100));
+    sendJson("bme_humidity", String(AIR_data.bme_humidity * 100));
+    
+    // HTU21DF sensor data
+    sendJson("htu_temperature", String(AIR_data.htu_temperature * 100));
+    sendJson("htu_humidity", String(AIR_data.htu_humidity * 100));
+    
+    // SCD4X sensor data
+    sendJson("scd4x_co2", String(AIR_data.scd4x_co2 * 100));
+    sendJson("scd4x_temperature", String(AIR_data.scd4x_temperature * 100));
+    sendJson("scd4x_humidity", String(AIR_data.scd4x_humidity * 100));
+    
+    // PMS sensor data
+    sendJson("pms_pm1", String(AIR_data.pms_pm1 * 10));
+    sendJson("pms_pm2_5", String(AIR_data.pms_pm2_5 * 10));
+    sendJson("pms_pm10", String(AIR_data.pms_pm10 * 10));
+    
+    // MS5611 sensor data
+    sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure * 100));
+    sendJson("ms5611_temperature", String(AIR_data.ms5611_temperature * 100));
+    
+    // BH1750 sensor data
+    sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting * 10));
+    
+    // VEML6070 sensor data
+    sendJson("veml_uv", String(AIR_data.veml_uv));
+    
+    // CH2O sensor data
+    sendJson("ch2o_value", String(AIR_data.ch2o_value * 10));
+    
+    // Microphone data
+    sendJson("microphone_noise", String(AIR_data.microphone_noise * 10));
 
     break;
-  case WStype_TEXT: // if a client has sent data, then type == WStype_TEXT
+  case WStype_TEXT:
     // try to decipher the JSON string received
-    StaticJsonDocument<200> doc; // create JSON container
+    StaticJsonDocument<200> doc;
     DeserializationError error = deserializeJson(doc, payload);
     if (error)
     {

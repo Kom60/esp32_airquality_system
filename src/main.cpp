@@ -27,20 +27,44 @@ void send_data_to_pc() {
     http.begin(url);
     http.addHeader("Content-Type", "application/json");
     
-    // Формируем ВАЛИДНЫЙ JSON
+    // Формируем ВАЛИДНЫЙ JSON с использованием новых имен переменных
     String json = "{";
-    json += "\"outdoor_temp\":" + format_float(AIR_data.Outdoor_temp) + ",";
-    json += "\"outdoor_pressure\":" + format_float(AIR_data.Outdoor_pressure) + ",";
-    json += "\"outdoor_humidity\":" + format_float(AIR_data.Outdoor_Humidity) + ",";
-    json += "\"indoor_temp\":" + format_float(AIR_data.Indoor_temp) + ",";
-    json += "\"indoor_pressure\":" + format_float(AIR_data.Indoor_pressure) + ",";
-    json += "\"indoor_humidity\":" + format_float(AIR_data.Indoor_humidity) + ",";
-    json += "\"pm1\":" + format_float(AIR_data.Indoor_PM1) + ",";
-    json += "\"pm25\":" + format_float(AIR_data.Indoor_PM2) + ",";
-    json += "\"pm10\":" + format_float(AIR_data.Indoor_PM10) + ",";
-    json += "\"co2\":" + String(is_valid_float(AIR_data.CO2) ? (int)AIR_data.CO2 : 0) + ",";
-    json += "\"ch2o\":" + format_float(AIR_data.CH2O, 3) + ",";
-    json += "\"lighting\":" + format_float(AIR_data.Lighting);
+    
+    // BME280 sensor data
+    json += "\"bme_temperature\":" + format_float(AIR_data.bme_temperature) + ",";
+    json += "\"bme_pressure\":" + format_float(AIR_data.bme_pressure) + ",";
+    json += "\"bme_humidity\":" + format_float(AIR_data.bme_humidity) + ",";
+    
+    // HTU21DF sensor data
+    json += "\"htu_temperature\":" + format_float(AIR_data.htu_temperature) + ",";
+    json += "\"htu_humidity\":" + format_float(AIR_data.htu_humidity) + ",";
+    
+    // SCD4X sensor data
+    json += "\"scd4x_co2\":" + String(is_valid_float(AIR_data.scd4x_co2) ? (int)AIR_data.scd4x_co2 : 0) + ",";
+    json += "\"scd4x_temperature\":" + format_float(AIR_data.scd4x_temperature) + ",";
+    json += "\"scd4x_humidity\":" + format_float(AIR_data.scd4x_humidity) + ",";
+    
+    // PMS sensor data
+    json += "\"pms_pm1\":" + String(AIR_data.pms_pm1) + ",";
+    json += "\"pms_pm2_5\":" + String(AIR_data.pms_pm2_5) + ",";
+    json += "\"pms_pm10\":" + String(AIR_data.pms_pm10) + ",";
+    
+    // MS5611 sensor data
+    json += "\"ms5611_pressure\":" + format_float(AIR_data.ms5611_pressure) + ",";
+    json += "\"ms5611_temperature\":" + format_float(AIR_data.ms5611_temperature) + ",";
+    
+    // BH1750 sensor data
+    json += "\"bh1750_lighting\":" + format_float(AIR_data.bh1750_lighting) + ",";
+    
+    // VEML6070 sensor data
+    json += "\"veml_uv\":" + String(AIR_data.veml_uv) + ",";
+    
+    // CH2O sensor data
+    json += "\"ch2o_value\":" + format_float(AIR_data.ch2o_value, 3) + ",";
+    
+    // Microphone data
+    json += "\"microphone_noise\":" + format_float(AIR_data.microphone_noise);
+    
     json += "}";
     
     // Отладка: выводим JSON в Serial
@@ -129,8 +153,7 @@ void loop()
   { // check if "interval" ms has passed since last time the clients were updated
     previousMillis = now;
     tft.fillScreen(TFT_BLACK);
-    display_bme();
-    display_indoor();
+    display_all_data();
 
     sendJson("cpu_voltage", String(random(360)));
     sendJson("indoor_radiation", String(0));

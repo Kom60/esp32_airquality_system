@@ -5,5 +5,4 @@ extern TFT_eSPI tft;  // Create object "tft"
 
 
 void show_init_animation();
-void display_bme();
-void display_indoor();
+void display_all_data();

@@ -6,13 +6,13 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="main_style.css" />
   <script src="logic.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js  "></script>
   <meta charset="utf-8">
   <title>Air quality monitor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com  ">
+  <link rel="preconnect" href="https://fonts.gstatic.com  " crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap  " rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined  :opsz,wght,FILL,GRAD@24,400,0,0" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="dungeon.css" />
@@ -24,104 +24,98 @@
 
 <div class="board">
   <div class="column column1">
-      <div class="column-header-text"> В помещении: </div>
+      <div class="column-header-text"> Датчики в помещении: </div>
       <div class="data-box">
         <div class="line">
-          <div onclick='alert("ABOBA")' class="text"> Температура: </div>
-          <div class="measured_value indoor_temp">---</div>
-          <div class="units"> C</div>
+          <div class="text"> Температура (HTU): </div>
+          <div class="measured_value htu_temperature">---</div>
+          <div class="units"> °C</div>
         </div>
         <div class="line">
-          <div class="text"> Давление: </div>
-          <div class="measured_value indoor_press">---</div>
-          <div class="units"> ГПа</div>
-        </div>
-        <div class="line">
-          <div class="text"> Влажность: </div>
-          <div class="measured_value indoor_humidity">---</div>
+          <div class="text"> Влажность (HTU): </div>
+          <div class="measured_value htu_humidity">---</div>
           <div class="units"> %</div>
         </div>
         <div class="line">
-          <div class="text"> Свет: </div>
-          <div class="measured_value indoor_light">---</div>
+          <div class="text"> Давление (MS): </div>
+          <div class="measured_value ms5611_pressure">---</div>
+          <div class="units"> ГПа</div>
+        </div>
+        <div class="line">
+          <div class="text"> Температура (MS): </div>
+          <div class="measured_value ms5611_temperature">---</div>
+          <div class="units"> °C</div>
+        </div>
+        <div class="line">
+          <div class="text"> CO2 (SCD): </div>
+          <div class="measured_value scd4x_co2">---</div>
+          <div class="units"> ppm</div>
+        </div>
+        <div class="line">
+          <div class="text"> Температура (SCD): </div>
+          <div class="measured_value scd4x_temperature">---</div>
+          <div class="units"> °C</div>
+        </div>
+        <div class="line">
+          <div class="text"> Влажность (SCD): </div>
+          <div class="measured_value scd4x_humidity">---</div>
+          <div class="units"> %</div>
+        </div>
+        <div class="line">
+          <div class="text">Част. 1,0 (PMS):</div>
+          <div class="measured_value pms_pm1">---</div>
+          <div class="units"> мкг/м³</div>
+        </div>
+        <div class="line">
+          <div class="text">Част. 2,5 (PMS):</div>
+          <div class="measured_value pms_pm2_5">---</div>
+          <div class="units"> мкг/м³</div>
+        </div>
+        <div class="line">
+          <div class="text"> Част. 10,0 (PMS):</div>
+          <div class="measured_value pms_pm10">---</div>
+          <div class="units">мкг/м³</div>
+        </div>
+        <div class="line">
+          <div class="text"> Свет (BH):</div>
+          <div class="measured_value bh1750_lighting">---</div>
           <div class="units"> Люкс</div>
         </div>
         <div class="line">
-          <div class="text"> Уровень CO2: </div>
-          <div class="measured_value indoor_CO2">---</div>
-          <div class="units"> мг/кг</div>
-        </div>
-        <div class="line">
-          <div class="text"> Уровень CН2О: </div>
-          <div class="measured_value indoor_CH2O">---</div>
-          <div class="units"> мг/кг</div>
-        </div>
-        <div class="line">
-          <div class="text">Част. 1,0:</div>
-          <div class="measured_value indoor_1_0">---</div>
-          <div class="units"> мг/кг</div>
-        </div>
-        <div class="line">
-          <div class="text">Част. 2,5:</div>
-          <div class="measured_value indoor_pm2_5">---</div>
-          <div class="units"> мг/кг</div>
-        </div>
-        <div class="line">
-          <div class="text"> Част. 10,0:</div>
-          <div class="measured_value indoor_pm10">---</div>
-          <div class="units">мг/кг</div>
-        </div>
-          
-        <div class="line">
-          <div class="text"> Радиация:</div>
-          <div class="measured_value indoor_radiation">---</div>
-          <div class="units"> мкР/ч</div>
+          <div class="text"> Формальдегид (CH2O):</div>
+          <div class="measured_value ch2o_value">---</div>
+          <div class="units"> ppm</div>
         </div>
         <div class="line">
           <div class="text"> Уровень шума:</div>
-          <div class="measured_value indoor_noise">---</div>
+          <div class="measured_value microphone_noise">---</div>
           <div class="units"> Дб</div>
         </div>
       </div>
     </div>
 
   <div class="column column2">
-      <div class="column-header-text"> На улице:</div>
+      <div class="column-header-text"> Наружные датчики:</div>
       <div class="data-box">
         <div class="line">
-          <div class="text"> Температура:</div>
-          <div class="measured_value outdoor_temp">---</div>
-          <div class="units"> C</div>
+          <div class="text"> Температура (BME):</div>
+          <div class="measured_value bme_temperature">---</div>
+          <div class="units"> °C</div>
         </div>
         <div class="line">
-          <div class="text"> Давление:</div>
-          <div class="measured_value outdoor_press">---</div>
+          <div class="text"> Давление (BME):</div>
+          <div class="measured_value bme_pressure">---</div>
           <div class="units"> ГПа</div>
         </div>
         <div class="line">
-          <div class="text"> Влажность:</div>
-          <div class="measured_value outdoor_humidity">---</div>
+          <div class="text"> Влажность (BME):</div>
+          <div class="measured_value bme_humidity">---</div>
           <div class="units"> %</div>
         </div>
         <div class="line">
-          <div class="text"> Свет:</div>
-          <div class="measured_value outdoor_light">---</div>
-          <div class="units"> Люкс</div>
-        </div>
-        <div class="line">
-          <div class="text"> Уровень CO2:</div>
-          <div class="measured_value outdoor_CO2">---</div>
-          <div class="units"> мг/кг</div>
-        </div>
-        <div class="line">
-          <div class="text"> Уровень CН2О:</div>
-          <div class="measured_value outdoor_CH2O">---</div>
-          <div class="units"> мг/кг</div>
-        </div>
-        <div class="line">
-          <div class="text"> Ультрафиолет:</div>
-          <div class="measured_value outdoor_UV">---</div>
-          <div class="units"> ед.</div>
+          <div class="text"> Ультрафиолет (VEML):</div>
+          <div class="measured_value veml_uv">---</div>
+          <div class="units"> индекс</div>
         </div>
       </div>
   </div>

@@ -3,9 +3,8 @@
 void show_init_animation()
 {
   uint32_t count = 400;
-    while(count)
-    {
-
+  while(count)
+  {
     uint16_t fg_color = random(0x10000);
     uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
 
@@ -24,54 +23,108 @@ void show_init_animation()
     bool arc_end = random(2);           // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
 
     tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color, arc_end);
-    //i=false;
     count--;
-    }
+  }
 }
 
-void display_bme()
+void display_all_data()
 {
-   tft.setTextSize(1);
-    tft.drawString("OUTDOOR AIR:",10,15);
-    tft.drawString("Temperature",15,30);
-    tft.drawFloat(AIR_data.Outdoor_temp,1,90,30);
-    tft.drawString("Celsium",120,30);
-    tft.drawString("Pressure",15,45);
-    tft.drawFloat(AIR_data.Outdoor_pressure,1,75,45);
-    tft.drawString("GPascal",115,45);
-    tft.drawString("Humidity",15,60);
-    tft.drawFloat(AIR_data.Outdoor_Humidity,1,75,60);
-    tft.drawString("%",110,60);
-}
-void display_indoor()
-{
-  tft.drawString("INDOOR AIR:",10,75);
-  tft.drawString("Temperature",15,90);
-  tft.drawFloat(AIR_data.Indoor_temp,1,90,90);
-  tft.drawString("Celsium",120,90);
-  tft.drawString("Pressure",15,105);
-  tft.drawFloat(AIR_data.Indoor_pressure/100.0,1,75,105);
-  tft.drawString("GPascal",115,105);
-  tft.drawString("Humidity",15,120);
-  tft.drawFloat(AIR_data.Indoor_humidity,1,75,120);
-  tft.drawString("%",110,120);
-  tft.drawString("PM1.0",15,135);
-  tft.drawFloat(AIR_data.Indoor_PM1,1,60,135);
-  tft.drawString("[ug/m3]",90,135);
-  tft.drawString("PM2.5",15,150);
-  tft.drawFloat(AIR_data.Indoor_PM2,1,60,150);
-  tft.drawString("[ug/m3]",90,150);
-  tft.drawString("PM10",15,165);
-  tft.drawFloat(AIR_data.Indoor_PM10,1,60,165);
-  tft.drawString("[ug/m3]",90,165);
-  tft.drawString("Radiation",15,180);
-  tft.drawString("Lighting",15,195);
-  tft.drawFloat(AIR_data.Lighting,1,75,195);
-  tft.drawString("lux",110,195);
-  tft.drawString("CO2",15,210);
-  tft.drawFloat(AIR_data.CO2,1,50,210);
-  tft.drawString("[ug/m3]",90,210);
-  tft.drawString("CH2O",15,225);
-  tft.drawFloat(AIR_data.CH2O,2,47,225);
-  tft.drawString("ppm",75,225);
+  // Clear the screen with a nice background
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setTextSize(1);
+  
+  // Outdoor section (BME280)
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.drawString("OUTDOOR SENSORS (BME280):", 10, 5);
+  
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("Temp:", 15, 20);
+  tft.drawFloat(AIR_data.bme_temperature, 1, 60, 20);
+  tft.drawString("C", 100, 20);
+  
+  tft.drawString("Press:", 15, 35);
+  tft.drawFloat(AIR_data.bme_pressure / 100.0, 1, 60, 35); // Convert to hPa
+  tft.drawString("hPa", 100, 35);
+  
+  tft.drawString("Humidity:", 15, 50);
+  tft.drawFloat(AIR_data.bme_humidity, 1, 80, 50);
+  tft.drawString("%", 115, 50);
+  
+  // VEML6070 UV sensor
+  tft.drawString("UV:", 15, 65);
+  tft.drawNumber(AIR_data.veml_uv, 60, 65);
+  tft.drawString("index", 90, 65);
+  
+  // Indoor section (HTU21DF)
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.drawString("INDOOR SENSORS (HTU21DF):", 10, 80);
+  
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("Temp:", 15, 95);
+  tft.drawFloat(AIR_data.htu_temperature, 1, 60, 95);
+  tft.drawString("C", 100, 95);
+  
+  tft.drawString("Humidity:", 15, 110);
+  tft.drawFloat(AIR_data.htu_humidity, 1, 80, 110);
+  tft.drawString("%", 115, 110);
+  
+  // MS5611 pressure sensor
+  tft.drawString("Press:", 15, 125);
+  tft.drawFloat(AIR_data.ms5611_pressure / 100.0, 1, 60, 125); // Convert to hPa
+  tft.drawString("hPa", 100, 125);
+  
+  // Temperature from MS5611 (if available)
+  if (AIR_data.ms5611_temperature != 0) {
+    tft.drawString("Temp (MS):", 15, 140);
+    tft.drawFloat(AIR_data.ms5611_temperature, 1, 80, 140);
+    tft.drawString("C", 120, 140);
+  }
+  
+  // Microphone noise
+  tft.drawString("Noise:", 15, 155);
+  tft.drawFloat(AIR_data.microphone_noise, 1, 60, 155);
+  tft.drawString("dB", 90, 155);
+  
+  // Air quality section (PMS, CO2, CH2O)
+  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  tft.drawString("AIR QUALITY:", 10, 170);
+  
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("PM1.0:", 15, 185);
+  tft.drawNumber(AIR_data.pms_pm1, 60, 185);
+  tft.drawString("ug/m3", 90, 185);
+  
+  tft.drawString("PM2.5:", 15, 200);
+  tft.drawNumber(AIR_data.pms_pm2_5, 60, 200);
+  tft.drawString("ug/m3", 90, 200);
+  
+  tft.drawString("PM10:", 15, 215);
+  tft.drawNumber(AIR_data.pms_pm10, 60, 215);
+  tft.drawString("ug/m3", 90, 215);
+  
+  // SCD4X CO2 sensor data
+  tft.drawString("CO2:", 15, 230);
+  tft.drawFloat(AIR_data.scd4x_co2, 0, 50, 230);
+  tft.drawString("ppm", 80, 230);
+  
+  // Add SCD4X temperature and humidity if available
+  if (AIR_data.scd4x_temperature != 0) {
+    tft.drawString("Temp (SCD):", 130, 230);
+    tft.drawFloat(AIR_data.scd4x_temperature, 1, 190, 230);
+    tft.drawString("C", 220, 230);
+  }
+  
+  // Environmental section (Lighting, CH2O)
+  tft.setTextColor(TFT_RED, TFT_BLACK);
+  tft.drawString("ENVIRONMENT:", 130, 80);
+  
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("Lighting:", 135, 95);
+  tft.drawFloat(AIR_data.bh1750_lighting, 1, 190, 95);
+  tft.drawString("lux", 220, 95);
+  
+  tft.drawString("CH2O:", 135, 110);
+  tft.drawFloat(AIR_data.ch2o_value, 2, 190, 110);
+  tft.drawString("ppm", 220, 110);
 }
