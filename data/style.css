@@ -59,7 +59,37 @@ body {
   color:rgb(220, 104, 236);
 }
 
+/* === Цветовые статусы для значений датчиков === */
+.measured_value.status-ok {
+  color: #4caf50 !important; /* зелёный */
+  text-shadow: 1px 1px 3px rgba(76, 175, 80, 0.5);
+}
 
+.measured_value.status-warning {
+  color: #ff9800 !important; /* оранжевый */
+  text-shadow: 1px 1px 3px rgba(255, 152, 0, 0.5);
+}
+
+.measured_value.status-critical {
+  color: #f44336 !important; /* красный */
+  text-shadow: 1px 1px 3px rgba(244, 67, 54, 0.5);
+  animation: critical-pulse 1.5s infinite;
+}
+
+@keyframes critical-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+/* Плавный переход для всех значений */
+.measured_value {
+  transition: color 0.4s ease, text-shadow 0.4s ease, transform 0.2s;
+}
+
+/* Подсказка при наведении */
+.measured_value[title]:hover {
+  cursor: help;
+}
 
 
 

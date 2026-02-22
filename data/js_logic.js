@@ -2,6 +2,95 @@ let CPU_temp;
 let output = document.getElementsByClassName("dungen_value esp32-voltage")[0];
 let Socket;
 
+// === Пороговые значения для датчиков ===
+// Все значения в "сырых" единицах (как приходят с ESP32), чтобы не конвертировать дважды
+// Формат: { min: норма_мин, max: норма_макс, warnMin: предупреждение_мин, warnMax: предупреждение_макс }
+const SENSOR_THRESHOLDS = {
+  // Температура (значения *100, °C)
+  'htu_temperature':      { min: 1800, max: 2600, warnMin: 1500, warnMax: 3000 },
+  'ms5611_temperature':   { min: 1800, max: 2600, warnMin: 1500, warnMax: 3000 },
+  'scd4x_temperature':    { min: 1800, max: 2600, warnMin: 1500, warnMax: 3000 },
+  'bme_temperature':      { min: -1000, max: 4000, warnMin: -2000, warnMax: 5000 }, // уличные
+  
+  // Влажность (значения *100, %)
+  'htu_humidity':         { min: 3000, max: 6000, warnMin: 2000, warnMax: 8000 },
+  'scd4x_humidity':       { min: 3000, max: 6000, warnMin: 2000, warnMax: 8000 },
+  'bme_humidity':         { min: 2000, max: 9000, warnMin: 1000, warnMax: 9500 },
+  
+  // Давление (значения *100, гПа)
+  'ms5611_pressure':      { min: 98000, max: 104000, warnMin: 96000, warnMax: 106000 },
+  'bme_pressure':         { min: 98000, max: 104000, warnMin: 96000, warnMax: 106000 },
+  
+  // CO2 (значения *100, ppm)
+  'scd4x_co2':            { min: 400, max: 1000, warnMin: 400, warnMax: 1400 },
+  
+  // PM частицы (значения *10, мкг/м³)
+  'pms_pm1':              { min: 0, max: 150, warnMin: 0, warnMax: 350 },
+  'pms_pm2_5':            { min: 0, max: 150, warnMin: 0, warnMax: 350 },
+  'pms_pm10':             { min: 0, max: 450, warnMin: 0, warnMax: 1500 },
+  
+  // Освещённость (значения *10, люкс)
+  'bh1750_lighting':      { min: 3000, max: 10000, warnMin: 1000, warnMax: 20000 },
+  
+  // Формальдегид (значения *10, ppm) - опасно уже при 0.1
+  'ch2o_value':           { min: 0, max: 8, warnMin: 0, warnMax: 10 },
+  
+  // Шум (значения *10, дБ)
+  'microphone_noise':     { min: 300, max: 550, warnMin: 200, warnMax: 700 },
+  
+  // УФ-индекс (целые числа)
+  'veml_uv':              { min: 0, max: 5, warnMin: 0, warnMax: 8 }
+};
+
+/**
+ * Определяет статус значения: 'ok' | 'warning' | 'critical'
+ */
+function getStatus(rawVal, thresholds) {
+  if (rawVal === null || rawVal === undefined || isNaN(rawVal)) return null;
+  if (rawVal < thresholds.warnMin || rawVal > thresholds.warnMax) return 'critical';
+  if (rawVal < thresholds.min || rawVal > thresholds.max) return 'warning';
+  return 'ok';
+}
+
+/**
+ * Применяет цветовую индикацию к элементу датчика
+ * @param {string} className - класс элемента (например, 'scd4x_co2')
+ * @param {number} rawValue - "сырое" числовое значение с ESP32
+ * @param {string} displayValue - уже отформатированная строка для отображения
+ */
+function applySensorStatus(className, rawValue, displayValue) {
+  const elements = document.getElementsByClassName(`measured_value ${className}`);
+  if (!elements.length) return;
+  const el = elements[0];
+  
+  // Обновляем отображаемое значение
+  el.innerHTML = displayValue;
+  
+  // Если нет порогов для этого датчика — выходим
+  if (!SENSOR_THRESHOLDS[className]) return;
+  
+  // Удаляем старые классы статуса
+  el.classList.remove('status-ok', 'status-warning', 'status-critical');
+  
+  // Определяем и применяем новый статус
+  const status = getStatus(rawValue, SENSOR_THRESHOLDS[className]);
+  if (status) {
+    el.classList.add(`status-${status}`);
+    // Добавляем подсказку
+    const t = SENSOR_THRESHOLDS[className];
+    const unit = className.includes('temperature') ? '°C' : 
+                 className.includes('humidity') ? '%' :
+                 className.includes('pressure') ? 'гПа' :
+                 className.includes('co2') ? 'ppm' :
+                 className.includes('pm') ? 'мкг/м³' :
+                 className.includes('lighting') ? 'лк' :
+                 className.includes('ch2o') ? 'ppm' :
+                 className.includes('noise') ? 'дБ' :
+                 className.includes('uv') ? 'индекс' : '';
+    el.title = `Норма: ${t.min/100}–${t.max/100}${unit}\nДопустимо: ${t.warnMin/100}–${t.warnMax/100}${unit}`;
+  }
+}
+
 function init() {
   Socket = new WebSocket('ws://' + window.location.hostname + ':81/');
   Socket.onmessage = function(event) {
@@ -12,119 +101,123 @@ function init() {
 function processCommand(event) {
   var obj = JSON.parse(event.data);
   var type = obj.type;
+  var rawValue = parseInt(obj.value); // "сырое" значение для сравнения с порогами
   
-  // Общие системные данные
-  if (type.localeCompare("cpu_voltage") == 0) {
-    var l_random_intensity = parseInt(obj.value); 
-    output.innerHTML = Math.floor(l_random_intensity/100)+","+l_random_intensity%100;
+  // === Системные данные (без индикации) ===
+  if (type === "cpu_voltage") {
+    output.innerHTML = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    return;
   }
-  if (type.localeCompare("esp32_cpu_freq") == 0) {
-    let esp32_cpu_freq = parseInt(obj.value); 
-    esp32_cpu_freq=esp32_cpu_freq/1000000;
-    document.getElementsByClassName("dungen_value esp32_cpu_freq")[0].innerHTML=esp32_cpu_freq;
-  }
-
-  // Данные с BME280 (наружные показания)
-  if (type.localeCompare("bme_temperature") == 0) {
-    let bme_temperature = parseInt(obj.value); 
-    bme_temperature = Math.floor(bme_temperature/100) + "," + (Math.abs(bme_temperature) % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value bme_temperature")[0].innerHTML = bme_temperature;
-  }
-  if (type.localeCompare("bme_pressure") == 0) {
-    let bme_pressure = parseInt(obj.value); 
-    bme_pressure = Math.floor(bme_pressure/100) + "," + (bme_pressure % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value bme_pressure")[0].innerHTML = bme_pressure;
-  }
-  if (type.localeCompare("bme_humidity") == 0) {
-    let bme_humidity = parseInt(obj.value); 
-    bme_humidity = Math.floor(bme_humidity/100) + "," + (bme_humidity % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value bme_humidity")[0].innerHTML = bme_humidity;
+  if (type === "esp32_cpu_freq") {
+    let val = rawValue / 1000000;
+    document.getElementsByClassName("dungen_value esp32_cpu_freq")[0].innerHTML = val.toFixed(2);
+    return;
   }
 
-  // Данные с HTU21DF (внутренние показания)
-  if (type.localeCompare("htu_temperature") == 0) {
-    let htu_temperature = parseInt(obj.value); 
-    htu_temperature = Math.floor(htu_temperature/100) + "," + (Math.abs(htu_temperature) % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value htu_temperature")[0].innerHTML = htu_temperature;
+  // === BME280 (наружные) ===
+  if (type === "bme_temperature") {
+    let display = Math.floor(rawValue/100) + "," + (Math.abs(rawValue) % 100).toString().padStart(2, '0');
+    applySensorStatus('bme_temperature', rawValue, display);
+    return;
   }
-  if (type.localeCompare("htu_humidity") == 0) {
-    let htu_humidity = parseInt(obj.value); 
-    htu_humidity = Math.floor(htu_humidity/100) + "," + (htu_humidity % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value htu_humidity")[0].innerHTML = htu_humidity;
+  if (type === "bme_pressure") {
+    let display = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    applySensorStatus('bme_pressure', rawValue, display);
+    return;
   }
-
-  // Данные с SCD4X
-  if (type.localeCompare("scd4x_co2") == 0) {
-    let scd4x_co2 = parseInt(obj.value); 
-    scd4x_co2 = Math.floor(scd4x_co2/100);
-    document.getElementsByClassName("measured_value scd4x_co2")[0].innerHTML = scd4x_co2;
-  }
-  if (type.localeCompare("scd4x_temperature") == 0) {
-    let scd4x_temperature = parseInt(obj.value); 
-    scd4x_temperature = Math.floor(scd4x_temperature/100) + "," + (Math.abs(scd4x_temperature) % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value scd4x_temperature")[0].innerHTML = scd4x_temperature;
-  }
-  if (type.localeCompare("scd4x_humidity") == 0) {
-    let scd4x_humidity = parseInt(obj.value); 
-    scd4x_humidity = Math.floor(scd4x_humidity/100) + "," + (scd4x_humidity % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value scd4x_humidity")[0].innerHTML = scd4x_humidity;
+  if (type === "bme_humidity") {
+    let display = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    applySensorStatus('bme_humidity', rawValue, display);
+    return;
   }
 
-  // Данные с PMS
-  if (type.localeCompare("pms_pm1") == 0) {
-    let pms_pm1 = parseInt(obj.value); 
-    pms_pm1 = Math.floor(pms_pm1/10) + "," + (pms_pm1 % 10);
-    document.getElementsByClassName("measured_value pms_pm1")[0].innerHTML = pms_pm1;
+  // === HTU21DF (внутренние) ===
+  if (type === "htu_temperature") {
+    let display = Math.floor(rawValue/100) + "," + (Math.abs(rawValue) % 100).toString().padStart(2, '0');
+    applySensorStatus('htu_temperature', rawValue, display);
+    return;
   }
-  if (type.localeCompare("pms_pm2_5") == 0) {
-    let pms_pm2_5 = parseInt(obj.value); 
-    pms_pm2_5 = Math.floor(pms_pm2_5/10) + "," + (pms_pm2_5 % 10);
-    document.getElementsByClassName("measured_value pms_pm2_5")[0].innerHTML = pms_pm2_5;
-  }
-  if (type.localeCompare("pms_pm10") == 0) {
-    let pms_pm10 = parseInt(obj.value); 
-    pms_pm10 = Math.floor(pms_pm10/10) + "," + (pms_pm10 % 10);
-    document.getElementsByClassName("measured_value pms_pm10")[0].innerHTML = pms_pm10;
+  if (type === "htu_humidity") {
+    let display = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    applySensorStatus('htu_humidity', rawValue, display);
+    return;
   }
 
-  // Данные с MS5611
-  if (type.localeCompare("ms5611_pressure") == 0) {
-    let ms5611_pressure = parseInt(obj.value); 
-    ms5611_pressure = Math.floor(ms5611_pressure/100) + "," + (ms5611_pressure % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value ms5611_pressure")[0].innerHTML = ms5611_pressure;
+  // === SCD4X ===
+  if (type === "scd4x_co2") {
+    let display = Math.floor(rawValue); // CO2 отображаем как целое
+    applySensorStatus('scd4x_co2', rawValue, display);
+    return;
   }
-  if (type.localeCompare("ms5611_temperature") == 0) {
-    let ms5611_temperature = parseInt(obj.value); 
-    ms5611_temperature = Math.floor(ms5611_temperature/100) + "," + (Math.abs(ms5611_temperature) % 100).toString().padStart(2, '0');
-    document.getElementsByClassName("measured_value ms5611_temperature")[0].innerHTML = ms5611_temperature;
+  if (type === "scd4x_temperature") {
+    let display = Math.floor(rawValue/100) + "," + (Math.abs(rawValue) % 100).toString().padStart(2, '0');
+    applySensorStatus('scd4x_temperature', rawValue, display);
+    return;
   }
-
-  // Данные с BH1750
-  if (type.localeCompare("bh1750_lighting") == 0) {
-    let bh1750_lighting = parseInt(obj.value); 
-    bh1750_lighting = Math.floor(bh1750_lighting/10) + "," + (bh1750_lighting % 10);
-    document.getElementsByClassName("measured_value bh1750_lighting")[0].innerHTML = bh1750_lighting;
+  if (type === "scd4x_humidity") {
+    let display = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    applySensorStatus('scd4x_humidity', rawValue, display);
+    return;
   }
 
-  // Данные с VEML6070
-  if (type.localeCompare("veml_uv") == 0) {
-    let veml_uv = parseInt(obj.value); 
-    veml_uv = Math.floor(veml_uv);
-    document.getElementsByClassName("measured_value veml_uv")[0].innerHTML = veml_uv;
+  // === PMS5003 (частицы, значения *10) ===
+  if (type === "pms_pm1") {
+    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    applySensorStatus('pms_pm1', rawValue, display);
+    return;
+  }
+  if (type === "pms_pm2_5") {
+    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    applySensorStatus('pms_pm2_5', rawValue, display);
+    return;
+  }
+  if (type === "pms_pm10") {
+    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    applySensorStatus('pms_pm10', rawValue, display);
+    return;
   }
 
-  // Данные с CH2O
-  if (type.localeCompare("ch2o_value") == 0) {
-    let ch2o_value = parseInt(obj.value); 
-    ch2o_value = Math.floor(ch2o_value/10) + "," + (ch2o_value % 10);
-    document.getElementsByClassName("measured_value ch2o_value")[0].innerHTML = ch2o_value;
+  // === MS5611 ===
+if (type === "ms5611_pressure") {
+    // rawValue в Pa×100, делим на 10000 для получения гПа с 2 знаками
+    let pressure_hPa_x100 = Math.round(rawValue / 100); // теперь в гПа×100
+    let display = Math.floor(pressure_hPa_x100/100) + "," + 
+                  (pressure_hPa_x100 % 100).toString().padStart(2, '0');
+    applySensorStatus('ms5611_pressure', pressure_hPa_x100, display);
+    return;
+}
+  if (type === "ms5611_temperature") {
+    let display = Math.floor(rawValue/100) + "," + (Math.abs(rawValue) % 100).toString().padStart(2, '0');
+    applySensorStatus('ms5611_temperature', rawValue, display);
+    return;
   }
 
-  // Данные с микрофона
-  if (type.localeCompare("microphone_noise") == 0) {
-    let microphone_noise = parseInt(obj.value); 
-    microphone_noise = Math.floor(microphone_noise/10) + "," + (microphone_noise % 10);
-    document.getElementsByClassName("measured_value microphone_noise")[0].innerHTML = microphone_noise;
+  // === BH1750 ===
+  if (type === "bh1750_lighting") {
+    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    applySensorStatus('bh1750_lighting', rawValue, display);
+    return;
+  }
+
+  // === VEML6070 ===
+  if (type === "veml_uv") {
+    let display = Math.floor(rawValue);
+    applySensorStatus('veml_uv', rawValue, display);
+    return;
+  }
+
+  // === CH2O (формальдегид) ===
+  if (type === "ch2o_value") {
+    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    applySensorStatus('ch2o_value', rawValue, display);
+    return;
+  }
+
+  // === Микрофон (шум) ===
+  if (type === "microphone_noise") {
+    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    applySensorStatus('microphone_noise', rawValue, display);
+    return;
   }
 }
 

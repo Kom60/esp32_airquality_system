@@ -31,7 +31,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     sendJson("htu_humidity", String(AIR_data.htu_humidity * 100));
     
     // SCD4X sensor data
-    sendJson("scd4x_co2", String(AIR_data.scd4x_co2 * 100));
+    sendJson("scd4x_co2", String(AIR_data.scd4x_co2));
     sendJson("scd4x_temperature", String(AIR_data.scd4x_temperature * 100));
     sendJson("scd4x_humidity", String(AIR_data.scd4x_humidity * 100));
     

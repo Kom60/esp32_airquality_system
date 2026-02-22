@@ -72,7 +72,7 @@ void send_data_to_pc() {
     Serial.println(json);
     
     int httpResponseCode = http.POST(json);
-    
+    //yield();
     if (httpResponseCode == 200) {
         Serial.println("[PC] ✓ Данные приняты сервером");
     } else {
