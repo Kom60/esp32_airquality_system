@@ -96,21 +96,52 @@ function init() {
   Socket.onmessage = function(event) {
     processCommand(event);
   };
+  Socket.onopen = function() {
+    console.log('WebSocket connected');
+  };
+  
+  // Запускаем обновление времени каждую секунду
+  setInterval(updateTime, 1000);
+}
+
+function updateTime() {
+  const now = new Date();
+  const timeEl = document.getElementsByClassName('dungen_value time')[0];
+  const dateEl = document.getElementsByClassName('dungen_value date')[0];
+  
+  if (timeEl) {
+    timeEl.innerHTML = now.getHours().toString().padStart(2, '0') + ':' + 
+                       now.getMinutes().toString().padStart(2, '0') + ':' + 
+                       now.getSeconds().toString().padStart(2, '0');
+  }
+  
+  if (dateEl) {
+    dateEl.innerHTML = now.getDate().toString().padStart(2, '0') + '.' + 
+                       (now.getMonth() + 1).toString().padStart(2, '0') + '.' + 
+                       now.getFullYear();
+  }
 }
 
 function processCommand(event) {
   var obj = JSON.parse(event.data);
   var type = obj.type;
-  var rawValue = parseInt(obj.value); // "сырое" значение для сравнения с порогами
+  var rawValue = parseFloat(obj.value); // используем parseFloat вместо parseInt
   
   // === Системные данные (без индикации) ===
   if (type === "cpu_voltage") {
-    output.innerHTML = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    let val = rawValue / 100;
+    output.innerHTML = val.toFixed(2);
     return;
   }
   if (type === "esp32_cpu_freq") {
     let val = rawValue / 1000000;
-    document.getElementsByClassName("dungen_value esp32_cpu_freq")[0].innerHTML = val.toFixed(2);
+    document.getElementsByClassName("dungen_value esp32_cpu_freq")[0].innerHTML = val.toFixed(0);
+    return;
+  }
+  if (type === "esp32_cpu_temp") {
+    let val = rawValue / 100;
+    let el = document.getElementsByClassName("dungen_value esp32_cpu_temp")[0];
+    if (el) el.innerHTML = val.toFixed(1);
     return;
   }
 
@@ -221,6 +252,30 @@ if (type === "ms5611_pressure") {
   }
 }
 
+// === Dark Mode ===
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDark);
+  if (isDark) {
+    document.querySelector('.dark-mode-button').src = 'on_bubl.png';
+  } else {
+    document.querySelector('.dark-mode-button').src = 'off_bubl.png';
+  }
+}
+
+function autoDarkMode() {
+  const saved = localStorage.getItem('darkMode');
+  if (saved === 'true') {
+    document.body.classList.add('dark-mode');
+    document.querySelector('.dark-mode-button').src = 'on_bubl.png';
+  } else {
+    document.body.classList.remove('dark-mode');
+    document.querySelector('.dark-mode-button').src = 'off_bubl.png';
+  }
+}
+
 window.onload = function(event) {
   init();
+  autoDarkMode();
 }

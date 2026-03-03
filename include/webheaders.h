@@ -1,7 +1,8 @@
 #include <WiFi.h>              // needed to connect to WiFi
-#include <ESPAsyncWebServer.h> // needed to create a simple webserver (make sure tools -> board is set to ESP32, otherwise you will get a "WebServer.h: No such file or directory" error)
+#include <ESPAsyncWebServer.h> // needed to create a simple webserver
 #include <WebSocketsServer.h>  // needed for instant communication between client and server through Websockets
-#include <ArduinoJson.h>       // needed for JSON encapsulation (send multiple variables with one string)
+#include <ArduinoJson.h>       // needed for JSON encapsulation
+#include "esp32/clk.h"         // for esp_clk_cpu_freq()
 
 // global variables of the LED selected and the intensity of that LED
 extern int random_intensity;

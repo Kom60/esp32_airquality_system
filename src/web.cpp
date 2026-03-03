@@ -25,36 +25,40 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     sendJson("bme_temperature", String(AIR_data.bme_temperature * 100));
     sendJson("bme_pressure", String(AIR_data.bme_pressure * 100));
     sendJson("bme_humidity", String(AIR_data.bme_humidity * 100));
-    
+
     // HTU21DF sensor data
     sendJson("htu_temperature", String(AIR_data.htu_temperature * 100));
     sendJson("htu_humidity", String(AIR_data.htu_humidity * 100));
-    
+
     // SCD4X sensor data
     sendJson("scd4x_co2", String(AIR_data.scd4x_co2));
     sendJson("scd4x_temperature", String(AIR_data.scd4x_temperature * 100));
     sendJson("scd4x_humidity", String(AIR_data.scd4x_humidity * 100));
-    
+
     // PMS sensor data
     sendJson("pms_pm1", String(AIR_data.pms_pm1 * 10));
     sendJson("pms_pm2_5", String(AIR_data.pms_pm2_5 * 10));
     sendJson("pms_pm10", String(AIR_data.pms_pm10 * 10));
-    
+
     // MS5611 sensor data
     sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure * 100));
     sendJson("ms5611_temperature", String(AIR_data.ms5611_temperature * 100));
-    
+
     // BH1750 sensor data
     sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting * 10));
-    
+
     // VEML6070 sensor data
     sendJson("veml_uv", String(AIR_data.veml_uv));
-    
+
     // CH2O sensor data
     sendJson("ch2o_value", String(AIR_data.ch2o_value * 10));
-    
+
     // Microphone data
     sendJson("microphone_noise", String(AIR_data.microphone_noise * 10));
+    
+    // ESP32 system data
+    sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
+    sendJson("esp32_cpu_temp", String(temperatureRead() * 100));
 
     break;
   case WStype_TEXT:

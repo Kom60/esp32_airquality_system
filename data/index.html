@@ -18,9 +18,13 @@
   <link rel="stylesheet" href="dungeon.css" />
 </head>
 <body>
-<div class="header"> 
+<div class="header">
   <div class="header-text">Мониторинг качества воздуха</div>
-  <img class="dark-mode-button" onclick='toggleDarkMode()' src="off_bubl.png" alt=""/></div>
+  <div class="header-buttons">
+    <button class="charts-button" onclick="location.href='charts.html'">📊 Графики и AQI</button>
+    <img class="dark-mode-button" onclick='toggleDarkMode()' src="off_bubl.png" alt=""/>
+  </div>
+</div>
 
 <div class="board">
   <div class="column column1">
@@ -29,47 +33,47 @@
         <div class="line">
           <div class="text"> Темп(HTU): </div>
           <div class="measured_value htu_temperature">---</div>
-          <div class="units"> °C</div>
+          <div class="units">°C</div>
         </div>
         <div class="line">
           <div class="text"> Влаж (HTU): </div>
           <div class="measured_value htu_humidity">---</div>
-          <div class="units"> %</div>
+          <div class="units">%</div>
         </div>
         <div class="line">
           <div class="text"> Давл (MS): </div>
           <div class="measured_value ms5611_pressure">---</div>
-          <div class="units"> ГПа</div>
+          <div class="units">ГПа</div>
         </div>
         <div class="line">
           <div class="text"> Темп (MS): </div>
           <div class="measured_value ms5611_temperature">---</div>
-          <div class="units"> °C</div>
+          <div class="units">°C</div>
         </div>
         <div class="line">
           <div class="text"> CO2 (SCD): </div>
           <div class="measured_value scd4x_co2">---</div>
-          <div class="units"> ppm</div>
+          <div class="units">ppm</div>
         </div>
         <div class="line">
           <div class="text"> Темп(SCD): </div>
           <div class="measured_value scd4x_temperature">---</div>
-          <div class="units"> °C</div>
+          <div class="units">°C</div>
         </div>
         <div class="line">
           <div class="text"> Влаж (SCD): </div>
           <div class="measured_value scd4x_humidity">---</div>
-          <div class="units"> %</div>
+          <div class="units">%</div>
         </div>
         <div class="line">
           <div class="text">Част. 1,0:</div>
           <div class="measured_value pms_pm1">---</div>
-          <div class="units"> мкг/м³</div>
+          <div class="units">мкг/м³</div>
         </div>
         <div class="line">
           <div class="text">Част. 2,5:</div>
           <div class="measured_value pms_pm2_5">---</div>
-          <div class="units"> мкг/м³</div>
+          <div class="units">мкг/м³</div>
         </div>
         <div class="line">
           <div class="text"> Част. 10,0:</div>
@@ -79,17 +83,17 @@
         <div class="line">
           <div class="text"> Свет (BH):</div>
           <div class="measured_value bh1750_lighting">---</div>
-          <div class="units"> Люкс</div>
+          <div class="units">Люкс</div>
         </div>
         <div class="line">
           <div class="text"> Форм (CH2O):</div>
           <div class="measured_value ch2o_value">---</div>
-          <div class="units"> ppm</div>
+          <div class="units">ppm</div>
         </div>
         <div class="line">
           <div class="text"> Уровень шума:</div>
           <div class="measured_value microphone_noise">---</div>
-          <div class="units"> Дб</div>
+          <div class="units">дБ</div>
         </div>
       </div>
     </div>
@@ -100,22 +104,22 @@
         <div class="line">
           <div class="text"> Темп (BME):</div>
           <div class="measured_value bme_temperature">---</div>
-          <div class="units"> °C</div>
+          <div class="units">°C</div>
         </div>
         <div class="line">
           <div class="text"> Давл (BME):</div>
           <div class="measured_value bme_pressure">---</div>
-          <div class="units"> ГПа</div>
+          <div class="units">ГПа</div>
         </div>
         <div class="line">
           <div class="text"> Влажн (BME):</div>
           <div class="measured_value bme_humidity">---</div>
-          <div class="units"> %</div>
+          <div class="units">%</div>
         </div>
         <div class="line">
           <div class="text"> Ультраф (VEML):</div>
           <div class="measured_value veml_uv">---</div>
-          <div class="units"> индекс</div>
+          <div class="units">индекс</div>
         </div>
       </div>
   </div>
@@ -144,21 +148,16 @@
     <div class="dungeon-units">МГц</div>
   </div>
   <div class="dungeon-line">
-    <div class="dungeon-text">Напряжение питания:</div>
-    <div class="dungen_value esp32_voltage">---</div>
-    <div class="dungeon-units">В</div>
+    <div class="dungeon-text">Температура ESP32:</div>
+    <div class="dungen_value esp32_cpu_temp">---</div>
+    <div class="dungeon-units">°C</div>
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">Версия программы:</div>
     <div class="dungen_value site_version">0.0.1</div>
   </div>
 </div>
-<script>
-CurrentDate();
-CurrentTime();
-autoDarkMode();
-</script>
-<script src="js_logic.js"></script>
+<script src="logic.js"></script>
 
 </body>
 </html>

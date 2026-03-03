@@ -1,9 +1,6 @@
 #include "headers.h"
 #include "main.h"
 
-const char* PC_IP = "192.168.0.220";  // ← ЗАМЕНИТЕ НА РЕАЛЬНЫЙ IP ВАШЕГО ПК!
-const int PC_PORT = 8080;
-
 // Функция проверки валидности числа
 bool is_valid_float(float value) {
     return !isnan(value) && !isinf(value) && value < 1e6 && value > -1e6;
@@ -22,7 +19,7 @@ String format_float(float value, int decimals = 1) {
 // Отправка данных на ПК
 void send_data_to_pc() {
     HTTPClient http;
-    
+
     String url = "http://" + String(PC_IP) + ":" + String(PC_PORT) + "/api/data";
     http.begin(url);
     http.addHeader("Content-Type", "application/json");
@@ -109,8 +106,8 @@ void setup(void)
     Serial.println("SPIFFS could not initialize");
   }
 
-  WiFi.begin(ssid, password);
-  Serial.println("Establishing connection to WiFi with SSID: " + String(ssid));
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.println("Establishing connection to WiFi with SSID: " + String(WIFI_SSID));
 
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -155,12 +152,10 @@ void loop()
     tft.fillScreen(TFT_BLACK);
     display_all_data();
 
-    sendJson("cpu_voltage", String(random(360)));
-    sendJson("indoor_radiation", String(0));
-    sendJson("outdoor_light", String(0));
-    sendJson("outdoor_CO2", String(0));
-    sendJson("outdoor_CH2O", String(0));
+    // Отправка данных о системе
     sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
+    sendJson("esp32_cpu_temp", String(temperatureRead() * 100));
+    
     send_data_to_pc();
   }
 }

@@ -217,8 +217,8 @@ void INMP441_measurementTaskFunction(void *parameter)
         Leq_dB = MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(Leq_RMS / MIC_REF_AMPL);
         Leq_sum_sqr = 0;
         Leq_samples = 0;
-      AIR_data.update_microphone_data(Leq_dB);
-		  sendJson("indoor_noise", String(10.0*AIR_data.microphone_noise));
+        AIR_data.update_microphone_data(Leq_dB);
+        sendJson("microphone_noise", String(AIR_data.microphone_noise * 10));
         // Serial output, customize (or remove) as needed
         //Serial.printf("%.1f\n", Leq_dB);
       }

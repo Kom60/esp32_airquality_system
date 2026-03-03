@@ -1,8 +1,7 @@
 #include "headers.h"
 #include "microphone.h"
 #include "webheaders.h"
-
-
+#include "secrets.h"
 
 SCD4X co2;
 double co2Value = 0, temperature = 0, humidity = 0;
@@ -24,10 +23,6 @@ Meteo_data AIR_data = Meteo_data();
 
 
 unsigned long delayTime;
-
-// SSID and password of Wifi connection:
-const char *ssid = "SAFARI";
-const char *password = "133713371337";
 
 // Configure IP addresses of the local access point
 IPAddress local_IP(192, 168, 1, 1);

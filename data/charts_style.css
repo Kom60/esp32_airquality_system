@@ -1,0 +1,326 @@
+/* Charts page styles */
+
+/* Дневная тема (по умолчанию) */
+body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.chart-wrapper {
+  background: #f5f5f5 !important;
+  border: 2px solid #666;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-family: "Press Start 2P", system-ui;
+  font-size: 12px;
+  color: #000000;
+}
+
+.chart-icon {
+  font-size: 16px;
+}
+
+.chart-wrapper canvas {
+  max-height: 250px;
+}
+
+/* AQI Dashboard */
+.aqi-dashboard {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.aqi-card {
+  background: #f5f5f5 !important;
+  border: 3px solid #666;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.aqi-label {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.aqi-value {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 64px;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.aqi-status {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 16px;
+  margin-bottom: 25px;
+}
+
+.aqi-bar {
+  height: 30px;
+  background: #ddd;
+  border-radius: 15px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.aqi-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 15px;
+  transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+.aqi-scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: "Press Start 2P", system-ui;
+  font-size: 8px;
+  color: #666;
+}
+
+.aqi-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.aqi-item {
+  background: #f5f5f5 !important;
+  border: 2px solid #666;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.aqi-item-icon {
+  font-size: 24px;
+}
+
+.aqi-item-label {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 10px;
+  color: #666;
+}
+
+.aqi-item-value {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 14px;
+  color: #000;
+}
+
+/* Header buttons */
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-button {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 10px;
+  padding: 10px 15px;
+  background: #4a4a6a;
+  color: #fff;
+  border: 2px solid #666;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-button:hover {
+  background: #5a5a7a;
+  transform: translateY(-2px);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+.control-btn {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 10px;
+  padding: 12px 20px;
+  background: #4a4a6a;
+  color: #fff;
+  border: 2px solid #666;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.control-btn:hover {
+  background: #5a5a7a;
+  transform: translateY(-2px);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
+/* Ночная тема */
+body.dark-mode {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .chart-wrapper {
+  background: #1e1e1e !important;
+  border-color: #444;
+}
+
+body.dark-mode .chart-header {
+  color: #fff;
+}
+
+body.dark-mode .aqi-card {
+  background: #1e1e1e !important;
+  border-color: #444;
+}
+
+body.dark-mode .aqi-label {
+  color: #ccc;
+}
+
+body.dark-mode .aqi-value {
+  color: #fff;
+}
+
+body.dark-mode .aqi-bar {
+  background: #333;
+}
+
+body.dark-mode .aqi-scale {
+  color: #999;
+}
+
+body.dark-mode .aqi-item {
+  background: #1e1e1e !important;
+  border-color: #444;
+}
+
+body.dark-mode .aqi-item-label {
+  color: #999;
+}
+
+body.dark-mode .aqi-item-value {
+  color: #fff;
+}
+
+body.dark-mode .nav-button {
+  background: #4a4a6a;
+}
+
+body.dark-mode .control-btn {
+  background: #4a4a6a;
+}
+
+/* AQI Status Colors */
+.aqi-good {
+  color: #2e7d32 !important;
+}
+
+.aqi-moderate {
+  color: #f57c00 !important;
+}
+
+.aqi-unhealthy-sensitive {
+  color: #ff9800 !important;
+}
+
+.aqi-unhealthy {
+  color: #f44336 !important;
+}
+
+.aqi-very-unhealthy {
+  color: #b71c1c !important;
+}
+
+.aqi-hazardous {
+  color: #4a148c !important;
+}
+
+body.dark-mode .aqi-good {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .aqi-moderate {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .aqi-unhealthy-sensitive {
+  color: #ffb74d !important;
+}
+
+body.dark-mode .aqi-unhealthy {
+  color: #ef5350 !important;
+}
+
+body.dark-mode .aqi-very-unhealthy {
+  color: #ef5350 !important;
+}
+
+body.dark-mode .aqi-hazardous {
+  color: #ab47bc !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .aqi-value {
+    font-size: 48px;
+  }
+  
+  .charts-container {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+  
+  .header-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .control-btn {
+    width: 100%;
+    max-width: 250px;
+  }
+}

@@ -1,95 +1,188 @@
-
+/* ДНЕВНАЯ ТЕМА (по умолчанию) */
 body {
-    
-    background-color: rgb(255, 255, 255);
-    color: rgb(0, 0, 0);
-    font-size: 25px;
-    transition: background-color 1.3s, color 1.3s;
-  }
-  .dark-mode {
-    background-color: black;
-    color: white;
-  }
-
-
-  
-  .site-version {
-    text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
-    flex: 1;
-      vertical-align: top;
-      /*height: var(--dark-mode-button-height);*/
-      width: var(--column-width);
-      /*border-style: solid;
-      border-color: red;*/
-      text-align: left;
-      font-family: "Press Start 2P", system-ui;
-      font-size: var(--font-size-value);
-      font-weight: 100;
-      font-style: normal;
-      margin-top: auto;
-      margin-bottom: auto;
-      margin-left: auto;
-      margin-right: 0;
-  }
-
-.measured_value{
-  padding-top: 1%;
-  padding-left: 1%;
-  padding-right: 2%;
-  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
-  /*border-style: solid;
-  border-color: red;*/
-  font-family: "Press Start 2P", system-ui;
-  font-size: var(--font-size-val);
-  font-weight: 100;
-  font-style: normal;
-  margin-top: auto;
-  margin-bottom: 0;
-  margin-left: auto;
-  margin-right: auto;
-  user-select: none;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-size: 25px;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-.measured_value.indoor_temp{
-  color:rgb(236, 104, 104);
+.board {
+  border-color: #333 !important;
+  background-color: transparent !important;
 }
 
-
-.measured_value.outdoor_temp{
-  color:rgb(220, 104, 236);
+.column {
+  border-color: #666 !important;
+  background-color: transparent !important;
 }
 
-/* === Цветовые статусы для значений датчиков === */
+.data-box {
+  background-color: transparent !important;
+}
+
+.dungeon {
+  border-color: #333 !important;
+  background-color: transparent !important;
+}
+
+.header {
+  border-color: #333 !important;
+  background-color: transparent !important;
+}
+
+.header-text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.column-header-text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.dungeon-header-text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.dungeon-text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.dungen_value {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.units {
+  color: #333333 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.measured_value {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+  font-family: "Press Start 2P", system-ui !important;
+  font-size: var(--font-size-val) !important;
+  line-height: 1 !important;
+  vertical-align: baseline !important;
+  display: inline !important;
+  padding-top: 3% !important;
+}
+
+.measured_value.indoor_temp {
+  color: #d32f2f !important;
+}
+
+.measured_value.outdoor_temp {
+  color: #7b1fa2 !important;
+}
+
+/* НОЧНАЯ ТЕМА */
+body.dark-mode {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .board {
+  border-color: #444 !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .column {
+  border-color: #333 !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .data-box {
+  background-color: transparent !important;
+}
+
+body.dark-mode .dungeon {
+  border-color: #444 !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .header {
+  border-color: #444 !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .header-text {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .column-header-text {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .dungeon-header-text {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .dungeon-text {
+  color: #cccccc !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .dungen_value {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .text {
+  color: #cccccc !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .units {
+  color: #999999 !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .measured_value {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .measured_value.indoor_temp {
+  color: #ef5350 !important;
+}
+
+body.dark-mode .measured_value.outdoor_temp {
+  color: #ab47bc !important;
+}
+
+/* Статусы датчиков */
 .measured_value.status-ok {
-  color: #4caf50 !important; /* зелёный */
-  text-shadow: 1px 1px 3px rgba(76, 175, 80, 0.5);
+  color: #2e7d32 !important;
 }
 
 .measured_value.status-warning {
-  color: #ff9800 !important; /* оранжевый */
-  text-shadow: 1px 1px 3px rgba(255, 152, 0, 0.5);
+  color: #f57c00 !important;
 }
 
 .measured_value.status-critical {
-  color: #f44336 !important; /* красный */
-  text-shadow: 1px 1px 3px rgba(244, 67, 54, 0.5);
-  animation: critical-pulse 1.5s infinite;
+  color: #c62828 !important;
 }
 
-@keyframes critical-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.02); }
+body.dark-mode .measured_value.status-ok {
+  color: #66bb6a !important;
 }
 
-/* Плавный переход для всех значений */
-.measured_value {
-  transition: color 0.4s ease, text-shadow 0.4s ease, transform 0.2s;
+body.dark-mode .measured_value.status-warning {
+  color: #ffa726 !important;
 }
 
-/* Подсказка при наведении */
-.measured_value[title]:hover {
-  cursor: help;
+body.dark-mode .measured_value.status-critical {
+  color: #ef5350 !important;
 }
-
-
-

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Графики и AQI - Мониторинг качества воздуха</title>
+  <link rel="stylesheet" href="dungeon.css" />
+  <link rel="stylesheet" href="charts_style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="header">
+  <div class="header-text">Графики и AQI</div>
+  <div class="header-buttons">
+    <button class="nav-button" onclick="location.href='index.html'">🏠 Главная</button>
+    <img class="dark-mode-button" onclick="toggleDarkMode()" src="off_bubl.png" alt=""/>
+  </div>
+</div>
+
+<!-- AQI Dashboard -->
+<div class="aqi-dashboard">
+  <div class="aqi-card">
+    <div class="aqi-label">Индекс качества воздуха</div>
+    <div class="aqi-value" id="aqi_value">--</div>
+    <div class="aqi-status" id="aqi_status">Загрузка...</div>
+    <div class="aqi-bar">
+      <div class="aqi-bar-fill" id="aqi_bar"></div>
+    </div>
+    <div class="aqi-scale">
+      <span>0</span>
+      <span>50</span>
+      <span>100</span>
+      <span>150</span>
+      <span>200</span>
+      <span>300+</span>
+    </div>
+  </div>
+  
+  <div class="aqi-details">
+    <div class="aqi-item">
+      <span class="aqi-item-icon">🌀</span>
+      <span class="aqi-item-label">PM2.5</span>
+      <span class="aqi-item-value" id="aqi_pm25">--</span>
+    </div>
+    <div class="aqi-item">
+      <span class="aqi-item-icon">🌫</span>
+      <span class="aqi-item-label">PM10</span>
+      <span class="aqi-item-value" id="aqi_pm10">--</span>
+    </div>
+    <div class="aqi-item">
+      <span class="aqi-item-icon">💨</span>
+      <span class="aqi-item-label">CO₂</span>
+      <span class="aqi-item-value" id="aqi_co2">--</span>
+    </div>
+    <div class="aqi-item">
+      <span class="aqi-item-icon">⚠</span>
+      <span class="aqi-item-label">CH₂O</span>
+      <span class="aqi-item-value" id="aqi_ch2o">--</span>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div class="charts-container">
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <span class="chart-icon">🌡</span>
+      <span>Температура (°C)</span>
+    </div>
+    <canvas id="tempChart"></canvas>
+  </div>
+  
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <span class="chart-icon">💧</span>
+      <span>Влажность (%)</span>
+    </div>
+    <canvas id="humidityChart"></canvas>
+  </div>
+  
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <span class="chart-icon">💨</span>
+      <span>CO₂ (ppm)</span>
+    </div>
+    <canvas id="co2Chart"></canvas>
+  </div>
+  
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <span class="chart-icon">🌀</span>
+      <span>PM2.5 (мкг/м³)</span>
+    </div>
+    <canvas id="pm25Chart"></canvas>
+  </div>
+  
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <span class="chart-icon">🌫</span>
+      <span>PM10 (мкг/м³)</span>
+    </div>
+    <canvas id="pm10Chart"></canvas>
+  </div>
+  
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <span class="chart-icon">📊</span>
+      <span>Давление (гПа)</span>
+    </div>
+    <canvas id="pressureChart"></canvas>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="control-btn" onclick="clearCharts()">🗑 Очистить графики</button>
+  <button class="control-btn" onclick="exportData()">📥 Экспорт CSV</button>
+  <button class="control-btn" onclick="toggleAutoScroll()">⏸ Пауза</button>
+</div>
+
+<script src="charts_logic.js"></script>
+</body>
+</html>

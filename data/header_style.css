@@ -73,7 +73,7 @@
 }
 
 .esp32-button {
-  
+
   border: solid;
   vertical-align:left;
   top:  var(--icon-top-padding);
@@ -90,4 +90,33 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto;
+}
+
+.charts-button {
+  font-family: "Press Start 2P", system-ui;
+  font-size: 10px;
+  padding: 10px 15px;
+  background: var(--button-bg, #4a4a6a);
+  color: var(--text-color, #fff);
+  border: 2px solid var(--border-color, #666);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+}
+
+.charts-button:hover {
+  background: var(--button-hover, #5a5a7a);
+  transform: translateY(-2px);
+}
+
+.charts-button:active {
+  transform: translateY(0);
 }

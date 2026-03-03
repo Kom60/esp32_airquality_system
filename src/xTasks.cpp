@@ -6,6 +6,7 @@ TaskHandle_t CO2_measurementTask, BME_measurementTask,
 
 void CO2_measurementTaskFunction(void *parameter)
 {
+    Wire.begin();
     co2.begin();
     co2.startPeriodicMeasurement();
     while (true)
@@ -15,7 +16,7 @@ void CO2_measurementTaskFunction(void *parameter)
             if (co2.readMeasurement(co2Value, temperature, humidity) == 0)
             {
                 sendJson("scd4x_co2", String(co2Value));
-                sendJson("scd4x_temp", String(temperature * 100));
+                sendJson("scd4x_temperature", String(temperature * 100));
                 sendJson("scd4x_humidity", String(humidity * 100));
                 AIR_data.update_scd4x_data(co2Value, temperature, humidity);
 
@@ -32,8 +33,8 @@ void BME_measurementTaskFunction(void *parameter)
     while (true)
     {
         AIR_data.update_bme_data(bme.readTemperature(), bme.readPressure() / 100.0F, bme.readHumidity());
-        sendJson("bme_temp", String(AIR_data.bme_temperature * 100));
-        sendJson("bme_press", String(AIR_data.bme_pressure * 100));
+        sendJson("bme_temperature", String(AIR_data.bme_temperature * 100));
+        sendJson("bme_pressure", String(AIR_data.bme_pressure * 100));
         sendJson("bme_humidity", String(AIR_data.bme_humidity * 100));
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
@@ -46,7 +47,7 @@ void HTU_measurementTaskFunction(void *parameter)
         float temp = htu.readTemperature();
         float hum = htu.readHumidity();
         AIR_data.update_htu_data(temp, hum);
-        sendJson("htu_temp", String(AIR_data.htu_temperature * 100));
+        sendJson("htu_temperature", String(AIR_data.htu_temperature * 100));
         sendJson("htu_humidity", String(AIR_data.htu_humidity * 100));
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
@@ -60,7 +61,7 @@ void BH1750_measurementTaskFunction(void *parameter)
         {
             float lux = lightMeter.readLightLevel();
             AIR_data.update_bh1750_data(lux);
-            sendJson("bh1750_light", String(AIR_data.bh1750_lighting * 10));
+            sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting * 10));
         }
         vTaskDelay(pdMS_TO_TICKS(500));
     }
@@ -97,14 +98,13 @@ void MS5611_measurementTaskFunction(void *parameter)
     while (true)
     {
         vTaskDelay(pdMS_TO_TICKS(500));
-        // Получаем и передаем и давление, и температуру
         double pressure = ms5611.readPressure();
         float temperature = ms5611.readTemperature();
-        
+
         AIR_data.update_ms5611_data(pressure, temperature);
-        sendJson("ms5611_press", String(AIR_data.ms5611_pressure));
-        sendJson("ms5611_temp", String(AIR_data.ms5611_temperature * 100));
-        
+        sendJson("ms5611_pressure", String(pressure / 100.0));  // Па -> гПа
+        sendJson("ms5611_temperature", String(temperature * 100));
+
         vTaskDelay(pdMS_TO_TICKS(6000));
     }
 }

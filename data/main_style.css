@@ -22,7 +22,8 @@
   width: var(--column-width);
   border: var(--border-dashed-size) dashed;
   padding: var(--colum-margin-val);
-  
+  background: transparent !important;
+
 }
 
 .column.column1 {
@@ -62,19 +63,16 @@
   padding-top: 3%;
   text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
   flex:1;
-  /*border-style: solid;
-  border-color: rgb(142, 212, 227);*/
   text-align: left;
   font-family: "Press Start 2P", system-ui;
   font-size: var(--font-size-val);
   font-weight: 100;
   font-style: normal;
-  text-align: left;
   margin-top: auto;
   margin-bottom: auto;
   margin-left: 0;
   margin-right: auto;
-
+  padding-left: 5px;
 }
 
 .text {
