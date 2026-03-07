@@ -1,15 +1,15 @@
 #include "headers.h"
 
 void BME_280_printValues() {
-   
+
     Serial.print("Temperature = ");
     Serial.print(bme.readTemperature());
-    
+
     Serial.println(" °C");
 
     Serial.print("Pressure = ");
 
-    Serial.print(bme.readPressure() / 100.0F);
+    Serial.print(bme.readPressure() / 100.0F);  // Конвертируем из Па в гПа
     Serial.println(" hPa");
 
     Serial.print("Approx. Altitude = ");
@@ -43,7 +43,7 @@ void display_bme()
     tft.drawFloat(bme.readTemperature(),1,90,30);
     tft.drawString("Celsium",120,30);
     tft.drawString("Pressure",15,45);
-    tft.drawFloat((bme.readPressure() / 100.0F),1,75,45);
+    tft.drawFloat((bme.readPressure() / 100.0F),1,75,45);  // Конвертируем из Па в гПа
     tft.drawString("hPascal",115,45);
     tft.drawString("Humidity",15,60);
     tft.drawFloat(bme.readHumidity(),1,75,60);

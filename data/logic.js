@@ -88,7 +88,7 @@ function handleWebSocketMessage(event) {
       'bme_humidity': { class: 'bme_humidity', suffix: '%', div: 100, decimals: 1 },
       'htu_temperature': { class: 'htu_temperature', suffix: '°C', div: 100, decimals: 1 },
       'htu_humidity': { class: 'htu_humidity', suffix: '%', div: 100, decimals: 1 },
-      'ms5611_pressure': { class: 'ms5611_pressure', suffix: 'гПа', div: 100, decimals: 1 },  // уже в гПа
+      'ms5611_pressure': { class: 'ms5611_pressure', suffix: 'гПа', div: 1, decimals: 1 },  // приходит в гПа
       'ms5611_temperature': { class: 'ms5611_temperature', suffix: '°C', div: 100, decimals: 1 },
       'scd4x_co2': { class: 'scd4x_co2', suffix: 'ppm', div: 1, decimals: 0 },
       'scd4x_temperature': { class: 'scd4x_temperature', suffix: '°C', div: 100, decimals: 1 },

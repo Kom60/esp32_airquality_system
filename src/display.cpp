@@ -44,7 +44,7 @@ void display_all_data()
   tft.drawString("C", 100, 20);
   
   tft.drawString("Press:", 15, 35);
-  tft.drawFloat(AIR_data.bme_pressure / 100.0, 1, 60, 35); // Convert to hPa
+  tft.drawFloat(AIR_data.bme_pressure, 1, 60, 35);  // Уже в гПа
   tft.drawString("hPa", 100, 35);
   
   tft.drawString("Humidity:", 15, 50);
@@ -71,7 +71,7 @@ void display_all_data()
   
   // MS5611 pressure sensor
   tft.drawString("Press:", 15, 125);
-  tft.drawFloat(AIR_data.ms5611_pressure / 100.0, 1, 60, 125); // Convert to hPa
+  tft.drawFloat(AIR_data.ms5611_pressure, 1, 60, 125);  // Уже в гПа
   tft.drawString("hPa", 100, 125);
   
   // Temperature from MS5611 (if available)

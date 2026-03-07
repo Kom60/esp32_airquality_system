@@ -184,6 +184,30 @@ class SCD4X {
 	 */
 	const char* getErrorText(uint8_t errorCode);
 
+	/**
+	 * @brief Sets the sensor altitude in meters above sea level.
+	 *
+	 * This command sets the altitude offset for the SCD4x sensor to compensate for
+	 * ambient pressure differences due to altitude.
+	 *
+	 * @param altitude Altitude in meters above sea level (0-65535)
+	 * @retval 0 Success
+	 * @retval 1-5 I2C errors
+	 */
+	uint8_t setSensorAltitude(uint16_t altitude);
+
+	/**
+	 * @brief Sets the ambient pressure in Pascal.
+	 *
+	 * This command sets the ambient pressure for the SCD4x sensor to compensate for
+	 * barometric pressure differences.
+	 *
+	 * @param ambientPressure Ambient pressure in Pascal (0-65535 Pa)
+	 * @retval 0 Success
+	 * @retval 1-5 I2C errors
+	 */
+	uint8_t setAmbientPressure(uint16_t ambientPressure);
+
    private:
 	uint8_t _error = 0;
 	uint8_t _isValid = false;
@@ -197,15 +221,38 @@ class SCD4X {
 	}
 
 	/**
+	 * @brief Calculates CRC8 for SCD4x communication
+	 * Polynomial: 0x31 (x^8 + x^5 + x^4 + 1)
+	 * Initialization: 0xFF
+	 */
+	uint8_t _calculateCrc8(uint8_t data1, uint8_t data2) {
+		uint8_t crc = 0xFF;
+		uint8_t data[] = {data1, data2};
+		for (size_t i = 0; i < 2; i++) {
+			crc ^= data[i];
+			for (uint8_t j = 0; j < 8; j++) {
+				if (crc & 0x80) {
+					crc = (crc << 1) ^ 0x31;
+				} else {
+					crc <<= 1;
+				}
+			}
+		}
+		return crc;
+	}
+
+	/**
 	 * Sends a command sequence over the I2C port.
 	 *
 	 * @param registerAddress The register address to write to.
 	 */
 	void _commandSequence(uint16_t registerAddress) {
+		Serial.printf("[SCD40] _commandSequence: addr=0x%02X, cmd=0x%04X\n", _address, registerAddress);
 		_i2cPort->beginTransmission(_address);
 		_i2cPort->write(highByte(registerAddress));
 		_i2cPort->write(lowByte(registerAddress));
 		_error = _i2cPort->endTransmission(true);  // Send stop bit
+		Serial.printf("[SCD40] _commandSequence result: %s (err=%d)\n", getErrorText(_error), _error);
 	}
 
 	/**

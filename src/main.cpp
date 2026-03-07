@@ -89,14 +89,33 @@ void send_data_to_pc() {
 void setup(void)
 {
   Serial.begin(115200);
+  
+  // Создаём mutex для защиты I2C шины ПЕРЕД инициализацией датчиков!
+  i2c_mutex = xSemaphoreCreateMutex();
+  
+  // Инициализация I2C с явной установкой частоты
+  Wire.begin();
+  Wire.setClock(100000);  // 100 kHz для стабильности SCD40 и других датчиков
+  
+  Serial.println("[I2C] Mutex создан, частота 100 kHz");
+  
+  // Инициализация датчиков с задержкой между задачами для стабильности I2C
   htu_setup();
+  vTaskDelay(pdMS_TO_TICKS(100));  // Даём задаче HTU время на старт
+  
   MS5611_setup();
+  vTaskDelay(pdMS_TO_TICKS(100));  // Даём задаче MS5611 время на старт
+  
   bme_setup();
+  vTaskDelay(pdMS_TO_TICKS(100));  // Даём задаче BME время на старт
+  
   BH1750_setup();
-  // pms.init();
+  vTaskDelay(pdMS_TO_TICKS(100));  // Даём задаче BH1750 время на старт
+  
   PMS_setup();
   CH2O_setup();
   VEML_setup();
+  vTaskDelay(pdMS_TO_TICKS(100));
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);

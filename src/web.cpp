@@ -23,7 +23,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     // send variables to newly connected web client
     // BME280 sensor data
     sendJson("bme_temperature", String(AIR_data.bme_temperature * 100));
-    sendJson("bme_pressure", String(AIR_data.bme_pressure * 100));
+    sendJson("bme_pressure", String(AIR_data.bme_pressure));  // уже в гПа
     sendJson("bme_humidity", String(AIR_data.bme_humidity * 100));
 
     // HTU21DF sensor data
@@ -41,7 +41,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     sendJson("pms_pm10", String(AIR_data.pms_pm10 * 10));
 
     // MS5611 sensor data
-    sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure * 100));
+    sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure));  // уже в гПа
     sendJson("ms5611_temperature", String(AIR_data.ms5611_temperature * 100));
 
     // BH1750 sensor data

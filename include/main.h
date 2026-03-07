@@ -6,6 +6,9 @@
 SCD4X co2;
 double co2Value = 0, temperature = 0, humidity = 0;
 
+// Mutex для защиты I2C шины
+SemaphoreHandle_t i2c_mutex = NULL;
+
 const int formaldehyde_Pin = 34;
 
 

@@ -385,8 +385,8 @@ function updatePM10Chart(value) {
 
 function updatePressureChart() {
   const data = [
-    (dataHistory.bme_pressure[dataHistory.bme_pressure.length - 1] || 0) / 100,
-    (dataHistory.ms5611_pressure[dataHistory.ms5611_pressure.length - 1] || 0) / 100
+    (dataHistory.bme_pressure[dataHistory.bme_pressure.length - 1] || 0) / 100,  // гПа×100 -> гПа
+    (dataHistory.ms5611_pressure[dataHistory.ms5611_pressure.length - 1] || 0)  // уже в гПа
   ];
   addDataPoint(charts.pressure, dataHistory.labels[dataHistory.labels.length - 1], data);
 }

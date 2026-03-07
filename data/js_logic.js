@@ -17,9 +17,9 @@ const SENSOR_THRESHOLDS = {
   'scd4x_humidity':       { min: 3000, max: 6000, warnMin: 2000, warnMax: 8000 },
   'bme_humidity':         { min: 2000, max: 9000, warnMin: 1000, warnMax: 9500 },
   
-  // Давление (значения *100, гПа)
-  'ms5611_pressure':      { min: 98000, max: 104000, warnMin: 96000, warnMax: 106000 },
-  'bme_pressure':         { min: 98000, max: 104000, warnMin: 96000, warnMax: 106000 },
+  // Давление (гПа)
+  'ms5611_pressure':      { min: 980, max: 1040, warnMin: 960, warnMax: 1060 },
+  'bme_pressure':         { min: 980, max: 1040, warnMin: 960, warnMax: 1060 },
   
   // CO2 (значения *100, ppm)
   'scd4x_co2':            { min: 400, max: 1000, warnMin: 400, warnMax: 1400 },
@@ -87,7 +87,9 @@ function applySensorStatus(className, rawValue, displayValue) {
                  className.includes('ch2o') ? 'ppm' :
                  className.includes('noise') ? 'дБ' :
                  className.includes('uv') ? 'индекс' : '';
-    el.title = `Норма: ${t.min/100}–${t.max/100}${unit}\nДопустимо: ${t.warnMin/100}–${t.warnMax/100}${unit}`;
+    el.title = className.includes('pressure') ? 
+    `Норма: ${t.min}–${t.max}${unit}\nДопустимо: ${t.warnMin}–${t.warnMax}${unit}` :
+    `Норма: ${t.min/100}–${t.max/100}${unit}\nДопустимо: ${t.warnMin/100}–${t.warnMax/100}${unit}`;
   }
 }
 
@@ -210,11 +212,10 @@ function processCommand(event) {
 
   // === MS5611 ===
 if (type === "ms5611_pressure") {
-    // rawValue в Pa×100, делим на 10000 для получения гПа с 2 знаками
-    let pressure_hPa_x100 = Math.round(rawValue / 100); // теперь в гПа×100
-    let display = Math.floor(pressure_hPa_x100/100) + "," + 
-                  (pressure_hPa_x100 % 100).toString().padStart(2, '0');
-    applySensorStatus('ms5611_pressure', pressure_hPa_x100, display);
+    // rawValue в гПа, форматируем для отображения
+    let display = Math.floor(rawValue) + "," + 
+                  (Math.round((rawValue - Math.floor(rawValue)) * 100)).toString().padStart(2, '0');
+    applySensorStatus('ms5611_pressure', rawValue, display);
     return;
 }
   if (type === "ms5611_temperature") {

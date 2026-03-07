@@ -6,6 +6,7 @@
 #include "Adafruit_HTU21DF.h"
 #include "Adafruit_VEML6070.h"
 #include <scd4x.h>
+//#include <SensirionI2cScd4x.h>
 #include <BH1750.h>
 #include <MS5611.h>
 #include <PMserial.h> // Arduino library for PM sensors with serial interface
@@ -13,6 +14,7 @@
 //#include "sos-iir-filter.h"
 
 extern SCD4X co2;
+//extern SensirionI2cScd4x scd4x;
 extern double co2Value, temperature, humidity;
 
 #define BME_SCK 13

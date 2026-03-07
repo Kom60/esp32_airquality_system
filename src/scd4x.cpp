@@ -79,7 +79,9 @@ bool SCD4X::isConnected(TwoWire& port, Stream* stream, uint8_t addr) {
 }
 
 uint8_t SCD4X::stopPeriodicMeasurement() {
+	Serial.println("[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86");
 	_commandSequence(0x3f86);
+	Serial.printf("[SCD40] stopPeriodicMeasurement result: %s (err=%d)\n", getErrorText(_error), _error);
 	return _error;
 }
 
@@ -186,4 +188,54 @@ const char* SCD4X::getErrorText(uint8_t errorCode) {
 		default:
 			return "Unknown error";
 	}
+}
+
+uint8_t SCD4X::setSensorAltitude(uint16_t altitude) {
+	// Команда setSensorAltitude: 0x2427
+	// Вызывается ДО startPeriodicMeasurement(), поэтому stop не нужен
+	// CRC для setSensorAltitude рассчитывается по спецификации Sensirion
+	
+	// Отладка: показываем байты altitude
+	uint8_t altHi = highByte(altitude);
+	uint8_t altLo = lowByte(altitude);
+	Serial.printf("[SCD40] setSensorAltitude: altitude=%d (0x%02X 0x%02X)\n", altitude, altHi, altLo);
+	
+	uint8_t crc = _calculateCrc8(altHi, altLo);
+	Serial.printf("[SCD40] CRC=0x%02X\n", crc);
+	
+	// Прямая запись через Wire с отладкой
+	_i2cPort->beginTransmission(_address);
+	_i2cPort->write(0x24);  // high byte команды
+	_i2cPort->write(0x27);  // low byte команды
+	_i2cPort->write(altHi);
+	_i2cPort->write(altLo);
+	_i2cPort->write(crc);
+	_error = _i2cPort->endTransmission(true);
+	
+	Serial.printf("[SCD40] setSensorAltitude result: %s (err=%d)\n", getErrorText(_error), _error);
+	return _error;
+}
+
+uint8_t SCD4X::setAmbientPressure(uint16_t ambientPressure) {
+	// Команда setAmbientPressure: 0xE000
+	// Вызывается ДО startPeriodicMeasurement(), поэтому stop не нужен
+	// CRC для setAmbientPressure рассчитывается по спецификации Sensirion
+	uint8_t pressHi = highByte(ambientPressure);
+	uint8_t pressLo = lowByte(ambientPressure);
+	Serial.printf("[SCD40] setAmbientPressure: pressure=%d Pa (0x%02X 0x%02X)\n", ambientPressure, pressHi, pressLo);
+	
+	uint8_t crc = _calculateCrc8(pressHi, pressLo);
+	Serial.printf("[SCD40] CRC=0x%02X\n", crc);
+	
+	// Прямая запись через Wire с отладкой
+	_i2cPort->beginTransmission(_address);
+	_i2cPort->write(0xE0);  // high byte команды
+	_i2cPort->write(0x00);  // low byte команды
+	_i2cPort->write(pressHi);
+	_i2cPort->write(pressLo);
+	_i2cPort->write(crc);
+	_error = _i2cPort->endTransmission(true);
+	
+	Serial.printf("[SCD40] setAmbientPressure result: %s (err=%d)\n", getErrorText(_error), _error);
+	return _error;
 }
