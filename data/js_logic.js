@@ -154,7 +154,7 @@ function processCommand(event) {
     return;
   }
   if (type === "bme_pressure") {
-    let display = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    let display = Math.floor(rawValue) + "," + (rawValue % 1).toFixed(1).toString().padStart(2, '0');
     applySensorStatus('bme_pressure', rawValue, display);
     return;
   }

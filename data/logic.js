@@ -84,7 +84,7 @@ function handleWebSocketMessage(event) {
     // Датчики - форматирование и отображение
     const sensors = {
       'bme_temperature': { class: 'bme_temperature', suffix: '°C', div: 100, decimals: 1 },
-      'bme_pressure': { class: 'bme_pressure', suffix: 'гПа', div: 100, decimals: 1 },
+      'bme_pressure': { class: 'bme_pressure', suffix: 'гПа', div: 1, decimals: 1 },  // приходит в гПа
       'bme_humidity': { class: 'bme_humidity', suffix: '%', div: 100, decimals: 1 },
       'htu_temperature': { class: 'htu_temperature', suffix: '°C', div: 100, decimals: 1 },
       'htu_humidity': { class: 'htu_humidity', suffix: '%', div: 100, decimals: 1 },
