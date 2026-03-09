@@ -173,8 +173,8 @@ void loop()
 
     // Отправка данных о системе
     sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
-    sendJson("esp32_cpu_temp", String(temperatureRead() * 100));
-    
+    sendJson("esp32_cpu_temp", String(temperatureRead()));  // Температура CPU в °C (без *100)
+
     send_data_to_pc();
   }
 }
