@@ -143,8 +143,8 @@ void CO2_measurementTaskFunction(void *parameter)
                         lastReadTime = millis();
 
                         sendJson("scd4x_co2", String(co2Value));
-                        sendJson("scd4x_temperature", String(temperature * 100));
-                        sendJson("scd4x_humidity", String(humidity * 100));
+                        sendJson("scd4x_temperature", String(temperature));  // Температура в °C (без *100)
+                        sendJson("scd4x_humidity", String(humidity));        // Влажность в % (без *100)
                         AIR_data.update_scd4x_data(co2Value, temperature, humidity);
 
                         Serial.printf("CO2: %.0f ppm, Temperature: %.1f °C, Humidity: %.0f %%RH\n", co2Value, temperature, humidity);
@@ -198,7 +198,7 @@ void CO2_measurementTaskFunction(void *parameter)
 void BME_measurementTaskFunction(void *parameter)
 {
     vTaskDelay(pdMS_TO_TICKS(500));  // Ждём завершения инициализации всех датчиков
-    
+
     while (true)
     {
         if (i2c_mutex != NULL) {
@@ -208,9 +208,9 @@ void BME_measurementTaskFunction(void *parameter)
             AIR_data.update_bme_data(bme.readTemperature(), bme.readPressure() / 100.0F, bme.readHumidity());
             xSemaphoreGive(i2c_mutex);
         }
-        sendJson("bme_temperature", String(AIR_data.bme_temperature * 100));
-        sendJson("bme_pressure", String(AIR_data.bme_pressure));  // уже в гПа
-        sendJson("bme_humidity", String(AIR_data.bme_humidity * 100));
+        sendJson("bme_temperature", String(AIR_data.bme_temperature));  // Температура в °C (без *100)
+        sendJson("bme_pressure", String(AIR_data.bme_pressure));         // Давление в гПа
+        sendJson("bme_humidity", String(AIR_data.bme_humidity));         // Влажность в % (без *100)
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -218,9 +218,9 @@ void BME_measurementTaskFunction(void *parameter)
 void HTU_measurementTaskFunction(void *parameter)
 {
     vTaskDelay(pdMS_TO_TICKS(700));  // Ждём завершения инициализации всех датчиков
-    
+
     float temp = 0, hum = 0;
-    
+
     while (true)
     {
         if (i2c_mutex != NULL) {
@@ -230,8 +230,8 @@ void HTU_measurementTaskFunction(void *parameter)
             xSemaphoreGive(i2c_mutex);
         }
         AIR_data.update_htu_data(temp, hum);
-        sendJson("htu_temperature", String(AIR_data.htu_temperature * 100));
-        sendJson("htu_humidity", String(AIR_data.htu_humidity * 100));
+        sendJson("htu_temperature", String(AIR_data.htu_temperature));  // Температура в °C (без *100)
+        sendJson("htu_humidity", String(AIR_data.htu_humidity));        // Влажность в % (без *100)
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
@@ -239,7 +239,7 @@ void HTU_measurementTaskFunction(void *parameter)
 void BH1750_measurementTaskFunction(void *parameter)
 {
     vTaskDelay(pdMS_TO_TICKS(900));  // Ждём завершения инициализации всех датчиков
-    
+
     while (true)
     {
         if (i2c_mutex != NULL) {
@@ -251,7 +251,7 @@ void BH1750_measurementTaskFunction(void *parameter)
             }
             xSemaphoreGive(i2c_mutex);
         }
-        sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting * 10));
+        sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting));  // Освещённость в lux (без *10)
         vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
@@ -262,7 +262,7 @@ void CH2O_measurementTaskFunction(void *parameter)
     {
         float formaldehyde = analogRead(formaldehyde_Pin) / 496.36;
         AIR_data.update_ch2o_data(formaldehyde);
-        sendJson("ch2o_value", String(AIR_data.ch2o_value * 10));
+        sendJson("ch2o_value", String(AIR_data.ch2o_value));  // Формальдегид в ppm (без *10)
         vTaskDelay(pdMS_TO_TICKS(6000));
     }
 }
@@ -274,9 +274,9 @@ void PMS_measurementTaskFunction(void *parameter)
     {
         pms.read();
         AIR_data.update_pms_data(pms.pm01, pms.pm25, pms.pm10);
-        sendJson("pms_pm1", String(pms.pm01 * 10));
-        sendJson("pms_pm2_5", String(pms.pm25 * 10));
-        sendJson("pms_pm10", String(pms.pm10 * 10));
+        sendJson("pms_pm1", String(pms.pm01));    // PM1.0 в µg/m³ (без *10)
+        sendJson("pms_pm2_5", String(pms.pm25));  // PM2.5 в µg/m³ (без *10)
+        sendJson("pms_pm10", String(pms.pm10));   // PM10 в µg/m³ (без *10)
         vTaskDelay(pdMS_TO_TICKS(6000));
     }
 }
@@ -284,25 +284,25 @@ void PMS_measurementTaskFunction(void *parameter)
 void MS5611_measurementTaskFunction(void *parameter)
 {
     vTaskDelay(pdMS_TO_TICKS(1100));  // Ждём завершения инициализации всех датчиков
-    
+
     while (true)
     {
         vTaskDelay(pdMS_TO_TICKS(500));
         double pressure_pa = 0;  // Давление в Паскалях
         float temperature = 0;
-        
+
         if (i2c_mutex != NULL) {
             xSemaphoreTake(i2c_mutex, portMAX_DELAY);
             pressure_pa = ms5611.readPressure();  // Возвращает Па
             temperature = ms5611.readTemperature();
             xSemaphoreGive(i2c_mutex);
         }
-        
+
         double pressure_hpa = pressure_pa / 100.0;  // Конвертируем в гПа
 
         AIR_data.update_ms5611_data(pressure_hpa, temperature);  // Сохраняем в гПа
-        sendJson("ms5611_pressure", String(pressure_hpa));  // гПа
-        sendJson("ms5611_temperature", String(temperature * 100));
+        sendJson("ms5611_pressure", String(pressure_hpa));       // Давление в гПа
+        sendJson("ms5611_temperature", String(temperature));     // Температура в °C (без *100)
 
         vTaskDelay(pdMS_TO_TICKS(6000));
     }

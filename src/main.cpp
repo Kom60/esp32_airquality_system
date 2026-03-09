@@ -168,7 +168,7 @@ void loop()
   if ((unsigned long)(now - previousMillis) > interval)
   { // check if "interval" ms has passed since last time the clients were updated
     previousMillis = now;
-    tft.fillScreen(TFT_BLACK);
+    //tft.fillScreen(TFT_BLACK);
     display_all_data();
 
     // Отправка данных о системе

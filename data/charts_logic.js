@@ -336,16 +336,16 @@ function processCommand(event) {
       );
       break;
     case 'pms_pm2_5':
-      updatePM25Chart(rawValue / 10);
+      updatePM25Chart(rawValue);  // Данные в µg/m³ (без /10)
       updateAQI(
-        rawValue / 10,
+        rawValue,
         dataHistory.pms_pm10[dataHistory.pms_pm10.length - 1] || 0,
         dataHistory.scd4x_co2[dataHistory.scd4x_co2.length - 1] || 0,
         dataHistory.ch2o_value[dataHistory.ch2o_value.length - 1] || 0
       );
       break;
     case 'pms_pm10':
-      updatePM10Chart(rawValue / 10);
+      updatePM10Chart(rawValue);  // Данные в µg/m³ (без /10)
       break;
     case 'bme_pressure':
     case 'ms5611_pressure':
@@ -356,17 +356,17 @@ function processCommand(event) {
 
 function updateTempChart() {
   const data = [
-    (dataHistory.bme_temperature[dataHistory.bme_temperature.length - 1] || 0) / 100,
-    (dataHistory.htu_temperature[dataHistory.htu_temperature.length - 1] || 0) / 100,
-    (dataHistory.scd4x_temperature[dataHistory.scd4x_temperature.length - 1] || 0) / 100
+    dataHistory.bme_temperature[dataHistory.bme_temperature.length - 1] || 0,
+    dataHistory.htu_temperature[dataHistory.htu_temperature.length - 1] || 0,
+    dataHistory.scd4x_temperature[dataHistory.scd4x_temperature.length - 1] || 0
   ];
   addDataPoint(charts.temp, dataHistory.labels[dataHistory.labels.length - 1], data);
 }
 
 function updateHumidityChart() {
   const data = [
-    (dataHistory.htu_humidity[dataHistory.htu_humidity.length - 1] || 0) / 100,
-    (dataHistory.scd4x_humidity[dataHistory.scd4x_humidity.length - 1] || 0) / 100
+    dataHistory.htu_humidity[dataHistory.htu_humidity.length - 1] || 0,
+    dataHistory.scd4x_humidity[dataHistory.scd4x_humidity.length - 1] || 0
   ];
   addDataPoint(charts.humidity, dataHistory.labels[dataHistory.labels.length - 1], data);
 }
@@ -376,11 +376,11 @@ function updateCO2Chart(value) {
 }
 
 function updatePM25Chart(value) {
-  addDataPoint(charts.pm25, dataHistory.labels[dataHistory.labels.length - 1], [value / 10]);
+  addDataPoint(charts.pm25, dataHistory.labels[dataHistory.labels.length - 1], [value]);  // Данные в µg/m³
 }
 
 function updatePM10Chart(value) {
-  addDataPoint(charts.pm10, dataHistory.labels[dataHistory.labels.length - 1], [value / 10]);
+  addDataPoint(charts.pm10, dataHistory.labels[dataHistory.labels.length - 1], [value]);  // Данные в µg/m³
 }
 
 function updatePressureChart() {
@@ -410,18 +410,18 @@ function toggleAutoScroll() {
 
 function exportData() {
   let csv = 'Time,BME_Temp,HTU_Temp,SCD_Temp,BME_Humidity,HTU_Humidity,SCD_Humidity,CO2,PM2.5,PM10\n';
-  
+
   for (let i = 0; i < dataHistory.labels.length; i++) {
     csv += dataHistory.labels[i] + ',';
-    csv += (dataHistory.bme_temperature[i] || 0) / 100 + ',';
-    csv += (dataHistory.htu_temperature[i] || 0) / 100 + ',';
-    csv += (dataHistory.scd4x_temperature[i] || 0) / 100 + ',';
-    csv += (dataHistory.bme_humidity[i] || 0) / 100 + ',';
-    csv += (dataHistory.htu_humidity[i] || 0) / 100 + ',';
-    csv += (dataHistory.scd4x_humidity[i] || 0) / 100 + ',';
+    csv += (dataHistory.bme_temperature[i] || 0) + ',';
+    csv += (dataHistory.htu_temperature[i] || 0) + ',';
+    csv += (dataHistory.scd4x_temperature[i] || 0) + ',';
+    csv += (dataHistory.bme_humidity[i] || 0) + ',';
+    csv += (dataHistory.htu_humidity[i] || 0) + ',';
+    csv += (dataHistory.scd4x_humidity[i] || 0) + ',';
     csv += (dataHistory.scd4x_co2[i] || 0) + ',';
-    csv += (dataHistory.pms_pm2_5[i] || 0) / 10 + ',';
-    csv += (dataHistory.pms_pm10[i] || 0) / 10 + '\n';
+    csv += (dataHistory.pms_pm2_5[i] || 0) + ',';
+    csv += (dataHistory.pms_pm10[i] || 0) + '\n';
   }
   
   const blob = new Blob([csv], { type: 'text/csv' });

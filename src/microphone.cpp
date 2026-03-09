@@ -218,7 +218,7 @@ void INMP441_measurementTaskFunction(void *parameter)
         Leq_sum_sqr = 0;
         Leq_samples = 0;
         AIR_data.update_microphone_data(Leq_dB);
-        sendJson("microphone_noise", String(AIR_data.microphone_noise * 10));
+        sendJson("microphone_noise", String(AIR_data.microphone_noise));  // Шум в dB (без *10)
         // Serial output, customize (or remove) as needed
         //Serial.printf("%.1f\n", Leq_dB);
       }

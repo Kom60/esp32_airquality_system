@@ -33,7 +33,7 @@ function getStatus(value, thresholds) {
 // Форматирование значения с плавающей точкой
 function formatValue(rawValue, decimals = 1) {
   if (rawValue === null || rawValue === undefined || isNaN(rawValue)) return '---';
-  let val = rawValue / 100;
+  let val = rawValue;  // Данные приходят в оригинальных единицах (без масштабирования)
   if (decimals === 0) return Math.round(val).toString();
   return val.toFixed(decimals);
 }
@@ -77,29 +77,29 @@ function handleWebSocketMessage(event) {
     }
     if (type === 'esp32_cpu_temp') {
       const el = document.querySelector('.dungen_value.esp32_cpu_temp');
-      if (el) el.innerHTML = (rawValue / 100).toFixed(1);
+      if (el) el.innerHTML = rawValue.toFixed(1);  // Температура в °C (без /100)
       return;
     }
-    
+
     // Датчики - форматирование и отображение
     const sensors = {
-      'bme_temperature': { class: 'bme_temperature', suffix: '°C', div: 100, decimals: 1 },
-      'bme_pressure': { class: 'bme_pressure', suffix: 'гПа', div: 1, decimals: 1 },  // приходит в гПа
-      'bme_humidity': { class: 'bme_humidity', suffix: '%', div: 100, decimals: 1 },
-      'htu_temperature': { class: 'htu_temperature', suffix: '°C', div: 100, decimals: 1 },
-      'htu_humidity': { class: 'htu_humidity', suffix: '%', div: 100, decimals: 1 },
-      'ms5611_pressure': { class: 'ms5611_pressure', suffix: 'гПа', div: 1, decimals: 1 },  // приходит в гПа
-      'ms5611_temperature': { class: 'ms5611_temperature', suffix: '°C', div: 100, decimals: 1 },
+      'bme_temperature': { class: 'bme_temperature', suffix: '°C', div: 1, decimals: 1 },
+      'bme_pressure': { class: 'bme_pressure', suffix: 'гПа', div: 1, decimals: 1 },
+      'bme_humidity': { class: 'bme_humidity', suffix: '%', div: 1, decimals: 1 },
+      'htu_temperature': { class: 'htu_temperature', suffix: '°C', div: 1, decimals: 1 },
+      'htu_humidity': { class: 'htu_humidity', suffix: '%', div: 1, decimals: 1 },
+      'ms5611_pressure': { class: 'ms5611_pressure', suffix: 'гПа', div: 1, decimals: 1 },
+      'ms5611_temperature': { class: 'ms5611_temperature', suffix: '°C', div: 1, decimals: 1 },
       'scd4x_co2': { class: 'scd4x_co2', suffix: 'ppm', div: 1, decimals: 0 },
-      'scd4x_temperature': { class: 'scd4x_temperature', suffix: '°C', div: 100, decimals: 1 },
-      'scd4x_humidity': { class: 'scd4x_humidity', suffix: '%', div: 100, decimals: 1 },
-      'pms_pm1': { class: 'pms_pm1', suffix: 'мкг/м³', div: 10, decimals: 1 },
-      'pms_pm2_5': { class: 'pms_pm2_5', suffix: 'мкг/м³', div: 10, decimals: 1 },
-      'pms_pm10': { class: 'pms_pm10', suffix: 'мкг/м³', div: 10, decimals: 1 },
-      'bh1750_lighting': { class: 'bh1750_lighting', suffix: 'лк', div: 10, decimals: 1 },
+      'scd4x_temperature': { class: 'scd4x_temperature', suffix: '°C', div: 1, decimals: 1 },
+      'scd4x_humidity': { class: 'scd4x_humidity', suffix: '%', div: 1, decimals: 1 },
+      'pms_pm1': { class: 'pms_pm1', suffix: 'мкг/м³', div: 1, decimals: 1 },
+      'pms_pm2_5': { class: 'pms_pm2_5', suffix: 'мкг/м³', div: 1, decimals: 1 },
+      'pms_pm10': { class: 'pms_pm10', suffix: 'мкг/м³', div: 1, decimals: 1 },
+      'bh1750_lighting': { class: 'bh1750_lighting', suffix: 'лк', div: 1, decimals: 1 },
       'veml_uv': { class: 'veml_uv', suffix: '', div: 1, decimals: 0 },
-      'ch2o_value': { class: 'ch2o_value', suffix: 'ppm', div: 10, decimals: 3 },
-      'microphone_noise': { class: 'microphone_noise', suffix: 'дБ', div: 10, decimals: 1 }
+      'ch2o_value': { class: 'ch2o_value', suffix: 'ppm', div: 1, decimals: 3 },
+      'microphone_noise': { class: 'microphone_noise', suffix: 'дБ', div: 1, decimals: 1 }
     };
     
     if (sensors[type]) {

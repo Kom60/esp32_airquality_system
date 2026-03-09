@@ -128,10 +128,10 @@ function processCommand(event) {
   var obj = JSON.parse(event.data);
   var type = obj.type;
   var rawValue = parseFloat(obj.value); // используем parseFloat вместо parseInt
-  
+
   // === Системные данные (без индикации) ===
   if (type === "cpu_voltage") {
-    let val = rawValue / 100;
+    let val = rawValue;
     output.innerHTML = val.toFixed(2);
     return;
   }
@@ -141,7 +141,7 @@ function processCommand(event) {
     return;
   }
   if (type === "esp32_cpu_temp") {
-    let val = rawValue / 100;
+    let val = rawValue;  // Температура в °C (без /100)
     let el = document.getElementsByClassName("dungen_value esp32_cpu_temp")[0];
     if (el) el.innerHTML = val.toFixed(1);
     return;
@@ -149,7 +149,7 @@ function processCommand(event) {
 
   // === BME280 (наружные) ===
   if (type === "bme_temperature") {
-    let display = Math.floor(rawValue/100) + "," + (Math.abs(rawValue) % 100).toString().padStart(2, '0');
+    let display = Math.floor(rawValue) + "," + (Math.abs(rawValue - Math.floor(rawValue)) * 100).toFixed(0).toString().padStart(2, '0');
     applySensorStatus('bme_temperature', rawValue, display);
     return;
   }
@@ -159,19 +159,19 @@ function processCommand(event) {
     return;
   }
   if (type === "bme_humidity") {
-    let display = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    let display = Math.floor(rawValue) + "," + (Math.abs(rawValue - Math.floor(rawValue)) * 100).toFixed(0).toString().padStart(2, '0');
     applySensorStatus('bme_humidity', rawValue, display);
     return;
   }
 
   // === HTU21DF (внутренние) ===
   if (type === "htu_temperature") {
-    let display = Math.floor(rawValue/100) + "," + (Math.abs(rawValue) % 100).toString().padStart(2, '0');
+    let display = Math.floor(rawValue) + "," + (Math.abs(rawValue - Math.floor(rawValue)) * 100).toFixed(0).toString().padStart(2, '0');
     applySensorStatus('htu_temperature', rawValue, display);
     return;
   }
   if (type === "htu_humidity") {
-    let display = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    let display = Math.floor(rawValue) + "," + (Math.abs(rawValue - Math.floor(rawValue)) * 100).toFixed(0).toString().padStart(2, '0');
     applySensorStatus('htu_humidity', rawValue, display);
     return;
   }
@@ -183,29 +183,29 @@ function processCommand(event) {
     return;
   }
   if (type === "scd4x_temperature") {
-    let display = Math.floor(rawValue/100) + "," + (Math.abs(rawValue) % 100).toString().padStart(2, '0');
+    let display = Math.floor(rawValue) + "," + (Math.abs(rawValue - Math.floor(rawValue)) * 100).toFixed(0).toString().padStart(2, '0');
     applySensorStatus('scd4x_temperature', rawValue, display);
     return;
   }
   if (type === "scd4x_humidity") {
-    let display = Math.floor(rawValue/100) + "," + (rawValue % 100).toString().padStart(2, '0');
+    let display = Math.floor(rawValue) + "," + (Math.abs(rawValue - Math.floor(rawValue)) * 100).toFixed(0).toString().padStart(2, '0');
     applySensorStatus('scd4x_humidity', rawValue, display);
     return;
   }
 
-  // === PMS5003 (частицы, значения *10) ===
+  // === PMS5003 (частицы) ===
   if (type === "pms_pm1") {
-    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    let display = Math.floor(rawValue) + "," + (rawValue % 1).toFixed(1).toString().padStart(2, '0');
     applySensorStatus('pms_pm1', rawValue, display);
     return;
   }
   if (type === "pms_pm2_5") {
-    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    let display = Math.floor(rawValue) + "," + (rawValue % 1).toFixed(1).toString().padStart(2, '0');
     applySensorStatus('pms_pm2_5', rawValue, display);
     return;
   }
   if (type === "pms_pm10") {
-    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    let display = Math.floor(rawValue) + "," + (rawValue % 1).toFixed(1).toString().padStart(2, '0');
     applySensorStatus('pms_pm10', rawValue, display);
     return;
   }
@@ -213,20 +213,20 @@ function processCommand(event) {
   // === MS5611 ===
 if (type === "ms5611_pressure") {
     // rawValue в гПа, форматируем для отображения
-    let display = Math.floor(rawValue) + "," + 
+    let display = Math.floor(rawValue) + "," +
                   (Math.round((rawValue - Math.floor(rawValue)) * 100)).toString().padStart(2, '0');
     applySensorStatus('ms5611_pressure', rawValue, display);
     return;
 }
   if (type === "ms5611_temperature") {
-    let display = Math.floor(rawValue/100) + "," + (Math.abs(rawValue) % 100).toString().padStart(2, '0');
+    let display = Math.floor(rawValue) + "," + (Math.abs(rawValue - Math.floor(rawValue)) * 100).toFixed(0).toString().padStart(2, '0');
     applySensorStatus('ms5611_temperature', rawValue, display);
     return;
   }
 
   // === BH1750 ===
   if (type === "bh1750_lighting") {
-    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    let display = Math.floor(rawValue) + "," + (rawValue % 1).toFixed(1).toString().padStart(2, '0');
     applySensorStatus('bh1750_lighting', rawValue, display);
     return;
   }
@@ -240,14 +240,14 @@ if (type === "ms5611_pressure") {
 
   // === CH2O (формальдегид) ===
   if (type === "ch2o_value") {
-    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    let display = rawValue.toFixed(3);  // Формальдегид с 3 знаками
     applySensorStatus('ch2o_value', rawValue, display);
     return;
   }
 
   // === Микрофон (шум) ===
   if (type === "microphone_noise") {
-    let display = Math.floor(rawValue/10) + "," + (rawValue % 10);
+    let display = rawValue.toFixed(1);  // Шум в dB с 1 знаком
     applySensorStatus('microphone_noise', rawValue, display);
     return;
   }
