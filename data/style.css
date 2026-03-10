@@ -162,6 +162,29 @@ body.dark-mode .measured_value.outdoor_temp {
   color: #ab47bc !important;
 }
 
+body.dark-mode .analytics-section {
+  border-color: #444;
+}
+
+body.dark-mode .analytics-card {
+  border-color: #444;
+}
+
+body.dark-mode .analytics-card .text {
+  color: #cccccc !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .analytics-card .calculated_value {
+  color: #66b3ff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .analytics-card .units {
+  color: #999999 !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
 /* Статусы датчиков */
 .measured_value.status-ok {
   color: #2e7d32 !important;
@@ -189,48 +212,135 @@ body.dark-mode .measured_value.status-critical {
 
 /* === СЕКЦИЯ АНАЛИТИКИ === */
 .analytics-section {
-  margin: 20px auto;
-  padding: 15px;
+  margin: 0.5% auto;
+  padding: 1%;
   max-width: 1400px;
+  border: var(--border-dashed-size) dashed #666;
+  background: transparent !important;
 }
 
 .analytics-section .column-header-text {
-  margin-bottom: 15px;
-  font-size: 1.3em;
+  margin-bottom: 1%;
+  font-size: var(--header-text-size);
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  padding: 1%;
+  vertical-align: top;
+  text-align: center;
+  font-family: "Press Start 2P", system-ui;
+  font-weight: 400;
+  font-style: normal;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .analytics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 15px;
+  display: flex;
+  flex-direction: column;
 }
 
 .analytics-card {
-  background: linear-gradient(135deg, rgba(100, 150, 200, 0.1), rgba(150, 200, 250, 0.15));
-  border: 2px solid #6496c8;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  background: transparent !important;
+  padding: 0;
+  margin: 0;
 }
 
-.analytics-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+.analytics-card .line {
+  display: flex;
+  justify-content: flex-start;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
-.analytics-card-title {
-  font-size: 0.95em;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #2c3e50;
-}
-
-.calculated_value {
+.analytics-card .text {
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  display: flex;
+  vertical-align: center;
+  text-align: left;
   font-family: "Press Start 2P", system-ui;
-  font-size: 1em;
-  color: #1a237e;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  padding-top: 1%;
+  padding-left: 3%;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.analytics-card .calculated_value {
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+  user-select: text;
+  text-align: left;
+  padding-left: 10px;
+  padding-top: 1%;
+}
+
+.analytics-card .units {
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+  padding-left: 5px;
+  padding-top: 1%;
+  text-align: left;
+  width: auto;
+}
+
+/* Цветовая дифференциация для аналитики */
+.analytics-card .calculated_value.value-good {
+  color: #2e7d32 !important;
+}
+
+.analytics-card .calculated_value.value-warning {
+  color: #f57c00 !important;
+}
+
+.analytics-card .calculated_value.value-critical {
+  color: #c62828 !important;
+}
+
+.analytics-card .calculated_value.value-info {
+  color: #1976d2 !important;
+}
+
+body.dark-mode .analytics-card .calculated_value.value-good {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .analytics-card .calculated_value.value-warning {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .analytics-card .calculated_value.value-critical {
+  color: #ef5350 !important;
+}
+
+body.dark-mode .analytics-card .calculated_value.value-info {
+  color: #42a5f5 !important;
 }
 
 /* IAQ стили */
@@ -270,19 +380,6 @@ body.dark-mode .measured_value.status-critical {
 .light-wait { color: #757575 !important; }
 
 /* Ночная тема для аналитики */
-body.dark-mode .analytics-card {
-  background: linear-gradient(135deg, rgba(50, 80, 120, 0.2), rgba(80, 120, 180, 0.25));
-  border-color: #4a6fa5;
-}
-
-body.dark-mode .analytics-card-title {
-  color: #90caf9;
-}
-
-body.dark-mode .calculated_value {
-  color: #64b5f6;
-}
-
 body.dark-mode .iaq-good { color: #66bb6a !important; }
 body.dark-mode .iaq-moderate { color: #ffa726 !important; }
 body.dark-mode .iaq-unhealthy-sensitive { color: #ff9800 !important; }

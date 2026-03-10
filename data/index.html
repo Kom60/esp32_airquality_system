@@ -21,7 +21,7 @@
 <div class="header">
   <div class="header-text">Мониторинг качества воздуха</div>
   <div class="header-buttons">
-    <button class="charts-button" onclick="location.href='charts.html'">📊 Графики и AQI</button>
+    <button class="charts-icon-button" onclick="location.href='charts.html'" title="Графики и AQI">📊</button>
     <img class="dark-mode-button" onclick='toggleDarkMode()' src="off_bubl.png" alt=""/>
   </div>
 </div>
@@ -129,64 +129,88 @@
 <div class="analytics-section">
   <div class="column-header-text">Аналитика и рекомендации:</div>
   <div class="analytics-grid">
-    
+
     <!-- Точка росы -->
     <div class="analytics-card" data-analytics="dew_point">
-      <div class="analytics-card-title">🌡️ Точка росы</div>
-      <div class="calculated_value dew_point">---</div>
+      <div class="line">
+        <div class="text">Точка росы:</div>
+        <div class="calculated_value dew_point">---</div>
+        <div class="units">°C</div>
+      </div>
     </div>
-    
+
     <!-- Индекс жары -->
     <div class="analytics-card" data-analytics="heat_index">
-      <div class="analytics-card-title">🔥 Индекс жары</div>
-      <div class="calculated_value heat_index">---</div>
+      <div class="line">
+        <div class="text">Индекс жары:</div>
+        <div class="calculated_value heat_index">---</div>
+        <div class="units">°C</div>
+      </div>
     </div>
-    
+
     <!-- Качество воздуха IAQ -->
     <div class="analytics-card" data-analytics="iaq">
-      <div class="analytics-card-title">💨 Качество воздуха</div>
-      <div class="calculated_value iaq_index">---</div>
-      <div class="calculated_value iaq_description">---</div>
+      <div class="line">
+        <div class="text">IAQ индекс:</div>
+        <div class="calculated_value iaq_index">---</div>
+        <div class="units"></div>
+      </div>
     </div>
-    
+
     <!-- Барометрическая тенденция -->
     <div class="analytics-card" data-analytics="pressure_trend">
-      <div class="analytics-card-title">📊 Давление</div>
-      <div class="calculated_value pressure_trend">---</div>
-      <div class="calculated_value pressure_trend_desc">---</div>
+      <div class="line">
+        <div class="text">Тренд:</div>
+        <div class="calculated_value pressure_trend">---</div>
+        <div class="units">ГПа/ч</div>
+      </div>
     </div>
-    
+
     <!-- УФ-рекомендация -->
     <div class="analytics-card" data-analytics="uv">
-      <div class="analytics-card-title">☀️ УФ-защита</div>
-      <div class="calculated_value uv_recommendation">---</div>
+      <div class="line">
+        <div class="text">УФ-индекс:</div>
+        <div class="calculated_value uv_recommendation">---</div>
+        <div class="units"></div>
+      </div>
     </div>
-    
+
     <!-- Индекс комфорта -->
     <div class="analytics-card" data-analytics="comfort">
-      <div class="analytics-card-title">😊 Комфорт</div>
-      <div class="calculated_value comfort_index">---</div>
-      <div class="calculated_value comfort_description">---</div>
+      <div class="line">
+        <div class="text">Комфорт:</div>
+        <div class="calculated_value comfort_index">---</div>
+        <div class="units">%</div>
+      </div>
     </div>
-    
+
     <!-- Проветривание -->
     <div class="analytics-card" data-analytics="ventilation">
-      <div class="analytics-card-title">🌬️ Проветривание</div>
-      <div class="calculated_value ventilation_recommendation">---</div>
+      <div class="line">
+        <div class="text">Проветривание:</div>
+        <div class="calculated_value ventilation_recommendation">---</div>
+        <div class="units"></div>
+      </div>
     </div>
-    
+
     <!-- Абсолютная влажность -->
     <div class="analytics-card" data-analytics="absolute_humidity">
-      <div class="analytics-card-title">💧 Абс. влажность</div>
-      <div class="calculated_value absolute_humidity">---</div>
+      <div class="line">
+        <div class="text">Абс. влажность:</div>
+        <div class="calculated_value absolute_humidity">---</div>
+        <div class="units">г/м³</div>
+      </div>
     </div>
-    
+
     <!-- Освещение -->
     <div class="analytics-card" data-analytics="lighting">
-      <div class="analytics-card-title">💡 Освещение</div>
-      <div class="calculated_value lighting_recommendation">---</div>
+      <div class="line">
+        <div class="text">Освещение:</div>
+        <div class="calculated_value lighting_recommendation">---</div>
+        <div class="units">лк</div>
+      </div>
     </div>
-    
+
   </div>
 </div>
 
