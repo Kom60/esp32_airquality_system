@@ -1,4 +1,5 @@
 #include "headers.h"
+#include "settings.h"
 
 TaskHandle_t CO2_measurementTask, BME_measurementTask,
     HTU_measurementTask, BH1750_measurementTask, CH2O_measurementTask,
@@ -145,6 +146,10 @@ void CO2_measurementTaskFunction(void *parameter)
                         sendJson("scd4x_co2", String(co2Value));
                         sendJson("scd4x_temperature", String(temperature));  // Температура в °C (без *100)
                         sendJson("scd4x_humidity", String(humidity));        // Влажность в % (без *100)
+                        
+                        // Применяем калибровку
+                        temperature += settings.temp_offset_scd;
+                        
                         AIR_data.update_scd4x_data(co2Value, temperature, humidity);
 
                         Serial.printf("CO2: %.0f ppm, Temperature: %.1f °C, Humidity: %.0f %%RH\n", co2Value, temperature, humidity);
@@ -206,6 +211,12 @@ void BME_measurementTaskFunction(void *parameter)
             // BME280 возвращает: температура (°C), давление (Па), влажность (%)
             // Делим на 100 для конвертации в гПа
             AIR_data.update_bme_data(bme.readTemperature(), bme.readPressure() / 100.0F, bme.readHumidity());
+            
+            // Применяем калибровку
+            AIR_data.bme_temperature += settings.temp_offset_bme;
+            AIR_data.bme_pressure += settings.press_offset_bme;
+            AIR_data.bme_humidity += settings.hum_offset_bme;
+            
             xSemaphoreGive(i2c_mutex);
         }
         sendJson("bme_temperature", String(AIR_data.bme_temperature));  // Температура в °C (без *100)
@@ -230,6 +241,11 @@ void HTU_measurementTaskFunction(void *parameter)
             xSemaphoreGive(i2c_mutex);
         }
         AIR_data.update_htu_data(temp, hum);
+        
+        // Применяем калибровку
+        AIR_data.htu_temperature += settings.temp_offset_htu;
+        AIR_data.htu_humidity += settings.hum_offset_htu;
+        
         sendJson("htu_temperature", String(AIR_data.htu_temperature));  // Температура в °C (без *100)
         sendJson("htu_humidity", String(AIR_data.htu_humidity));        // Влажность в % (без *100)
         vTaskDelay(pdMS_TO_TICKS(5000));
@@ -299,6 +315,10 @@ void MS5611_measurementTaskFunction(void *parameter)
         }
 
         double pressure_hpa = pressure_pa / 100.0;  // Конвертируем в гПа
+        
+        // Применяем калибровку
+        pressure_hpa += settings.press_offset_ms;
+        temperature += settings.temp_offset_bme;  // Используем тот же offset что и для BME
 
         AIR_data.update_ms5611_data(pressure_hpa, temperature);  // Сохраняем в гПа
         sendJson("ms5611_pressure", String(pressure_hpa));       // Давление в гПа

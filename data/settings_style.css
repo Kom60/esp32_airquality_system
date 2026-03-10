@@ -1,0 +1,275 @@
+:root {
+  --settings-width: calc(90vw);
+  --settings-max-width: 800px;
+  --font-size-val: calc(1.9vw);
+  --header-text-size: calc(2.6vw);
+  --border-dashed-size: calc(0.7vw);
+  --ghost-size: calc(0.2vw);
+}
+
+body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-family: "Press Start 2P", system-ui;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  border: var(--border-dashed-size) dashed;
+  display: flex;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1%;
+  user-select: none;
+}
+
+.header-text {
+  flex: 1;
+  text-align: center;
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--header-text-size);
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto;
+}
+
+.charts-icon-button {
+  font-family: "Press Start 2P", system-ui;
+  font-size: calc(2.72vw);
+  padding: 0;
+  background: transparent;
+  color: #000000;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: calc(2.72vw);
+  width: calc(2.72vw);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.charts-icon-button:hover {
+  transform: scale(1.1);
+}
+
+.dark-mode-button {
+  height: calc(4vw);
+  width: calc(4vw);
+  cursor: pointer;
+}
+
+.settings-container {
+  max-width: var(--settings-max-width);
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.settings-section {
+  border: var(--border-dashed-size) dashed;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: var(--header-text-size);
+  margin-bottom: 15px;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.setting-row label {
+  min-width: 200px;
+  font-size: var(--font-size-val);
+}
+
+.setting-row input {
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  padding: 5px 10px;
+  width: 100px;
+  border: 2px solid #666;
+  border-radius: 4px;
+  background: #f5f5f5;
+}
+
+.setting-row input:focus {
+  outline: none;
+  border-color: #4a9eff;
+  background: #fff;
+}
+
+.setting-desc {
+  font-size: calc(0.8 * var(--font-size-val));
+  color: #666;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+
+.btn-save, .btn-reset, .btn-reboot {
+  font-family: "Press Start 2P", system-ui;
+  font-size: calc(0.9 * var(--font-size-val));
+  padding: 15px 25px;
+  border: 2px solid #666;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-save {
+  background: #4a9eff;
+  color: #fff;
+}
+
+.btn-save:hover {
+  background: #3a8eef;
+}
+
+.btn-apply-wifi {
+  background: #2e7d32;
+  color: #fff;
+  font-family: "Press Start 2P", system-ui;
+  font-size: calc(0.9 * var(--font-size-val));
+  padding: 15px 25px;
+  border: 2px solid #666;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-apply-wifi:hover {
+  background: #1e6d22;
+}
+
+.btn-reset {
+  background: #f57c00;
+  color: #fff;
+}
+
+.btn-reset:hover {
+  background: #e56c00;
+}
+
+.btn-reboot {
+  background: #c62828;
+  color: #fff;
+}
+
+.btn-reboot:hover {
+  background: #b61818;
+}
+
+.status-message {
+  text-align: center;
+  margin-top: 20px;
+  font-size: var(--font-size-val);
+  padding: 10px;
+  border-radius: 8px;
+  display: none;
+}
+
+.status-message.success {
+  display: block;
+  background: #c8e6c9;
+  color: #2e7d32;
+  border: 2px solid #2e7d32;
+}
+
+.status-message.error {
+  display: block;
+  background: #ffcdd2;
+  color: #c62828;
+  border: 2px solid #c62828;
+}
+
+/* Night mode */
+body.dark-mode {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .header {
+  border-color: #444;
+}
+
+body.dark-mode .charts-icon-button {
+  color: #ffffff;
+}
+
+body.dark-mode .settings-section {
+  border-color: #444;
+  background: #1e1e1e;
+}
+
+body.dark-mode .setting-row input {
+  background: #2a2a2a;
+  color: #fff;
+  border-color: #444;
+}
+
+body.dark-mode .setting-desc {
+  color: #999;
+}
+
+body.dark-mode .btn-save {
+  background: #4a6fa5;
+}
+
+body.dark-mode .btn-apply-wifi {
+  background: #2e7d32;
+}
+
+body.dark-mode .btn-reset {
+  background: #a56f4a;
+}
+
+body.dark-mode .btn-reboot {
+  background: #a54a4a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .setting-row label {
+    min-width: auto;
+    margin-bottom: 5px;
+  }
+  
+  .setting-row input {
+    width: 100%;
+  }
+  
+  .settings-actions {
+    flex-direction: column;
+  }
+  
+  .btn-save, .btn-reset, .btn-reboot {
+    width: 100%;
+  }
+}

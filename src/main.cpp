@@ -1,5 +1,6 @@
 #include "headers.h"
 #include "main.h"
+#include "settings.h"
 
 // Переменные для расчёта загрузки CPU
 unsigned long loop_start_time = 0;
@@ -134,6 +135,23 @@ void setup(void)
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.println("Establishing connection to WiFi with SSID: " + String(WIFI_SSID));
 
+  // Инициализация настроек из NVS
+  settings_init();
+  
+  // Применяем WiFi настройки из NVS если они есть
+  if (strlen(settings.wifi_ssid) > 0) {
+    Serial.println("Using WiFi settings from NVS: " + String(settings.wifi_ssid));
+    WiFi.begin(settings.wifi_ssid, settings.wifi_password);
+  } else {
+    // Используем настройки по умолчанию из secrets.h
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  }
+  
+  Serial.println("Establishing connection to WiFi with SSID: " + String(WiFi.SSID()));
+
+  // Обновляем интервал из настроек
+  interval = settings.update_interval * 1000;  // конвертируем секунды в миллисекунды
+
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(1000);
@@ -145,6 +163,27 @@ void setup(void)
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { // define here wat the webserver needs to do
     request->send(SPIFFS, "/index.html", "text/html");
   });
+
+  server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/settings.html", "text/html");
+  });
+
+  // API для настроек
+  server.on("/api/settings", HTTP_GET, handleGetSettings);
+  
+  AsyncCallbackWebHandler* settingsPostHandler = new AsyncCallbackWebHandler();
+  settingsPostHandler->setUri("/api/settings");
+  settingsPostHandler->setMethod(HTTP_POST);
+  settingsPostHandler->onBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+    handleSaveSettings(request, data, len);
+  });
+  settingsPostHandler->onRequest([](AsyncWebServerRequest *request) {
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+  });
+  server.addHandler(settingsPostHandler);
+  
+  server.on("/api/settings/reset", HTTP_POST, handleResetSettings);
+  server.on("/api/reboot", HTTP_POST, handleReboot);
 
   server.onNotFound([](AsyncWebServerRequest *request)
                     { request->send(404, "text/plain", "File not found"); });
@@ -173,6 +212,14 @@ void loop()
   
   webSocket.loop();             // Update function for the webSockets
   unsigned long now = millis(); // read out the current "time" ("millis()" gives the time in ms since the Arduino started)
+  
+  // Обновляем интервал из настроек (на случай изменений)
+  static int last_interval = 0;
+  if (settings.update_interval != last_interval) {
+    interval = settings.update_interval * 1000;
+    last_interval = settings.update_interval;
+    Serial.println("Interval updated: " + String(interval) + "ms");
+  }
   
   if ((unsigned long)(now - previousMillis) > interval)
   { // check if "interval" ms has passed since last time the clients were updated

@@ -1,5 +1,6 @@
 #include "webheaders.h"
 #include "headers.h"
+#include "settings.h"
 
 // global variables of the LED selected and the intensity of that LED
 int random_intensity = 5;
@@ -105,20 +106,89 @@ void sendJson(String l_type, String l_value)
   webSocket.broadcastTXT(jsonString); // send JSON string to all clients
 }
 
-// Simple function to send information to the web clients
-void sendJsonArray(String l_type, float l_array_values[])
-{
-  String jsonString = ""; // create a JSON string for sending data to the client
-  const size_t CAPACITY = JSON_ARRAY_SIZE(ARRAY_LENGTH) + 100;
-  StaticJsonDocument<CAPACITY> doc; // create JSON container
+// =====================================================
+// API для настроек
+// =====================================================
 
-  JsonObject object = doc.to<JsonObject>(); // create a JSON Object
-  object["type"] = l_type;                  // write data into the JSON object
-  JsonArray value = object.createNestedArray("value");
-  for (int i = 0; i < ARRAY_LENGTH; i++)
-  {
-    value.add(l_array_values[i]);
+// Получить настройки (JSON)
+void handleGetSettings(AsyncWebServerRequest *request) {
+  String json = "{";
+  json += "\"wifi_ssid\":\"" + String(settings.wifi_ssid) + "\",";
+  json += "\"wifi_password\":\"" + String(settings.wifi_password) + "\",";
+  json += "\"update_interval\":" + String(settings.update_interval) + ",";
+  json += "\"temp_offset_bme\":" + String(settings.temp_offset_bme) + ",";
+  json += "\"temp_offset_htu\":" + String(settings.temp_offset_htu) + ",";
+  json += "\"temp_offset_scd\":" + String(settings.temp_offset_scd) + ",";
+  json += "\"hum_offset_bme\":" + String(settings.hum_offset_bme) + ",";
+  json += "\"hum_offset_htu\":" + String(settings.hum_offset_htu) + ",";
+  json += "\"press_offset_bme\":" + String(settings.press_offset_bme) + ",";
+  json += "\"press_offset_ms\":" + String(settings.press_offset_ms) + ",";
+  json += "\"co2_warning\":" + String(settings.co2_warning) + ",";
+  json += "\"co2_critical\":" + String(settings.co2_critical) + ",";
+  json += "\"pm25_warning\":" + String(settings.pm25_warning) + ",";
+  json += "\"pm25_critical\":" + String(settings.pm25_critical) + ",";
+  json += "\"night_mode_start\":" + String(settings.night_mode_start) + ",";
+  json += "\"night_mode_end\":" + String(settings.night_mode_end);
+  json += "}";
+  request->send(200, "application/json", json);
+}
+
+// Сохранить настройки (JSON POST)
+void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t len) {
+  if (len == 0) {
+    request->send(400, "application/json", "{\"error\":\"No data\"}");
+    return;
   }
-  serializeJson(doc, jsonString);     // convert JSON object to string
-  webSocket.broadcastTXT(jsonString); // send JSON string to all clients
+  
+  StaticJsonDocument<1024> doc;
+  DeserializationError error = deserializeJson(doc, data, len);
+  
+  if (error) {
+    request->send(400, "application/json", "{\"error\":\"Invalid JSON\"}");
+    return;
+  }
+  
+  // WiFi настройки
+  const char* ssid = doc["wifi_ssid"];
+  const char* password = doc["wifi_password"];
+  if (ssid && strlen(ssid) > 0 && strlen(ssid) <= 32) {
+    strncpy(settings.wifi_ssid, ssid, 32);
+    settings.wifi_ssid[32] = '\0';
+  }
+  if (password && strlen(password) > 0 && strlen(password) <= 64) {
+    strncpy(settings.wifi_password, password, 64);
+    settings.wifi_password[64] = '\0';
+  }
+  
+  // Сохраняем остальные настройки
+  settings.update_interval = doc["update_interval"] | 10;
+  settings.temp_offset_bme = doc["temp_offset_bme"] | 0.0;
+  settings.temp_offset_htu = doc["temp_offset_htu"] | 0.0;
+  settings.temp_offset_scd = doc["temp_offset_scd"] | 0.0;
+  settings.hum_offset_bme = doc["hum_offset_bme"] | 0;
+  settings.hum_offset_htu = doc["hum_offset_htu"] | 0;
+  settings.press_offset_bme = doc["press_offset_bme"] | 0;
+  settings.press_offset_ms = doc["press_offset_ms"] | 0;
+  settings.co2_warning = doc["co2_warning"] | 1000;
+  settings.co2_critical = doc["co2_critical"] | 1400;
+  settings.pm25_warning = doc["pm25_warning"] | 35;
+  settings.pm25_critical = doc["pm25_critical"] | 50;
+  settings.night_mode_start = doc["night_mode_start"] | 23;
+  settings.night_mode_end = doc["night_mode_end"] | 7;
+  
+  settings_save();
+  request->send(200, "application/json", "{\"status\":\"ok\"}");
+}
+
+// Сброс настроек
+void handleResetSettings(AsyncWebServerRequest *request) {
+  settings_reset();
+  request->send(200, "application/json", "{\"status\":\"ok\"}");
+}
+
+// Перезагрузка ESP32
+void handleReboot(AsyncWebServerRequest *request) {
+  request->send(200, "application/json", "{\"status\":\"ok\"}");
+  delay(1000);
+  ESP.restart();
 }

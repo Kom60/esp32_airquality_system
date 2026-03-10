@@ -36,7 +36,7 @@ IPAddress subnet(255, 255, 255, 0);
 
 
 // We want to periodically send values to the clients, so we need to define an "interval" and remember the last time we sent data to the client (with "previousMillis")
-int interval = 10000;              // send data to the client every 1000ms -> 1s
+int interval = 10000;              // будет обновлено из settings.update_interval
 unsigned long previousMillis = 0; // we use the "millis()" command for time reference and this will output an unsigned long
 
 
@@ -79,4 +79,10 @@ extern "C" {
 #define I2S_TASK_STACK 2048
 //
 void mic_i2s_reader_task(void* parameter);
+
+// Обработчики API настроек
+void handleGetSettings(AsyncWebServerRequest *request);
+void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t len);
+void handleResetSettings(AsyncWebServerRequest *request);
+void handleReboot(AsyncWebServerRequest *request);
 

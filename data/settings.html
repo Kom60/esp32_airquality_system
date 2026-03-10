@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Настройки - Мониторинг качества воздуха</title>
+  <link rel="stylesheet" href="settings_style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="header">
+  <div class="header-text">Настройки метеостанции</div>
+  <div class="header-buttons">
+    <button class="charts-icon-button" onclick="location.href='index.html'" title="Главная">🏠</button>
+    <img class="dark-mode-button" onclick="toggleDarkMode()" src="off_bubl.png" alt=""/>
+  </div>
+</div>
+
+<div class="settings-container">
+  <!-- WiFi настройки -->
+  <div class="settings-section">
+    <div class="section-title">📡 WiFi настройки</div>
+    <div class="setting-row">
+      <label for="wifi_ssid">SSID сети:</label>
+      <input type="text" id="wifi_ssid" maxlength="32" placeholder="MyWiFi">
+      <span class="setting-desc">Имя WiFi сети</span>
+    </div>
+    <div class="setting-row">
+      <label for="wifi_password">Пароль:</label>
+      <input type="password" id="wifi_password" maxlength="64" placeholder="password">
+      <span class="setting-desc">Пароль WiFi</span>
+    </div>
+    <div class="setting-row">
+      <label></label>
+      <button class="btn-apply-wifi" onclick="applyWiFi()">🔄 Применить WiFi</button>
+      <span class="setting-desc">ESP32 перезагрузится</span>
+    </div>
+  </div>
+
+  <!-- Интервал обновления -->
+  <div class="settings-section">
+    <div class="section-title">⏱️ Интервал обновления</div>
+    <div class="setting-row">
+      <label for="update_interval">Интервал (сек):</label>
+      <input type="number" id="update_interval" min="5" max="300" value="10">
+      <span class="setting-desc">Период обновления данных датчиков</span>
+    </div>
+  </div>
+
+  <!-- Калибровка температуры -->
+  <div class="settings-section">
+    <div class="section-title">🌡️ Калибровка температуры</div>
+    <div class="setting-row">
+      <label for="temp_offset_bme">BME280 offset:</label>
+      <input type="number" id="temp_offset_bme" step="0.1" min="-10" max="10" value="0">
+      <span class="setting-desc">°C</span>
+    </div>
+    <div class="setting-row">
+      <label for="temp_offset_htu">HTU21DF offset:</label>
+      <input type="number" id="temp_offset_htu" step="0.1" min="-10" max="10" value="0">
+      <span class="setting-desc">°C</span>
+    </div>
+    <div class="setting-row">
+      <label for="temp_offset_scd">SCD4X offset:</label>
+      <input type="number" id="temp_offset_scd" step="0.1" min="-10" max="10" value="0">
+      <span class="setting-desc">°C</span>
+    </div>
+  </div>
+
+  <!-- Калибровка влажности -->
+  <div class="settings-section">
+    <div class="section-title">💧 Калибровка влажности</div>
+    <div class="setting-row">
+      <label for="hum_offset_bme">BME280 offset:</label>
+      <input type="number" id="hum_offset_bme" step="1" min="-20" max="20" value="0">
+      <span class="setting-desc">%</span>
+    </div>
+    <div class="setting-row">
+      <label for="hum_offset_htu">HTU21DF offset:</label>
+      <input type="number" id="hum_offset_htu" step="1" min="-20" max="20" value="0">
+      <span class="setting-desc">%</span>
+    </div>
+  </div>
+
+  <!-- Калибровка давления -->
+  <div class="settings-section">
+    <div class="section-title">📊 Калибровка давления</div>
+    <div class="setting-row">
+      <label for="press_offset_bme">BME280 offset:</label>
+      <input type="number" id="press_offset_bme" step="1" min="-50" max="50" value="0">
+      <span class="setting-desc">гПа</span>
+    </div>
+    <div class="setting-row">
+      <label for="press_offset_ms">MS5611 offset:</label>
+      <input type="number" id="press_offset_ms" step="1" min="-50" max="50" value="0">
+      <span class="setting-desc">гПа</span>
+    </div>
+  </div>
+
+  <!-- Пороги CO2 -->
+  <div class="settings-section">
+    <div class="section-title">💨 Пороги CO₂</div>
+    <div class="setting-row">
+      <label for="co2_warning">Предупреждение:</label>
+      <input type="number" id="co2_warning" min="800" max="2000" value="1000">
+      <span class="setting-desc">ppm (жёлтый)</span>
+    </div>
+    <div class="setting-row">
+      <label for="co2_critical">Критический:</label>
+      <input type="number" id="co2_critical" min="1200" max="5000" value="1400">
+      <span class="setting-desc">ppm (красный)</span>
+    </div>
+  </div>
+
+  <!-- Пороги PM2.5 -->
+  <div class="settings-section">
+    <div class="section-title">🌀 Пороги PM2.5</div>
+    <div class="setting-row">
+      <label for="pm25_warning">Предупреждение:</label>
+      <input type="number" id="pm25_warning" min="25" max="100" value="35">
+      <span class="setting-desc">мкг/м³ (жёлтый)</span>
+    </div>
+    <div class="setting-row">
+      <label for="pm25_critical">Критический:</label>
+      <input type="number" id="pm25_critical" min="50" max="500" value="50">
+      <span class="setting-desc">мкг/м³ (красный)</span>
+    </div>
+  </div>
+
+  <!-- Ночной режим -->
+  <div class="settings-section">
+    <div class="section-title">🌙 Ночной режим дисплея</div>
+    <div class="setting-row">
+      <label for="night_mode_start">Начало (час):</label>
+      <input type="number" id="night_mode_start" min="0" max="23" value="23">
+      <span class="setting-desc">:00</span>
+    </div>
+    <div class="setting-row">
+      <label for="night_mode_end">Конец (час):</label>
+      <input type="number" id="night_mode_end" min="0" max="23" value="7">
+      <span class="setting-desc">:00</span>
+    </div>
+  </div>
+
+  <!-- Кнопки -->
+  <div class="settings-actions">
+    <button class="btn-save" onclick="saveSettings()">💾 Сохранить</button>
+    <button class="btn-reset" onclick="resetSettings()">🔄 Сброс</button>
+    <button class="btn-reboot" onclick="rebootESP()">🔌 Перезагрузка</button>
+  </div>
+
+  <div id="status_message" class="status-message"></div>
+</div>
+
+<script src="settings_logic.js"></script>
+</body>
+</html>
