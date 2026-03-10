@@ -185,6 +185,88 @@ body.dark-mode .analytics-card .units {
   text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
 }
 
+/* WiFi RSSI стили */
+.dungen_value.wifi_rssi.excellent {
+  color: #2e7d32 !important;
+}
+
+.dungen_value.wifi_rssi.good {
+  color: #8bc34a !important;
+}
+
+.dungen_value.wifi_rssi.fair {
+  color: #ff9800 !important;
+}
+
+.dungen_value.wifi_rssi.weak {
+  color: #f44336 !important;
+}
+
+body.dark-mode .dungen_value.wifi_rssi.excellent {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .dungen_value.wifi_rssi.good {
+  color: #9ccc65 !important;
+}
+
+body.dark-mode .dungen_value.wifi_rssi.fair {
+  color: #ffb74d !important;
+}
+
+body.dark-mode .dungen_value.wifi_rssi.weak {
+  color: #ef5350 !important;
+}
+
+/* ESP32 память и загрузка */
+.dungen_value.esp32_free_heap.good {
+  color: #2e7d32 !important;
+}
+
+.dungen_value.esp32_free_heap.warning {
+  color: #f57c00 !important;
+}
+
+.dungen_value.esp32_free_heap.critical {
+  color: #c62828 !important;
+}
+
+.dungen_value.esp32_cpu_load.low {
+  color: #2e7d32 !important;
+}
+
+.dungen_value.esp32_cpu_load.medium {
+  color: #f57c00 !important;
+}
+
+.dungen_value.esp32_cpu_load.high {
+  color: #c62828 !important;
+}
+
+body.dark-mode .dungen_value.esp32_free_heap.good {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .dungen_value.esp32_free_heap.warning {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .dungen_value.esp32_free_heap.critical {
+  color: #ef5350 !important;
+}
+
+body.dark-mode .dungen_value.esp32_cpu_load.low {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .dungen_value.esp32_cpu_load.medium {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .dungen_value.esp32_cpu_load.high {
+  color: #ef5350 !important;
+}
+
 /* Статусы датчиков */
 .measured_value.status-ok {
   color: #2e7d32 !important;

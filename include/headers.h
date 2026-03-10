@@ -9,6 +9,7 @@
 #include "esp32/clk.h"
 #include "sensors.h"
 #include <HTTPClient.h>
+#include <time.h>
 
 extern SemaphoreHandle_t i2c_mutex;
 extern unsigned long delayTime;

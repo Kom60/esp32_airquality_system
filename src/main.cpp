@@ -1,6 +1,12 @@
 #include "headers.h"
 #include "main.h"
 
+// Переменные для расчёта загрузки CPU
+unsigned long loop_start_time = 0;
+unsigned long loop_total_time = 0;
+unsigned long loop_count = 0;
+float cpu_load_percent = 0.0;
+
 // Функция проверки валидности числа
 bool is_valid_float(float value) {
     return !isnan(value) && !isinf(value) && value < 1e6 && value > -1e6;
@@ -163,18 +169,39 @@ void setup(void)
 
 void loop()
 {
+  loop_start_time = micros();  // Засекаем время начала цикла
+  
   webSocket.loop();             // Update function for the webSockets
   unsigned long now = millis(); // read out the current "time" ("millis()" gives the time in ms since the Arduino started)
+  
   if ((unsigned long)(now - previousMillis) > interval)
   { // check if "interval" ms has passed since last time the clients were updated
     previousMillis = now;
-    //tft.fillScreen(TFT_BLACK);
     display_all_data();
 
     // Отправка данных о системе
     sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
-    sendJson("esp32_cpu_temp", String(temperatureRead()));  // Температура CPU в °C (без *100)
+    sendJson("esp32_cpu_temp", String(temperatureRead()));
+    sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
+    
+    // Расчёт загрузки CPU на основе времени выполнения loop
+    cpu_load_percent = (float)loop_total_time / (loop_count * interval * 1000) * 100.0;
+    if (cpu_load_percent > 100) cpu_load_percent = 100;
+    sendJson("esp32_cpu_load", String(cpu_load_percent));
+    
+    // Сброс счётчиков каждые 100 циклов
+    if (loop_count >= 100) {
+      loop_total_time = 0;
+      loop_count = 0;
+    }
+    
+    sendJson("wifi_rssi", String(WiFi.RSSI()));
 
     send_data_to_pc();
   }
+  
+  // Измеряем время выполнения цикла
+  unsigned long loop_time = micros() - loop_start_time;
+  loop_total_time += loop_time;
+  loop_count++;
 }

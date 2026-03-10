@@ -80,4 +80,3 @@ extern "C" {
 //
 void mic_i2s_reader_task(void* parameter);
 
-

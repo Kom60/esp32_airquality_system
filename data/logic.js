@@ -546,7 +546,47 @@ function handleWebSocketMessage(event) {
     }
     if (type === 'esp32_cpu_temp') {
       const el = document.querySelector('.dungen_value.esp32_cpu_temp');
-      if (el) el.innerHTML = rawValue.toFixed(1);  // Температура в °C (без /100)
+      if (el) el.innerHTML = rawValue.toFixed(1);
+      return;
+    }
+    if (type === 'esp32_free_heap') {
+      const el = document.querySelector('.dungen_value.esp32_free_heap');
+      if (el) {
+        const heapKB = Math.round(rawValue / 1024);
+        el.innerHTML = heapKB;
+        // Цветовая индикация свободной памяти
+        el.classList.remove('good', 'warning', 'critical');
+        if (heapKB > 200) el.classList.add('good');
+        else if (heapKB > 100) el.classList.add('warning');
+        else el.classList.add('critical');
+      }
+      return;
+    }
+    if (type === 'esp32_cpu_load') {
+      const el = document.querySelector('.dungen_value.esp32_cpu_load');
+      if (el) {
+        const load = Math.round(rawValue);
+        el.innerHTML = load;
+        // Цветовая индикация загрузки CPU
+        el.classList.remove('low', 'medium', 'high');
+        if (load < 50) el.classList.add('low');
+        else if (load < 80) el.classList.add('medium');
+        else el.classList.add('high');
+      }
+      return;
+    }
+    if (type === 'wifi_rssi') {
+      const el = document.querySelector('.dungen_value.wifi_rssi');
+      if (el) {
+        const rssi = Math.round(rawValue);
+        el.innerHTML = rssi;
+        // Цветовая индикация качества сигнала
+        el.classList.remove('excellent', 'good', 'fair', 'weak');
+        if (rssi >= -50) el.classList.add('excellent');
+        else if (rssi >= -60) el.classList.add('good');
+        else if (rssi >= -70) el.classList.add('fair');
+        else el.classList.add('weak');
+      }
       return;
     }
 

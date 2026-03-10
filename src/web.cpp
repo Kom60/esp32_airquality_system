@@ -59,6 +59,8 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     // ESP32 system data
     sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
     sendJson("esp32_cpu_temp", String(temperatureRead()));
+    sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
+    sendJson("wifi_rssi", String(WiFi.RSSI()));
 
     break;
   case WStype_TEXT:
