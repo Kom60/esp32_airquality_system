@@ -1,4 +1,5 @@
 #include <TFT_eSPI.h>       // Include the graphics library
+#include <WiFi.h>
 #include "headers.h"
 
 extern TFT_eSPI tft;  // Create object "tft"

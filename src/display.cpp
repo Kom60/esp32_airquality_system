@@ -127,4 +127,9 @@ void display_all_data()
   tft.drawString("CH2O:", 135, 110);
   tft.drawFloat(AIR_data.ch2o_value, 2, 190, 110);
   tft.drawString("ppm", 220, 110);
+
+  // WiFi IP address
+  tft.setTextColor(TFT_BLUE, TFT_BLACK);
+  tft.drawString("WiFi IP:", 135, 125);
+  tft.drawString(WiFi.localIP().toString().c_str(), 190, 125);
 }
