@@ -538,6 +538,8 @@ function handleWebSocketMessage(event) {
     const type = obj.type;
     const rawValue = parseFloat(obj.value);
 
+    console.log('[WS] Received:', type, '=', rawValue);  // ← Добавили логирование
+
     // Системные данные
     if (type === 'esp32_cpu_freq') {
       const el = document.querySelector('.dungen_value.esp32_cpu_freq');

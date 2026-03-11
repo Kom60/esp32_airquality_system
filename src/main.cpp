@@ -194,6 +194,10 @@ void setup(void)
   webSocket.onEvent(webSocketEvent); // define a callback function -> what does the ESP32 need to do when an event from the websocket is received? -> run function "webSocketEvent()"
   SCD40_setup();
   server.begin();
+
+  // WebSocket работает асинхронно - задача НЕ нужна!
+  // xTaskCreatePinnedToCore(webSocketTaskFunction, "WebSocket Task", 4096, NULL, 2, &webSocketTaskHandle, 1);
+
   // Create FreeRTOS queue
   samples_queue = xQueueCreate(8, sizeof(sum_queue_t));
 
@@ -209,8 +213,9 @@ void setup(void)
 void loop()
 {
   loop_start_time = micros();  // Засекаем время начала цикла
-  
-  webSocket.loop();             // Update function for the webSockets
+
+  webSocket.loop();  // Обработка WebSocket (требуется для links2004/WebSockets)
+
   unsigned long now = millis(); // read out the current "time" ("millis()" gives the time in ms since the Arduino started)
   
   // Обновляем интервал из настроек (на случай изменений)
@@ -226,22 +231,58 @@ void loop()
     previousMillis = now;
     display_all_data();
 
+    // Отправка данных датчиков в WebSocket
+    // BME280 sensor data
+    sendJson("bme_temperature", String(AIR_data.bme_temperature));
+    sendJson("bme_pressure", String(AIR_data.bme_pressure));
+    sendJson("bme_humidity", String(AIR_data.bme_humidity));
+
+    // HTU21DF sensor data
+    sendJson("htu_temperature", String(AIR_data.htu_temperature));
+    sendJson("htu_humidity", String(AIR_data.htu_humidity));
+
+    // SCD4X sensor data
+    sendJson("scd4x_co2", String(AIR_data.scd4x_co2));
+    sendJson("scd4x_temperature", String(AIR_data.scd4x_temperature));
+    sendJson("scd4x_humidity", String(AIR_data.scd4x_humidity));
+
+    // PMS sensor data
+    sendJson("pms_pm1", String(AIR_data.pms_pm1));
+    sendJson("pms_pm2_5", String(AIR_data.pms_pm2_5));
+    sendJson("pms_pm10", String(AIR_data.pms_pm10));
+
+    // MS5611 sensor data
+    sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure));
+    sendJson("ms5611_temperature", String(AIR_data.ms5611_temperature));
+
+    // BH1750 sensor data
+    sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting));
+
+    // VEML6070 sensor data
+    sendJson("veml_uv", String(AIR_data.veml_uv));
+
+    // CH2O sensor data
+    sendJson("ch2o_value", String(AIR_data.ch2o_value));
+
+    // Microphone data
+    sendJson("microphone_noise", String(AIR_data.microphone_noise));
+
     // Отправка данных о системе
     sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
     sendJson("esp32_cpu_temp", String(temperatureRead()));
     sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
-    
+
     // Расчёт загрузки CPU на основе времени выполнения loop
     cpu_load_percent = (float)loop_total_time / (loop_count * interval * 1000) * 100.0;
     if (cpu_load_percent > 100) cpu_load_percent = 100;
     sendJson("esp32_cpu_load", String(cpu_load_percent));
-    
+
     // Сброс счётчиков каждые 100 циклов
     if (loop_count >= 100) {
       loop_total_time = 0;
       loop_count = 0;
     }
-    
+
     sendJson("wifi_rssi", String(WiFi.RSSI()));
 
     send_data_to_pc();

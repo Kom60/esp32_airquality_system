@@ -21,6 +21,10 @@ void CO2_measurementTaskFunction(void *parameter)
         // Проверяем наличие датчика на шине
         Wire.beginTransmission(0x62);
         uint8_t i2cErr = Wire.endTransmission();
+        
+        xSemaphoreGive(i2c_mutex);
+        
+        // Вывод отладки ЗА пределами mutex
         if (i2cErr == 0) {
             Serial.println("[SCD40] Датчик найден на адресе 0x62");
         } else {
@@ -28,7 +32,11 @@ void CO2_measurementTaskFunction(void *parameter)
             Serial.println("[SCD40] Проверьте подключение и питание!");
         }
 
+        xSemaphoreTake(i2c_mutex, portMAX_DELAY);
         uint8_t err = co2.begin();
+        xSemaphoreGive(i2c_mutex);
+        
+        // Вывод отладки ЗА пределами mutex
         if (err != 0) {
             Serial.printf("[SCD40] Ошибка co2.begin(): %s\n", co2.getErrorText(err));
         } else {
@@ -37,13 +45,15 @@ void CO2_measurementTaskFunction(void *parameter)
 
         // Принудительно останавливаем измерения (если были запущены из EEPROM)
         Serial.println("[SCD40] Остановка возможных измерений...");
-        err = co2.stopPeriodicMeasurement();
-        Serial.printf("[SCD40] stopPeriodicMeasurement: %s\n", co2.getErrorText(err));
         
+        xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+        err = co2.stopPeriodicMeasurement();
+        xSemaphoreGive(i2c_mutex);
+        
+        Serial.printf("[SCD40] stopPeriodicMeasurement: %s\n", co2.getErrorText(err));
+
         // Ждём пока датчик остановится (по спецификации 500мс)
         vTaskDelay(pdMS_TO_TICKS(500));
-
-        xSemaphoreGive(i2c_mutex);
     } else {
         Serial.println("[SCD40] ОШИБКА: i2c_mutex не создан!");
     }
@@ -72,11 +82,17 @@ void CO2_measurementTaskFunction(void *parameter)
         if (avgPressure > 0) {
             // Расчёт altitude по барометрической формуле (в метрах)
             float altitude = 44330.0f * (1.0f - pow(avgPressure / 1013.25f, 0.1903f));
+            xSemaphoreGive(i2c_mutex);
+
+            // Вывод отладки ЗА пределами mutex
             Serial.printf("[SCD40] Расчётное altitude: %.1f м (давление: %.2f гПа)\n", altitude, avgPressure);
 
+            xSemaphoreTake(i2c_mutex, portMAX_DELAY);
             // Установка altitude в SCD40 (в метрах)
             uint16_t altitudeInt = (uint16_t)altitude;
             uint8_t err = co2.setSensorAltitude(altitudeInt);
+            xSemaphoreGive(i2c_mutex);
+
             if (err == 0) {
                 Serial.printf("[SCD40] ✓ Установлено altitude: %d м\n", altitudeInt);
             } else {
@@ -87,14 +103,15 @@ void CO2_measurementTaskFunction(void *parameter)
         }
 
         // Теперь запускаем периодические измерения
+        xSemaphoreTake(i2c_mutex, portMAX_DELAY);
         uint8_t err = co2.startPeriodicMeasurement();
+        xSemaphoreGive(i2c_mutex);
+        
         if (err != 0) {
             Serial.printf("[SCD40] Ошибка startPeriodicMeasurement(): %s\n", co2.getErrorText(err));
         } else {
             Serial.println("[SCD40] startPeriodicMeasurement() успешно");
         }
-
-        xSemaphoreGive(i2c_mutex);
     }
 
     int errorCount = 0;
@@ -102,7 +119,7 @@ void CO2_measurementTaskFunction(void *parameter)
     int successCount = 0;
     unsigned long startTime = millis();
     unsigned long lastReadTime = 0;
-    
+
     Serial.println("[SCD40] Начало цикла измерений...");
     Serial.println("[SCD40] Первое измерение займёт ~5 секунд");
 
@@ -110,27 +127,29 @@ void CO2_measurementTaskFunction(void *parameter)
     {
         unsigned long elapsed = millis() - startTime;
         unsigned long timeSinceLastRead = millis() - lastReadTime;
-        
+
         // Пытаемся читать каждые 5 секунд
         if (timeSinceLastRead >= 5000 || lastReadTime == 0)
         {
             readAttemptCount++;
             Serial.printf("\n[SCD40] === Попытка #%d (elapsed=%lus) ===\n", readAttemptCount, elapsed / 1000);
-            
+
             // Проверяем isDataReady()
             bool ready = false;
             if (i2c_mutex != NULL) {
                 if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
                     ready = co2.isDataReady();
-                    Serial.printf("[SCD40] isDataReady() = %d\n", ready ? 1 : 0);
                     xSemaphoreGive(i2c_mutex);
+                    
+                    // Вывод отладки ЗА пределами mutex
+                    Serial.printf("[SCD40] isDataReady() = %d\n", ready ? 1 : 0);
                 }
             }
-            
+
             // Читаем данные
             if (i2c_mutex != NULL) {
                 if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
-                    
+
                     Serial.println("[SCD40] Чтение данных...");
                     uint8_t err = co2.readMeasurement(co2Value, temperature, humidity);
                     xSemaphoreGive(i2c_mutex);
@@ -139,21 +158,21 @@ void CO2_measurementTaskFunction(void *parameter)
                     {
                         successCount++;
                         Serial.printf("[SCD40] ✓ УСПЕХ! (успешно: %d)\n", successCount);
-                        
+
                         errorCount = 0;
                         lastReadTime = millis();
 
                         sendJson("scd4x_co2", String(co2Value));
                         sendJson("scd4x_temperature", String(temperature));  // Температура в °C (без *100)
                         sendJson("scd4x_humidity", String(humidity));        // Влажность в % (без *100)
-                        
+
                         // Применяем калибровку
                         temperature += settings.temp_offset_scd;
-                        
+
                         AIR_data.update_scd4x_data(co2Value, temperature, humidity);
 
                         Serial.printf("CO2: %.0f ppm, Temperature: %.1f °C, Humidity: %.0f %%RH\n", co2Value, temperature, humidity);
-                        
+
                         // После успешного чтения ждём 5 секунд
                         vTaskDelay(pdMS_TO_TICKS(5000));
                     }
@@ -168,17 +187,17 @@ void CO2_measurementTaskFunction(void *parameter)
 
                             if (i2c_mutex != NULL) {
                                 xSemaphoreTake(i2c_mutex, portMAX_DELAY);
-                                
+
                                 Serial.println("[SCD40] stopPeriodicMeasurement()...");
                                 co2.stopPeriodicMeasurement();
                                 vTaskDelay(pdMS_TO_TICKS(500));
-                                
+
                                 Serial.println("[SCD40] startPeriodicMeasurement()...");
                                 co2.startPeriodicMeasurement();
-                                
+
                                 xSemaphoreGive(i2c_mutex);
                             }
-                            
+
                             errorCount = 0;
                             startTime = millis();
                             lastReadTime = 0;
@@ -211,14 +230,14 @@ void BME_measurementTaskFunction(void *parameter)
             // BME280 возвращает: температура (°C), давление (Па), влажность (%)
             // Делим на 100 для конвертации в гПа
             AIR_data.update_bme_data(bme.readTemperature(), bme.readPressure() / 100.0F, bme.readHumidity());
-            
-            // Применяем калибровку
-            AIR_data.bme_temperature += settings.temp_offset_bme;
-            AIR_data.bme_pressure += settings.press_offset_bme;
-            AIR_data.bme_humidity += settings.hum_offset_bme;
-            
             xSemaphoreGive(i2c_mutex);
         }
+        
+        // Применяем калибровку ЗА пределами mutex
+        AIR_data.bme_temperature += settings.temp_offset_bme;
+        AIR_data.bme_pressure += settings.press_offset_bme;
+        AIR_data.bme_humidity += settings.hum_offset_bme;
+
         sendJson("bme_temperature", String(AIR_data.bme_temperature));  // Температура в °C (без *100)
         sendJson("bme_pressure", String(AIR_data.bme_pressure));         // Давление в гПа
         sendJson("bme_humidity", String(AIR_data.bme_humidity));         // Влажность в % (без *100)
@@ -241,11 +260,11 @@ void HTU_measurementTaskFunction(void *parameter)
             xSemaphoreGive(i2c_mutex);
         }
         AIR_data.update_htu_data(temp, hum);
-        
-        // Применяем калибровку
+
+        // Применяем калибровку ЗА пределами mutex
         AIR_data.htu_temperature += settings.temp_offset_htu;
         AIR_data.htu_humidity += settings.hum_offset_htu;
-        
+
         sendJson("htu_temperature", String(AIR_data.htu_temperature));  // Температура в °C (без *100)
         sendJson("htu_humidity", String(AIR_data.htu_humidity));        // Влажность в % (без *100)
         vTaskDelay(pdMS_TO_TICKS(5000));
@@ -315,8 +334,8 @@ void MS5611_measurementTaskFunction(void *parameter)
         }
 
         double pressure_hpa = pressure_pa / 100.0;  // Конвертируем в гПа
-        
-        // Применяем калибровку
+
+        // Применяем калибровку ЗА пределами mutex
         pressure_hpa += settings.press_offset_ms;
         temperature += settings.temp_offset_bme;  // Используем тот же offset что и для BME
 
@@ -331,7 +350,7 @@ void MS5611_measurementTaskFunction(void *parameter)
 void VEML_measurementTaskFunction(void *parameter)
 {
     vTaskDelay(pdMS_TO_TICKS(1300));  // Ждём завершения инициализации всех датчиков
-    
+
     while (true)
     {
         if (i2c_mutex != NULL) {

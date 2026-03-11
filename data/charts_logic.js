@@ -35,33 +35,33 @@ const AQI_THRESHOLDS = {
 function initCharts() {
   const commonOptions = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     animation: { duration: 0 },
     scales: {
       xAxes: [{
         type: 'category',
         ticks: {
-          maxTicksLimit: 8,
-          fontColor: '#888',
+          maxTicksLimit: 10,  // Увеличено количество меток
+          fontColor: '#000000',  // Чёрный цвет
           fontFamily: '"Press Start 2P"',
-          fontSize: 8
+          fontSize: getResponsiveFontSize(8)
         },
         gridLines: { color: '#333' }
       }],
       yAxes: [{
         ticks: {
-          fontColor: '#888',
+          fontColor: '#000000',  // Чёрный цвет
           fontFamily: '"Press Start 2P"',
-          fontSize: 8
+          fontSize: getResponsiveFontSize(8)
         },
         gridLines: { color: '#333' }
       }]
     },
     legend: {
       labels: {
-        fontColor: '#fff',
+        fontColor: '#000000',  // Чёрный цвет
         fontFamily: '"Press Start 2P"',
-        fontSize: 8
+        fontSize: getResponsiveFontSize(8)
       }
     }
   };
@@ -297,18 +297,18 @@ function processCommand(event) {
   const obj = JSON.parse(event.data);
   const type = obj.type;
   const rawValue = parseFloat(obj.value);
-  
+
   const now = new Date();
-  const timeLabel = now.getHours().toString().padStart(2, '0') + ':' + 
-                    now.getMinutes().toString().padStart(2, '0') + ':' + 
-                    now.getSeconds().toString().padStart(2, '0');
+  // Формат ЧЧ:ММ
+  const timeLabel = now.getHours().toString().padStart(2, '0') + ':' +
+                    now.getMinutes().toString().padStart(2, '0');
 
   // Store data
   if (dataHistory[type] !== undefined) {
     dataHistory[type].push(rawValue);
     if (dataHistory[type].length > MAX_DATA_POINTS) dataHistory[type].shift();
   }
-  
+
   if (dataHistory.labels.length === 0 || dataHistory.labels.length < MAX_DATA_POINTS) {
     dataHistory.labels.push(timeLabel);
     if (dataHistory.labels.length > MAX_DATA_POINTS) dataHistory.labels.shift();
@@ -401,6 +401,41 @@ function clearCharts() {
   dataHistory.labels = [];
   Object.keys(dataHistory).forEach(key => {
     if (key !== 'labels') dataHistory[key] = [];
+  });
+}
+
+// Обновление размеров шрифтов при изменении окна
+let resizeTimeout;
+window.addEventListener('resize', function() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(function() {
+    updateChartFonts();
+  }, 250);
+});
+
+function getResponsiveFontSize(baseSize) {
+  const width = window.innerWidth;
+  // Увеличиваем на 10% от базового размера
+  const increasedSize = baseSize * 1.1;
+  if (width <= 480) return increasedSize * 0.7;
+  if (width <= 768) return increasedSize * 0.85;
+  return increasedSize;
+}
+
+function updateChartFonts() {
+  const fontSize = getResponsiveFontSize(8);
+  
+  Object.values(charts).forEach(chart => {
+    // Обновить шрифты осей (чёрный цвет и на 10% крупнее)
+    chart.options.scales.xAxes[0].ticks.fontSize = fontSize;
+    chart.options.scales.xAxes[0].ticks.fontColor = '#000000';
+    chart.options.scales.xAxes[0].ticks.maxTicksLimit = 10;  // Больше меток
+    chart.options.scales.yAxes[0].ticks.fontSize = fontSize;
+    chart.options.scales.yAxes[0].ticks.fontColor = '#000000';
+    chart.options.legend.fontSize = fontSize;
+    chart.options.legend.fontColor = '#000000';
+    
+    chart.update();
   });
 }
 

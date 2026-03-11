@@ -294,11 +294,12 @@ body.dark-mode .measured_value.status-critical {
 
 /* === СЕКЦИЯ АНАЛИТИКИ === */
 .analytics-section {
-  margin: 0.5% auto;
+  margin: 0.5% 0;
   padding: 1%;
-  max-width: 1400px;
+  width: 100%;
   border: var(--border-dashed-size) dashed #666;
   background: transparent !important;
+  box-sizing: border-box;
 }
 
 .analytics-section .column-header-text {

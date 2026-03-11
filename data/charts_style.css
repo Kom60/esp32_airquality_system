@@ -8,6 +8,10 @@
 body {
   background-color: #ffffff !important;
   color: #000000 !important;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;  /* Скрыть горизонтальную прокрутку */
+  width: 100%;
 }
 
 .charts-icon-button {
@@ -42,11 +46,14 @@ body.dark-mode .charts-icon-button {
 
 .charts-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, 1fr);  /* 2 графика в строке */
   gap: 20px;
   padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;  /* На всю доступную ширину */
+  max-width: 100%;  /* Не больше ширины окна */
+  box-sizing: border-box;
+  margin: 0;
+  overflow-x: hidden;  /* Скрыть горизонтальную прокрутку */
 }
 
 .chart-wrapper {
@@ -55,6 +62,13 @@ body.dark-mode .charts-icon-button {
   border-radius: 12px;
   padding: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  /* Уменьшено по вертикали на 15%: было 4/3, стало 3/2 */
+  aspect-ratio: 3 / 2;  /* Соотношение 3:2 (компактнее по высоте) */
+  min-width: 0;  /* Предотвратить вылезание за границы */
 }
 
 .chart-header {
@@ -63,16 +77,22 @@ body.dark-mode .charts-icon-button {
   gap: 10px;
   margin-bottom: 15px;
   font-family: "Press Start 2P", system-ui;
-  font-size: 12px;
+  font-size: clamp(10px, 1.5vw, 14px);  /* Адаптивный шрифт заголовка */
   color: #000000;
+  flex-shrink: 0;  /* Не сжимать заголовок */
+  white-space: nowrap;  /* Не переносить заголовок */
 }
 
 .chart-icon {
-  font-size: 16px;
+  font-size: clamp(14px, 2vw, 20px);  /* Адаптивный размер иконки */
+  flex-shrink: 0;  /* Не сжимать иконку */
 }
 
 .chart-wrapper canvas {
-  max-height: 250px;
+  width: 100% !important;  /* Масштабировать canvas по ширине */
+  height: 100% !important;  /* Масштабировать canvas по высоте */
+  flex: 1;  /* Занять всё доступное место */
+  min-height: 0;  /* Предотвратить вылезание */
 }
 
 /* AQI Dashboard */
@@ -224,6 +244,10 @@ body.dark-mode .chart-header {
   color: #fff;
 }
 
+body.dark-mode .chart-wrapper canvas {
+  /* В тёмной теме подписи осей остаются чёрными для контраста на светлом фоне графика */
+}
+
 body.dark-mode .aqi-card {
   background: #1e1e1e !important;
   border-color: #444;
@@ -326,22 +350,36 @@ body.dark-mode .aqi-hazardous {
   .aqi-value {
     font-size: 48px;
   }
-  
+
   .charts-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr;  /* 1 колонка на мобильных */
     padding: 10px;
+    width: 100%;
+    max-width: 100%;
   }
-  
+
+  .chart-wrapper {
+    aspect-ratio: 4 / 3;  /* Сохранить пропорцию 4:3 */
+  }
+
+  .chart-header {
+    font-size: clamp(9px, 2vw, 12px);
+  }
+
+  .chart-icon {
+    font-size: clamp(12px, 2.5vw, 18px);
+  }
+
   .header-buttons {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .controls {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .control-btn {
     width: 100%;
     max-width: 250px;

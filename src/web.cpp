@@ -9,60 +9,45 @@ const int ARRAY_LENGTH=10;
 float sens_vals[ARRAY_LENGTH];
 
 AsyncWebServer server(80);                         // the server uses port 80 (standard port for websites
-WebSocketsServer webSocket = WebSocketsServer(81); // the websocket uses port 81 (standard port for websockets*/
+WebSocketsServer webSocket = WebSocketsServer(81); // the websocket uses port 81
 
 void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
-{ 
+{
   switch (type)
-  {                         
+  {
   case WStype_DISCONNECTED:
-    Serial.println("Client " + String(num) + " disconnected");
+    Serial.println("[WS] Client " + String(num) + " disconnected");
     break;
   case WStype_CONNECTED:
-    Serial.println("Client " + String(num) + " connected");
+    Serial.println("[WS] Client " + String(num) + " connected");
+    Serial.println("[WS] Sending initial data...");
 
-    // send variables to newly connected web client (в оригинальных единицах, без масштабирования)
-    // BME280 sensor data
+    // send variables to newly connected web client
     sendJson("bme_temperature", String(AIR_data.bme_temperature));
+    Serial.println("[WS] Sent bme_temperature: " + String(AIR_data.bme_temperature));
+    
     sendJson("bme_pressure", String(AIR_data.bme_pressure));
     sendJson("bme_humidity", String(AIR_data.bme_humidity));
-
-    // HTU21DF sensor data
     sendJson("htu_temperature", String(AIR_data.htu_temperature));
     sendJson("htu_humidity", String(AIR_data.htu_humidity));
-
-    // SCD4X sensor data
     sendJson("scd4x_co2", String(AIR_data.scd4x_co2));
     sendJson("scd4x_temperature", String(AIR_data.scd4x_temperature));
     sendJson("scd4x_humidity", String(AIR_data.scd4x_humidity));
-
-    // PMS sensor data
     sendJson("pms_pm1", String(AIR_data.pms_pm1));
     sendJson("pms_pm2_5", String(AIR_data.pms_pm2_5));
     sendJson("pms_pm10", String(AIR_data.pms_pm10));
-
-    // MS5611 sensor data
     sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure));
     sendJson("ms5611_temperature", String(AIR_data.ms5611_temperature));
-
-    // BH1750 sensor data
     sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting));
-
-    // VEML6070 sensor data
     sendJson("veml_uv", String(AIR_data.veml_uv));
-
-    // CH2O sensor data
     sendJson("ch2o_value", String(AIR_data.ch2o_value));
-
-    // Microphone data
     sendJson("microphone_noise", String(AIR_data.microphone_noise));
-
-    // ESP32 system data
     sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
     sendJson("esp32_cpu_temp", String(temperatureRead()));
     sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
     sendJson("wifi_rssi", String(WiFi.RSSI()));
 
+    Serial.println("[WS] Initial data sent!");
     break;
   case WStype_TEXT:
     // try to decipher the JSON string received
@@ -97,13 +82,18 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
 // Simple function to send information to the web clients
 void sendJson(String l_type, String l_value)
 {
-  String jsonString = "";                   // create a JSON string for sending data to the client
-  StaticJsonDocument<200> doc;              // create JSON container
-  JsonObject object = doc.to<JsonObject>(); // create a JSON Object
-  object["type"] = l_type;                  // write data into the JSON object
+  String jsonString = "";
+  StaticJsonDocument<200> doc;
+  JsonObject object = doc.to<JsonObject>();
+  object["type"] = l_type;
   object["value"] = l_value;
-  serializeJson(doc, jsonString);     // convert JSON object to string
-  webSocket.broadcastTXT(jsonString); // send JSON string to all clients
+  serializeJson(doc, jsonString);
+  
+  // Отладка
+  Serial.print("[WS] Sending: ");
+  Serial.println(jsonString);
+  
+  webSocket.broadcastTXT(jsonString);
 }
 
 // =====================================================
