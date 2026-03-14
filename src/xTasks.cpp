@@ -1,9 +1,68 @@
 #include "headers.h"
 #include "settings.h"
 
+// Функция проверки валидности числа
+bool is_valid_float(float value) {
+    return !isnan(value) && !isinf(value) && value < 1e6 && value > -1e6;
+}
+
 TaskHandle_t CO2_measurementTask, BME_measurementTask,
     HTU_measurementTask, BH1750_measurementTask, CH2O_measurementTask,
-    PMS_measurementTask, MS5611_measurementTask, VEML_measurementTask;
+    PMS_measurementTask, MS5611_measurementTask, VEML_measurementTask,
+    DISPLAY_measurementTask;
+
+// Проверка готовности данных от всех датчиков
+bool are_all_sensors_ready() {
+  // Проверяем основные датчики
+  if (!is_valid_float(AIR_data.bme_temperature)) return false;
+  if (!is_valid_float(AIR_data.bme_pressure)) return false;
+  if (!is_valid_float(AIR_data.bme_humidity)) return false;
+  
+  if (!is_valid_float(AIR_data.htu_temperature)) return false;
+  if (!is_valid_float(AIR_data.htu_humidity)) return false;
+  
+  if (!is_valid_float(AIR_data.ms5611_pressure)) return false;
+  
+  if (AIR_data.scd4x_co2 <= 0 || AIR_data.scd4x_co2 > 5000) return false;
+  
+  if (AIR_data.pms_pm1 < 0 || AIR_data.pms_pm1 > 500) return false;
+  if (AIR_data.pms_pm2_5 < 0 || AIR_data.pms_pm2_5 > 500) return false;
+  if (AIR_data.pms_pm10 < 0 || AIR_data.pms_pm10 > 500) return false;
+  
+  if (!is_valid_float(AIR_data.bh1750_lighting)) return false;
+  if (!is_valid_float(AIR_data.ch2o_value)) return false;
+  if (!is_valid_float(AIR_data.microphone_noise)) return false;
+  
+  return true;
+}
+
+// Задача обновления дисплея (раз в 2 минуты)
+void DISPLAY_measurementTaskFunction(void *parameter)
+{
+    const unsigned long DISPLAY_INTERVAL = 120000;  // 2 минуты в миллисекундах
+    bool display_initialized = false;
+    
+    vTaskDelay(pdMS_TO_TICKS(2000));  // Ждём инициализации TFT и WiFi
+    
+    Serial.println("[DISPLAY] Task started");
+    
+    for (;;) {
+        // Проверяем готовность датчиков перед первой отрисовкой
+        if (!display_initialized) {
+            if (are_all_sensors_ready()) {
+                display_all_data();
+                display_initialized = true;
+                Serial.println("[DISPLAY] Initial data displayed");
+            }
+        } else {
+            display_all_data();
+            Serial.println("[DISPLAY] Updated");
+        }
+        
+        // Ждём следующий цикл (2 минуты)
+        vTaskDelay(pdMS_TO_TICKS(DISPLAY_INTERVAL));
+    }
+}
 
 void CO2_measurementTaskFunction(void *parameter)
 {

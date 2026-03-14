@@ -8,63 +8,6 @@ unsigned long loop_total_time = 0;
 unsigned long loop_count = 0;
 float cpu_load_percent = 0.0;
 
-// Задача обновления дисплея
-TaskHandle_t displayTaskHandle = NULL;
-const unsigned long DISPLAY_INTERVAL = 60000;  // 2 минуты в миллисекундах
-
-// Функция проверки валидности числа
-bool is_valid_float(float value) {
-    return !isnan(value) && !isinf(value) && value < 1e6 && value > -1e6;
-}
-
-// Проверка готовности данных от всех датчиков
-bool are_all_sensors_ready() {
-  // Проверяем основные датчики
-  if (!is_valid_float(AIR_data.bme_temperature)) return false;
-  if (!is_valid_float(AIR_data.bme_pressure)) return false;
-  if (!is_valid_float(AIR_data.bme_humidity)) return false;
-  
-  if (!is_valid_float(AIR_data.htu_temperature)) return false;
-  if (!is_valid_float(AIR_data.htu_humidity)) return false;
-  
-  if (!is_valid_float(AIR_data.ms5611_pressure)) return false;
-  
-  if (AIR_data.scd4x_co2 <= 0 || AIR_data.scd4x_co2 > 5000) return false;
-  
-  if (AIR_data.pms_pm1 < 0 || AIR_data.pms_pm1 > 500) return false;
-  if (AIR_data.pms_pm2_5 < 0 || AIR_data.pms_pm2_5 > 500) return false;
-  if (AIR_data.pms_pm10 < 0 || AIR_data.pms_pm10 > 500) return false;
-  
-  if (!is_valid_float(AIR_data.bh1750_lighting)) return false;
-  if (!is_valid_float(AIR_data.ch2o_value)) return false;
-  if (!is_valid_float(AIR_data.microphone_noise)) return false;
-  
-  return true;
-}
-
-// Функция задачи обновления дисплея
-void displayTaskFunction(void* parameter) {
-  TickType_t xLastWakeTime = xTaskGetTickCount();
-  bool display_initialized = false;
-  
-  for (;;) {
-    // Проверяем готовность датчиков перед первой отрисовкой
-    if (!display_initialized) {
-      if (are_all_sensors_ready()) {
-        display_all_data();
-        display_initialized = true;
-        Serial.println("[DISPLAY] Initial data displayed (from task)");
-      }
-    } else {
-      display_all_data();
-      Serial.println("[DISPLAY] Updated (from task)");
-    }
-    
-    // Ждём следующий цикл (2 минуты)
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(DISPLAY_INTERVAL));
-  }
-}
-
 // Форматирование float в строку без экспоненты и с защитой от -0.0
 String format_float(float value, int decimals = 1) {
     if (!is_valid_float(value)) return "0";
@@ -254,12 +197,12 @@ void setup(void)
 
   // Создаём задачу обновления дисплея (приоритет 1, ядро 1)
   xTaskCreatePinnedToCore(
-    displayTaskFunction,   // Функция задачи
+    DISPLAY_measurementTaskFunction,   // Функция задачи
     "Display Task",        // Имя задачи
     4096,                  // Размер стека
     NULL,                  // Параметры
     1,                     // Приоритет
-    &displayTaskHandle,    // Дескриптор задачи
+    &DISPLAY_measurementTask,    // Дескриптор задачи
     1                      // Ядро (1 = APP_CPU)
   );
   Serial.println("[DISPLAY] Task created");

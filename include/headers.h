@@ -16,6 +16,10 @@ extern unsigned long delayTime;
 
 extern TaskHandle_t CO2_measurementTask,BME_measurementTask,
  HTU_measurementTask,BH1750_measurementTask,CH2O_measurementTask,
-  PMS_measurementTask,MS5611_measurementTask,VEML_measurementTask;
+  PMS_measurementTask,MS5611_measurementTask,VEML_measurementTask,
+  DISPLAY_measurementTask;
+
+// Функция проверки валидности числа
+bool is_valid_float(float value);
 
 #endif
