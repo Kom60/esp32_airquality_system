@@ -1,4 +1,5 @@
 #include "display.h"
+#include <time.h>
 
 // Пороговые значения для цветовой индикации (как в logic.js)
 struct Thresholds {
@@ -20,31 +21,56 @@ uint16_t getValueColor(float value, Thresholds thresh) {
   return COLOR_OK;
 }
 
-void show_init_animation()
-{
-  uint32_t count = 400;
-  while(count)
-  {
-    uint16_t fg_color = random(0x10000);
-    uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
-
-    uint16_t x = random(tft.width());  // Position of centre of arc
-    uint16_t y = random(tft.height());
-
-    uint8_t radius       = random(20, tft.width()/4); // Outer arc radius
-    uint8_t thickness    = random(1, radius / 4);     // Thickness
-    uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
-
-    // 0 degrees is at 6 o'clock position
-    // Arcs are drawn clockwise from start_angle to end_angle
-    uint16_t start_angle = 0; // Start angle must be in range 0 to 360
-    uint16_t end_angle   = 360; // End angle must be in range 0 to 360
-
-    bool arc_end = random(2);           // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
-
-    tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color, arc_end);
-    count--;
+// Рисование иконки аккумулятора (без процентов)
+void drawBatteryIcon(int16_t x, int16_t y, uint8_t level) {
+  // level: 0-100 процентов
+  uint16_t color = (level < 20) ? TFT_RED : ((level < 50) ? TFT_YELLOW : TFT_GREEN);
+  
+  // Основной корпус батареи
+  tft.drawRect(x, y, 36, 16, TFT_WHITE);
+  
+  // Положительный вывод справа
+  tft.fillRect(x + 36, y + 4, 3, 8, TFT_WHITE);
+  
+  // Заполнение уровня
+  if (level > 0) {
+    uint8_t fill_width = (level * 32) / 100;  // 32px внутри рамки
+    tft.fillRect(x + 2, y + 2, fill_width, 12, color);
   }
+}
+
+// Отрисовка строки с адаптивным отступом
+void drawSensorRow(const char* label, const char* value, const char* unit, int16_t x, int16_t y, uint16_t value_color) {
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString(label, x, y);
+  
+  // Вычисляем ширину метки для адаптивного отступа
+  int16_t label_width = tft.textWidth(label);
+  int16_t value_x = x + label_width + 8;  // 8px отступ после метки
+  
+  tft.setTextColor(value_color, TFT_BLACK);
+  tft.drawString(value, value_x, y);
+  
+  // Единицы измерения
+  int16_t value_width = tft.textWidth(value);
+  int16_t unit_x = value_x + value_width + 4;  // 4px отступ после значения
+  
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString(unit, unit_x, y);
+}
+
+// Отрисовка строки с float значением и адаптивным отступом
+void drawSensorRowFloat(const char* label, float value, int decimals, const char* unit, int16_t x, int16_t y, uint16_t value_color) {
+  char buf[16];
+  dtostrf(value, 1, decimals, buf);
+  drawSensorRow(label, buf, unit, x, y, value_color);
+}
+
+// Отрисовка строки с int значением и адаптивным отступом
+void drawSensorRowInt(const char* label, int value, const char* unit, int16_t x, int16_t y, uint16_t value_color) {
+  char buf[16];
+  itoa(value, buf, 10);
+  drawSensorRow(label, buf, unit, x, y, value_color);
 }
 
 void display_all_data()
@@ -54,255 +80,180 @@ void display_all_data()
 
   int16_t screen_width = tft.width();   // 320
 
-  // Позиции по X для разных секций
-  const int16_t section1_label_x = 5;   // Метки (T:, P:, H: и т.д.)
-  const int16_t section1_value_x = 45;  // Значения
-  const int16_t section1_unit_x = 110;  // Единицы измерения
+  // Позиции по X
+  const int16_t label_x = 5;      // Позиция меток
 
-  const int16_t section2_label_x = 170;   // Метки правой колонки
-  const int16_t section2_value_x = 210;   // Значения правой колонки
-  const int16_t section2_unit_x = 280;    // Единицы правой колонки
+  // Высота строки для TextSize 2 = 16px + 2px отступ = 18px
+  const int16_t row_height = 18;
+  int16_t y = 25;  // Стартовая позиция Y (после статус-бара)
 
-  // Высота строки для TextSize 2 = 16px + 4px отступ = 20px
-  const int16_t row_height = 20;
-  int16_t y = 5;  // Стартовая позиция Y
-  int16_t y_right = 5;  // Позиция Y для правой колонки
-
-  // ==================== ЗАГОЛОВОК ====================
-  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  // ==================== STATUS BAR ====================
+  // Разделительная линия снизу
+  tft.drawLine(0, 22, screen_width, 22, TFT_DARKGREY);
+  
+  // Время слева (ЧЧ:ММ) - заглушка
   tft.setTextSize(2);
-  tft.drawString("AIR QUALITY MONITOR", section1_label_x, y);
-  y += row_height + 10;
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("12:00", 5, 2);
+  
+  // Аккумулятор справа (без процентов, заглушка 75%)
+  drawBatteryIcon(screen_width - 45, 3, 75);
 
-  // ==================== OUTDOOR SENSORS (BME280) ====================
+  // ==================== OUTDOOR (BME) ====================
   tft.setTextColor(TFT_CYAN, TFT_BLACK);
   tft.setTextSize(2);
-  tft.drawString("OUTDOOR (BME280)", section1_label_x, y);
-  y += row_height + 5;
+  tft.drawString("OUTDOOR (BME):", label_x, y);
+  y += row_height + 2;
 
-  // Температура BME280 (норма: 18-26, предупреждение: 15-30)
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("T:", section1_label_x, y);
+  // Температура
   Thresholds temp_thresh = {-10, 40, -20, 50};
-  tft.setTextColor(getValueColor(AIR_data.bme_temperature, temp_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.bme_temperature, 1, section1_value_x, y);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("C", section1_unit_x, y);
+  drawSensorRowFloat("Temperature:", AIR_data.bme_temperature, 1, "C", label_x, y, 
+                     getValueColor(AIR_data.bme_temperature, temp_thresh));
   y += row_height;
 
-  // Давление BME280 (норма: 980-1040, предупреждение: 960-1060)
-  tft.drawString("P:", section1_label_x, y);
+  // Давление
   Thresholds press_thresh = {980, 1040, 960, 1060};
-  tft.setTextColor(getValueColor(AIR_data.bme_pressure, press_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.bme_pressure, 0, section1_value_x, y);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("hPa", section1_unit_x, y);
+  drawSensorRowFloat("Pressure:", AIR_data.bme_pressure, 0, "GPa", label_x, y,
+                     getValueColor(AIR_data.bme_pressure, press_thresh));
   y += row_height;
 
-  // Влажность BME280 (норма: 20-90, предупреждение: 10-95)
-  tft.drawString("H:", section1_label_x, y);
+  // Влажность
   Thresholds hum_thresh = {20, 90, 10, 95};
-  tft.setTextColor(getValueColor(AIR_data.bme_humidity, hum_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.bme_humidity, 0, section1_value_x, y);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("%", section1_unit_x, y);
-  y += row_height;
+  drawSensorRowFloat("Humidity:", AIR_data.bme_humidity, 0, "%", label_x, y,
+                     getValueColor(AIR_data.bme_humidity, hum_thresh));
+  y += row_height + 4;
 
-  // UV индекс (норма: 0-5, предупреждение: 0-8)
-  tft.drawString("UV:", section1_label_x, y);
-  Thresholds uv_thresh = {0, 5, 0, 8};
-  tft.setTextColor(getValueColor(AIR_data.veml_uv, uv_thresh), TFT_BLACK);
-  tft.drawNumber(AIR_data.veml_uv, section1_value_x, y);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("idx", section1_unit_x, y);
-  y += row_height + 10;
-
-  // ==================== INDOOR SENSORS (HTU21DF) ====================
+  // ==================== INDOOR (HTU) ====================
   tft.setTextColor(TFT_YELLOW, TFT_BLACK);
-  tft.setTextSize(2);
-  tft.drawString("INDOOR (HTU21DF)", section1_label_x, y);
-  y += row_height + 5;
+  tft.drawString("INDOOR (HTU):", label_x, y);
+  y += row_height + 2;
 
-  // Температура HTU (норма: 18-26, предупреждение: 15-30)
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("T:", section1_label_x, y);
-  tft.setTextColor(getValueColor(AIR_data.htu_temperature, temp_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.htu_temperature, 1, section1_value_x, y);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("C", section1_unit_x, y);
+  // Температура
+  drawSensorRowFloat("Temperature:", AIR_data.htu_temperature, 1, "C", label_x, y,
+                     getValueColor(AIR_data.htu_temperature, temp_thresh));
   y += row_height;
 
-  // Влажность HTU (норма: 30-60, предупреждение: 20-80)
-  tft.drawString("H:", section1_label_x, y);
+  // Влажность
   Thresholds hum_indoor_thresh = {30, 60, 20, 80};
-  tft.setTextColor(getValueColor(AIR_data.htu_humidity, hum_indoor_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.htu_humidity, 0, section1_value_x, y);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("%", section1_unit_x, y);
-  y += row_height + 10;
+  drawSensorRowFloat("Humidity:", AIR_data.htu_humidity, 0, "%", label_x, y,
+                     getValueColor(AIR_data.htu_humidity, hum_indoor_thresh));
+  y += row_height + 4;
 
   // ==================== MS5611 ====================
-  tft.setTextColor(TFT_MAGENTA, TFT_BLACK);
-  tft.setTextSize(2);
-  tft.drawString("MS5611", section1_label_x, y);
-  y += row_height + 5;
-
-  // Давление MS5611
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("P:", section1_label_x, y);
-  tft.setTextColor(getValueColor(AIR_data.ms5611_pressure, press_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.ms5611_pressure, 0, section1_value_x, y);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("hPa", section1_unit_x, y);
+  // Давление
+  drawSensorRowFloat("Pressure(MS):", AIR_data.ms5611_pressure, 0, "GPa", label_x, y,
+                     getValueColor(AIR_data.ms5611_pressure, press_thresh));
   y += row_height;
-
-  // Температура MS5611
+  
+  // Температура (если доступна)
   if (AIR_data.ms5611_temperature != 0) {
-    tft.drawString("T:", section1_label_x, y);
-    tft.setTextColor(getValueColor(AIR_data.ms5611_temperature, temp_thresh), TFT_BLACK);
-    tft.drawFloat(AIR_data.ms5611_temperature, 1, section1_value_x, y);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.drawString("C", section1_unit_x, y);
+    drawSensorRowFloat("Temperature(MS):", AIR_data.ms5611_temperature, 1, "C", label_x, y,
+                       getValueColor(AIR_data.ms5611_temperature, temp_thresh));
     y += row_height;
   }
-  y += 5;
 
-  // ==================== MICROPHONE ====================
-  tft.setTextColor(TFT_GREEN, TFT_BLACK);
-  tft.setTextSize(2);
-  tft.drawString("NOISE", section1_label_x, y);
-  y += row_height + 5;
-
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("dB:", section1_label_x, y);
-  Thresholds noise_thresh = {30, 55, 20, 70};
-  tft.setTextColor(getValueColor(AIR_data.microphone_noise, noise_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.microphone_noise, 1, section1_value_x, y);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("dB", section1_unit_x, y);
-  y += row_height + 10;
-
-  // ==================== AIR QUALITY (ПРАВАЯ КОЛОНКА) ====================
-  tft.setTextColor(TFT_GREEN, TFT_BLACK);
-  tft.setTextSize(2);
-  tft.drawString("AIR QUALITY", section2_label_x, y_right);
-  y_right += row_height + 5;
-
-  // PM1.0 (норма: 0-35, предупреждение: 0-50)
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("PM1.0:", section2_label_x, y_right);
-  Thresholds pm1_thresh = {0, 35, 0, 50};
-  tft.setTextColor(getValueColor(AIR_data.pms_pm1, pm1_thresh), TFT_BLACK);
-  tft.drawNumber(AIR_data.pms_pm1, section2_value_x, y_right);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextSize(1);
-  tft.drawString("ug/m3", section2_unit_x, y_right + 4);
-  tft.setTextSize(2);
-  y_right += row_height;
-
-  // PM2.5 (норма: 0-25, предупреждение: 0-50)
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("PM2.5:", section2_label_x, y_right);
-  Thresholds pm25_thresh = {0, 25, 0, 50};
-  tft.setTextColor(getValueColor(AIR_data.pms_pm2_5, pm25_thresh), TFT_BLACK);
-  tft.drawNumber(AIR_data.pms_pm2_5, section2_value_x, y_right);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextSize(1);
-  tft.drawString("ug/m3", section2_unit_x, y_right + 4);
-  tft.setTextSize(2);
-  y_right += row_height;
-
-  // PM10 (норма: 0-50, предупреждение: 0-150)
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("PM10:", section2_label_x, y_right);
-  Thresholds pm10_thresh = {0, 50, 0, 150};
-  tft.setTextColor(getValueColor(AIR_data.pms_pm10, pm10_thresh), TFT_BLACK);
-  tft.drawNumber(AIR_data.pms_pm10, section2_value_x, y_right);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextSize(1);
-  tft.drawString("ug/m3", section2_unit_x, y_right + 4);
-  tft.setTextSize(2);
-  y_right += row_height;
-
-  // CO2 (норма: 400-1000, предупреждение: 400-1400)
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("CO2:", section2_label_x, y_right);
+  // ==================== SCD4X ====================
+  // CO2
   Thresholds co2_thresh = {400, 1000, 400, 1400};
-  tft.setTextColor(getValueColor(AIR_data.scd4x_co2, co2_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.scd4x_co2, 0, section2_value_x, y_right);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextSize(1);
-  tft.drawString("ppm", section2_unit_x, y_right + 4);
-  tft.setTextSize(2);
-  y_right += row_height;
+  drawSensorRowFloat("CO2:", AIR_data.scd4x_co2, 0, "ppm", label_x, y,
+                     getValueColor(AIR_data.scd4x_co2, co2_thresh));
+  y += row_height;
 
-  // CH2O формальдегид (норма: 0-0.08, предупреждение: 0-0.1)
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("CH2O:", section2_label_x, y_right);
+  // Температура SCD4X
+  drawSensorRowFloat("Temperature(SCD):", AIR_data.scd4x_temperature, 1, "C", label_x, y,
+                     getValueColor(AIR_data.scd4x_temperature, temp_thresh));
+  y += row_height;
+
+  // Влажность SCD4X
+  drawSensorRowFloat("Humidity(SCD):", AIR_data.scd4x_humidity, 0, "%", label_x, y,
+                     getValueColor(AIR_data.scd4x_humidity, hum_indoor_thresh));
+  y += row_height + 4;
+
+  // ==================== AIR QUALITY ====================
+  // PM1.0
+  Thresholds pm1_thresh = {0, 35, 0, 50};
+  drawSensorRowInt("PM1.0:", (int)AIR_data.pms_pm1, "ug/m3", label_x, y,
+                   getValueColor(AIR_data.pms_pm1, pm1_thresh));
+  y += row_height;
+
+  // PM2.5
+  Thresholds pm25_thresh = {0, 25, 0, 50};
+  drawSensorRowInt("PM2.5:", (int)AIR_data.pms_pm2_5, "ug/m3", label_x, y,
+                   getValueColor(AIR_data.pms_pm2_5, pm25_thresh));
+  y += row_height;
+
+  // PM10
+  Thresholds pm10_thresh = {0, 50, 0, 150};
+  drawSensorRowInt("PM10:", (int)AIR_data.pms_pm10, "ug/m3", label_x, y,
+                   getValueColor(AIR_data.pms_pm10, pm10_thresh));
+  y += row_height;
+
+  // CH2O
   Thresholds ch2o_thresh = {0, 0.08, 0, 0.1};
-  tft.setTextColor(getValueColor(AIR_data.ch2o_value, ch2o_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.ch2o_value, 3, section2_value_x, y_right);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextSize(1);
-  tft.drawString("ppm", section2_unit_x, y_right + 4);
-  tft.setTextSize(2);
-  y_right += row_height + 5;
+  drawSensorRowFloat("CH2O:", AIR_data.ch2o_value, 3, "ppm", label_x, y,
+                     getValueColor(AIR_data.ch2o_value, ch2o_thresh));
+  y += row_height + 4;
 
-  // SCD4X температура и влажность
-  if (AIR_data.scd4x_temperature != 0) {
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.drawString("T(SCD):", section2_label_x, y_right);
-    tft.setTextColor(getValueColor(AIR_data.scd4x_temperature, temp_thresh), TFT_BLACK);
-    tft.drawFloat(AIR_data.scd4x_temperature, 1, section2_value_x, y_right);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.drawString("C", section2_unit_x, y_right);
-    y_right += row_height;
-
-    tft.drawString("H(SCD):", section2_label_x, y_right);
-    tft.setTextColor(getValueColor(AIR_data.scd4x_humidity, hum_indoor_thresh), TFT_BLACK);
-    tft.drawFloat(AIR_data.scd4x_humidity, 0, section2_value_x, y_right);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.drawString("%", section2_unit_x, y_right);
-    y_right += row_height + 5;
-  }
-
-  // ==================== ENVIRONMENT (ПРАВАЯ КОЛОНКА) ====================
-  tft.setTextColor(TFT_CYAN, TFT_BLACK);
-  tft.setTextSize(2);
-  tft.drawString("ENVIRONMENT", section2_label_x, y_right);
-  y_right += row_height + 5;
-
-  // Освещённость (норма: 300-1000, предупреждение: 100-2000)
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("Light:", section2_label_x, y_right);
+  // ==================== ENVIRONMENT ====================
+  // Освещённость
   Thresholds light_thresh = {300, 1000, 100, 2000};
-  tft.setTextColor(getValueColor(AIR_data.bh1750_lighting, light_thresh), TFT_BLACK);
-  tft.drawFloat(AIR_data.bh1750_lighting, 0, section2_value_x, y_right);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setTextSize(1);
-  tft.drawString("lux", section2_unit_x, y_right + 4);
-  tft.setTextSize(2);
-  y_right += row_height + 10;
-
-  // ==================== FOOTER (WiFi + RSSI) ====================
-  int16_t footer_y = max(y, y_right) + 5;
+  drawSensorRowFloat("Lighting:", AIR_data.bh1750_lighting, 0, "lux", label_x, y,
+                     getValueColor(AIR_data.bh1750_lighting, light_thresh));
+  y += row_height;
   
+  // UV индекс
+  Thresholds uv_thresh = {0, 5, 0, 8};
+  drawSensorRowInt("UV:", (int)AIR_data.veml_uv, "idx", label_x, y,
+                   getValueColor(AIR_data.veml_uv, uv_thresh));
+  y += row_height;
+  
+  // Шум
+  Thresholds noise_thresh = {30, 55, 20, 70};
+  drawSensorRowFloat("Noise:", AIR_data.microphone_noise, 0, "dB", label_x, y,
+                     getValueColor(AIR_data.microphone_noise, noise_thresh));
+  y += row_height + 8;
+
+  // ==================== SYSTEM INFO ====================
   // Разделительная линия
-  tft.drawLine(0, footer_y, screen_width, footer_y, TFT_DARKGREY);
-  footer_y += 5;
-
-  // WiFi IP
+  tft.drawLine(0, y, screen_width, y, TFT_DARKGREY);
+  y += 5;
+  
   tft.setTextSize(1);
-  tft.setTextColor(TFT_BLUE, TFT_BLACK);
-  tft.drawString("WiFi:", section1_label_x, footer_y);
+  
+  // WiFi IP
+  tft.setTextColor(TFT_CYAN, TFT_BLACK);
+  tft.drawString("WiFi IP:", label_x, y);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString(WiFi.localIP().toString().c_str(), section1_label_x + 40, footer_y);
-
-  // RSSI справа
+  tft.drawString(WiFi.localIP().toString().c_str(), label_x + 55, y);
+  y += 12;
+  
+  // RSSI
   int16_t rssi = WiFi.RSSI();
   uint16_t rssi_color = (rssi < -80) ? TFT_RED : ((rssi < -60) ? TFT_YELLOW : TFT_GREEN);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("RSSI:", label_x, y);
   tft.setTextColor(rssi_color, TFT_BLACK);
-  tft.drawString("RSSI:", section2_label_x, footer_y);
-  tft.drawNumber(rssi, section2_label_x + 45, footer_y);
-  tft.drawString("dBm", section2_label_x + 75, footer_y);
+  char rssi_str[16];
+  sprintf(rssi_str, "%d dBm", rssi);
+  tft.drawString(rssi_str, label_x + 40, y);
+  y += 12;
+  
+  // CPU температура
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("CPU Temp:", label_x, y);
+  tft.setTextColor(getValueColor(temperatureRead(), temp_thresh), TFT_BLACK);
+  char cpu_temp_str[16];
+  sprintf(cpu_temp_str, "%.1f C", temperatureRead());
+  tft.drawString(cpu_temp_str, label_x + 70, y);
+  y += 12;
+  
+  // Free heap
+  uint32_t free_heap = ESP.getFreeHeap();
+  uint16_t heap_color = (free_heap < 100000) ? TFT_RED : ((free_heap < 200000) ? TFT_YELLOW : TFT_GREEN);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("Free Heap:", label_x, y);
+  tft.setTextColor(heap_color, TFT_BLACK);
+  char heap_str[16];
+  sprintf(heap_str, "%d KB", (int)(free_heap / 1024));
+  tft.drawString(heap_str, label_x + 70, y);
 }

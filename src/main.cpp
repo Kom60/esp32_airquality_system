@@ -8,9 +8,41 @@ unsigned long loop_total_time = 0;
 unsigned long loop_count = 0;
 float cpu_load_percent = 0.0;
 
+// Переменные для обновления дисплея раз в 2 минуты
+unsigned long display_previous_millis = 0;
+const unsigned long DISPLAY_INTERVAL = 120000;  // 2 минуты в миллисекундах
+
+// Флаг первичной инициализации дисплея
+bool display_initialized = false;
+
 // Функция проверки валидности числа
 bool is_valid_float(float value) {
     return !isnan(value) && !isinf(value) && value < 1e6 && value > -1e6;
+}
+
+// Проверка готовности данных от всех датчиков
+bool are_all_sensors_ready() {
+  // Проверяем основные датчики
+  if (!is_valid_float(AIR_data.bme_temperature)) return false;
+  if (!is_valid_float(AIR_data.bme_pressure)) return false;
+  if (!is_valid_float(AIR_data.bme_humidity)) return false;
+  
+  if (!is_valid_float(AIR_data.htu_temperature)) return false;
+  if (!is_valid_float(AIR_data.htu_humidity)) return false;
+  
+  if (!is_valid_float(AIR_data.ms5611_pressure)) return false;
+  
+  if (AIR_data.scd4x_co2 <= 0 || AIR_data.scd4x_co2 > 5000) return false;
+  
+  if (AIR_data.pms_pm1 < 0 || AIR_data.pms_pm1 > 500) return false;
+  if (AIR_data.pms_pm2_5 < 0 || AIR_data.pms_pm2_5 > 500) return false;
+  if (AIR_data.pms_pm10 < 0 || AIR_data.pms_pm10 > 500) return false;
+  
+  if (!is_valid_float(AIR_data.bh1750_lighting)) return false;
+  if (!is_valid_float(AIR_data.ch2o_value)) return false;
+  if (!is_valid_float(AIR_data.microphone_noise)) return false;
+  
+  return true;
 }
 
 // Форматирование float в строку без экспоненты и с защитой от -0.0
@@ -96,29 +128,29 @@ void send_data_to_pc() {
 void setup(void)
 {
   Serial.begin(115200);
-  
+
   // Создаём mutex для защиты I2C шины ПЕРЕД инициализацией датчиков!
   i2c_mutex = xSemaphoreCreateMutex();
-  
+
   // Инициализация I2C с явной установкой частоты
   Wire.begin();
   Wire.setClock(100000);  // 100 kHz для стабильности SCD40 и других датчиков
-  
+
   Serial.println("[I2C] Mutex создан, частота 100 kHz");
-  
+
   // Инициализация датчиков с задержкой между задачами для стабильности I2C
   htu_setup();
   vTaskDelay(pdMS_TO_TICKS(100));  // Даём задаче HTU время на старт
-  
+
   MS5611_setup();
   vTaskDelay(pdMS_TO_TICKS(100));  // Даём задаче MS5611 время на старт
-  
+
   bme_setup();
   vTaskDelay(pdMS_TO_TICKS(100));  // Даём задаче BME время на старт
-  
+
   BH1750_setup();
   vTaskDelay(pdMS_TO_TICKS(100));  // Даём задаче BH1750 время на старт
-  
+
   PMS_setup();
   CH2O_setup();
   VEML_setup();
@@ -126,7 +158,12 @@ void setup(void)
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
-  
+
+  // Показываем "Loading..." пока датчики инициализируются
+  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  tft.setTextSize(2);
+  tft.drawString("Loading...", 5, 5);
+
   if (!SPIFFS.begin())
   {
     Serial.println("SPIFFS could not initialize");
@@ -229,7 +266,6 @@ void loop()
   if ((unsigned long)(now - previousMillis) > interval)
   { // check if "interval" ms has passed since last time the clients were updated
     previousMillis = now;
-    display_all_data();
 
     // Отправка данных датчиков в WebSocket
     // BME280 sensor data
@@ -286,6 +322,20 @@ void loop()
     sendJson("wifi_rssi", String(WiFi.RSSI()));
 
     send_data_to_pc();
+  }
+
+  // Обновление дисплея раз в 2 минуты
+  if (!display_initialized) {
+    // Первая отрисовка - только когда все датчики готовы
+    if (are_all_sensors_ready()) {
+      display_all_data();
+      display_previous_millis = now;
+      display_initialized = true;
+      Serial.println("[DISPLAY] Initial data displayed");
+    }
+  } else if ((unsigned long)(now - display_previous_millis) > DISPLAY_INTERVAL) {
+    display_previous_millis = now;
+    display_all_data();
   }
   
   // Измеряем время выполнения цикла
