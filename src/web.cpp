@@ -90,8 +90,8 @@ void sendJson(String l_type, String l_value)
   serializeJson(doc, jsonString);
   
   // Отладка
-  Serial.print("[WS] Sending: ");
-  Serial.println(jsonString);
+  //Serial.print("[WS] Sending: ");
+  //Serial.println(jsonString);
   
   webSocket.broadcastTXT(jsonString);
 }
