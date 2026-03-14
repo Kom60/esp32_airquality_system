@@ -8,12 +8,9 @@ unsigned long loop_total_time = 0;
 unsigned long loop_count = 0;
 float cpu_load_percent = 0.0;
 
-// Переменные для обновления дисплея раз в 2 минуты
-unsigned long display_previous_millis = 0;
-const unsigned long DISPLAY_INTERVAL = 120000;  // 2 минуты в миллисекундах
-
-// Флаг первичной инициализации дисплея
-bool display_initialized = false;
+// Задача обновления дисплея
+TaskHandle_t displayTaskHandle = NULL;
+const unsigned long DISPLAY_INTERVAL = 60000;  // 2 минуты в миллисекундах
 
 // Функция проверки валидности числа
 bool is_valid_float(float value) {
@@ -43,6 +40,29 @@ bool are_all_sensors_ready() {
   if (!is_valid_float(AIR_data.microphone_noise)) return false;
   
   return true;
+}
+
+// Функция задачи обновления дисплея
+void displayTaskFunction(void* parameter) {
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  bool display_initialized = false;
+  
+  for (;;) {
+    // Проверяем готовность датчиков перед первой отрисовкой
+    if (!display_initialized) {
+      if (are_all_sensors_ready()) {
+        display_all_data();
+        display_initialized = true;
+        Serial.println("[DISPLAY] Initial data displayed (from task)");
+      }
+    } else {
+      display_all_data();
+      Serial.println("[DISPLAY] Updated (from task)");
+    }
+    
+    // Ждём следующий цикл (2 минуты)
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(DISPLAY_INTERVAL));
+  }
 }
 
 // Форматирование float в строку без экспоненты и с защитой от -0.0
@@ -232,6 +252,18 @@ void setup(void)
   SCD40_setup();
   server.begin();
 
+  // Создаём задачу обновления дисплея (приоритет 1, ядро 1)
+  xTaskCreatePinnedToCore(
+    displayTaskFunction,   // Функция задачи
+    "Display Task",        // Имя задачи
+    4096,                  // Размер стека
+    NULL,                  // Параметры
+    1,                     // Приоритет
+    &displayTaskHandle,    // Дескриптор задачи
+    1                      // Ядро (1 = APP_CPU)
+  );
+  Serial.println("[DISPLAY] Task created");
+
   // WebSocket работает асинхронно - задача НЕ нужна!
   // xTaskCreatePinnedToCore(webSocketTaskFunction, "WebSocket Task", 4096, NULL, 2, &webSocketTaskHandle, 1);
 
@@ -324,20 +356,6 @@ void loop()
     send_data_to_pc();
   }
 
-  // Обновление дисплея раз в 2 минуты
-  if (!display_initialized) {
-    // Первая отрисовка - только когда все датчики готовы
-    if (are_all_sensors_ready()) {
-      display_all_data();
-      display_previous_millis = now;
-      display_initialized = true;
-      Serial.println("[DISPLAY] Initial data displayed");
-    }
-  } else if ((unsigned long)(now - display_previous_millis) > DISPLAY_INTERVAL) {
-    display_previous_millis = now;
-    display_all_data();
-  }
-  
   // Измеряем время выполнения цикла
   unsigned long loop_time = micros() - loop_start_time;
   loop_total_time += loop_time;
