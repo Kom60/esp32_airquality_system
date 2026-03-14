@@ -1,5 +1,13 @@
 #include "headers.h"
 #include "settings.h"
+#include "microphone.h"
+
+// Переменные
+QueueHandle_t samples_queue;
+TaskHandle_t INMP441_measurementTask;
+
+// Static buffer for block of samples
+float samples[SAMPLES_SHORT] __attribute__((aligned(4)));
 
 // Функция проверки валидности числа
 bool is_valid_float(float value) {
@@ -62,6 +70,21 @@ void DISPLAY_measurementTaskFunction(void *parameter)
         // Ждём следующий цикл (2 минуты)
         vTaskDelay(pdMS_TO_TICKS(DISPLAY_INTERVAL));
     }
+}
+
+// Инициализация микрофона и создание задач
+void microphone_init(void)
+{
+    // Create FreeRTOS queue
+    samples_queue = xQueueCreate(8, sizeof(sum_queue_t));
+
+    // Create the I2S reader FreeRTOS task
+    xTaskCreate(mic_i2s_reader_task, "Mic I2S Reader", I2S_TASK_STACK, NULL, I2S_TASK_PRI, NULL);
+    
+    // Create INMP441 measurement task
+    xTaskCreatePinnedToCore(INMP441_measurementTaskFunction, "INMP441MeasurementTask", 2048, NULL, 1, &INMP441_measurementTask, 0);
+    
+    Serial.println("[MIC] Tasks created");
 }
 
 void CO2_measurementTaskFunction(void *parameter)

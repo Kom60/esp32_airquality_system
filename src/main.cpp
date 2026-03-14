@@ -207,19 +207,11 @@ void setup(void)
   );
   Serial.println("[DISPLAY] Task created");
 
+  // Инициализация микрофона и создание задач
+  microphone_init();
+
   // WebSocket работает асинхронно - задача НЕ нужна!
   // xTaskCreatePinnedToCore(webSocketTaskFunction, "WebSocket Task", 4096, NULL, 2, &webSocketTaskHandle, 1);
-
-  // Create FreeRTOS queue
-  samples_queue = xQueueCreate(8, sizeof(sum_queue_t));
-
-  // Create the I2S reader FreeRTOS task
-  // NOTE: Current version of ESP-IDF will pin the task
-  //       automatically to the first core it happens to run on
-  //       (due to using the hardware FPU instructions).
-  //       For manual control see: xTaskCreatePinnedToCore
-  xTaskCreate(mic_i2s_reader_task, "Mic I2S Reader", I2S_TASK_STACK, NULL, I2S_TASK_PRI, NULL);
-  xTaskCreatePinnedToCore(INMP441_measurementTaskFunction, "INMP441MeasurementTask", 2048, NULL, 1, &INMP441_measurementTask, 0);
 }
 
 void loop()
