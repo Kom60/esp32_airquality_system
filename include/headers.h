@@ -6,6 +6,7 @@
 #include "webheaders.h"
 #include "tasks.h"
 #include "network.h"
+#include "system_init.h"
 #include <SPIFFS.h>
 #include "esp32/clk.h"
 #include "sensors.h"
