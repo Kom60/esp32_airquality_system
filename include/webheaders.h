@@ -13,6 +13,13 @@ extern float sens_vals[];
 extern AsyncWebServer server;                         // the server uses port 80 (standard port for websites
 extern WebSocketsServer webSocket; // the websocket uses port 81 (standard port for websockets*/
 
+void web_setup();
 void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length);
 void sendJson(String l_type, String l_value);
 void sendJsonArray(String l_type, float l_array_values[]);
+
+// Обработчики API настроек
+void handleGetSettings(AsyncWebServerRequest *request);
+void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t len);
+void handleResetSettings(AsyncWebServerRequest *request);
+void handleReboot(AsyncWebServerRequest *request);

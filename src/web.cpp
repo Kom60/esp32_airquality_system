@@ -11,6 +11,48 @@ float sens_vals[ARRAY_LENGTH];
 AsyncWebServer server(80);                         // the server uses port 80 (standard port for websites
 WebSocketsServer webSocket = WebSocketsServer(81); // the websocket uses port 81
 
+// Инициализация веб-сервера и WebSocket
+void web_setup() {
+  // Маршруты веб-сервера
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
+
+  server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/settings.html", "text/html");
+  });
+
+  // API для настроек
+  server.on("/api/settings", HTTP_GET, handleGetSettings);
+
+  AsyncCallbackWebHandler* settingsPostHandler = new AsyncCallbackWebHandler();
+  settingsPostHandler->setUri("/api/settings");
+  settingsPostHandler->setMethod(HTTP_POST);
+  settingsPostHandler->onBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+    handleSaveSettings(request, data, len);
+  });
+  settingsPostHandler->onRequest([](AsyncWebServerRequest *request) {
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+  });
+  server.addHandler(settingsPostHandler);
+
+  server.on("/api/settings/reset", HTTP_POST, handleResetSettings);
+  server.on("/api/reboot", HTTP_POST, handleReboot);
+
+  server.onNotFound([](AsyncWebServerRequest *request) {
+    request->send(404, "text/plain", "File not found");
+  });
+
+  server.serveStatic("/", SPIFFS, "/");
+
+  // Инициализация WebSocket
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+
+  // Запуск сервера
+  server.begin();
+}
+
 void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
 {
   switch (type)

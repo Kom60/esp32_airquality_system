@@ -153,40 +153,14 @@ void setup(void)
   Serial.print("Connected to network with IP address: ");
   Serial.println(WiFi.localIP());
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { // define here wat the webserver needs to do
-    request->send(SPIFFS, "/index.html", "text/html");
-  });
+  // Обновляем интервал из настроек
+  interval = settings.update_interval * 1000;  // конвертируем секунды в миллисекунды
 
-  server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/settings.html", "text/html");
-  });
-
-  // API для настроек
-  server.on("/api/settings", HTTP_GET, handleGetSettings);
-  
-  AsyncCallbackWebHandler* settingsPostHandler = new AsyncCallbackWebHandler();
-  settingsPostHandler->setUri("/api/settings");
-  settingsPostHandler->setMethod(HTTP_POST);
-  settingsPostHandler->onBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-    handleSaveSettings(request, data, len);
-  });
-  settingsPostHandler->onRequest([](AsyncWebServerRequest *request) {
-    request->send(200, "application/json", "{\"status\":\"ok\"}");
-  });
-  server.addHandler(settingsPostHandler);
-  
-  server.on("/api/settings/reset", HTTP_POST, handleResetSettings);
-  server.on("/api/reboot", HTTP_POST, handleReboot);
-
-  server.onNotFound([](AsyncWebServerRequest *request)
-                    { request->send(404, "text/plain", "File not found"); });
-
-  server.serveStatic("/", SPIFFS, "/");
-
-  webSocket.begin();                 // start websocket
-  webSocket.onEvent(webSocketEvent); // define a callback function -> what does the ESP32 need to do when an event from the websocket is received? -> run function "webSocketEvent()"
+  // Инициализация SCD40 перед веб-сервером
   SCD40_setup();
-  server.begin();
+
+  // Инициализация веб-сервера и WebSocket
+  web_setup();
 
   // Инициализация микрофона и создание задач
   microphone_init();
