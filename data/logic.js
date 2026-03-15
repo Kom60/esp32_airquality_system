@@ -609,7 +609,7 @@ function handleWebSocketMessage(event) {
       'pms_pm10': { class: 'pms_pm10', suffix: 'мкг/м³', div: 1, decimals: 1 },
       'bh1750_lighting': { class: 'bh1750_lighting', suffix: 'лк', div: 1, decimals: 1 },
       'veml_uv': { class: 'veml_uv', suffix: '', div: 1, decimals: 0 },
-      'ch2o_value': { class: 'ch2o_value', suffix: 'ppm', div: 1, decimals: 3 },
+      'ch2o_value': { class: 'ch2o_value', suffix: 'мг/м³', div: 1, decimals: 3 },
       'microphone_noise': { class: 'microphone_noise', suffix: 'дБ', div: 1, decimals: 1 }
     };
 

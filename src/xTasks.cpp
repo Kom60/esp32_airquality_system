@@ -377,7 +377,7 @@ void CH2O_measurementTaskFunction(void *parameter)
     {
         float formaldehyde = analogRead(formaldehyde_Pin) / 496.36;
         AIR_data.update_ch2o_data(formaldehyde);
-        sendJson("ch2o_value", String(AIR_data.ch2o_value));  // Формальдегид в ppm (без *10)
+        sendJson("ch2o_value", String(AIR_data.ch2o_value));  // Формальдегид в мг/м³
         vTaskDelay(pdMS_TO_TICKS(6000));
     }
 }

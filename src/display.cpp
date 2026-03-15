@@ -149,10 +149,10 @@ void display_all_data()
   // Давление
   Thresholds press_thresh = {980, 1040, 960, 1060};
   if (is_valid_float(AIR_data.bme_pressure)) {
-    drawSensorRowFloat("Pressure:", AIR_data.bme_pressure, 0, "GPa", label_x, y,
+    drawSensorRowFloat("Pressure:", AIR_data.bme_pressure, 0, "hPa", label_x, y,
                        getValueColor(AIR_data.bme_pressure, press_thresh));
   } else {
-    drawSensorRowPlaceholder("Pressure:", "GPa", label_x, y);
+    drawSensorRowPlaceholder("Pressure:", "hPa", label_x, y);
   }
   y += row_height;
 
@@ -193,10 +193,10 @@ void display_all_data()
   // ==================== MS5611 ====================
   // Давление
   if (is_valid_float(AIR_data.ms5611_pressure)) {
-    drawSensorRowFloat("Pressure(MS):", AIR_data.ms5611_pressure, 0, "GPa", label_x, y,
+    drawSensorRowFloat("Pressure(MS):", AIR_data.ms5611_pressure, 0, "hPa", label_x, y,
                        getValueColor(AIR_data.ms5611_pressure, press_thresh));
   } else {
-    drawSensorRowPlaceholder("Pressure(MS):", "GPa", label_x, y);
+    drawSensorRowPlaceholder("Pressure(MS):", "hPa", label_x, y);
   }
   y += row_height;
 
@@ -270,10 +270,10 @@ void display_all_data()
   // CH2O
   Thresholds ch2o_thresh = {0, 0.08, 0, 0.1};
   if (is_valid_float(AIR_data.ch2o_value)) {
-    drawSensorRowFloat("CH2O:", AIR_data.ch2o_value, 3, "ppm", label_x, y,
+    drawSensorRowFloat("CH2O:", AIR_data.ch2o_value, 3, "mg/m3", label_x, y,
                        getValueColor(AIR_data.ch2o_value, ch2o_thresh));
   } else {
-    drawSensorRowPlaceholder("CH2O:", "ppm", label_x, y);
+    drawSensorRowPlaceholder("CH2O:", "mg/m3", label_x, y);
   }
   y += row_height + 4;
 
