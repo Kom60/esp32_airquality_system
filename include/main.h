@@ -42,3 +42,6 @@ void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t le
 void handleResetSettings(AsyncWebServerRequest *request);
 void handleReboot(AsyncWebServerRequest *request);
 
+// Инициализация WiFi
+void wifi_setup();
+
