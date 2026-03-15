@@ -90,14 +90,14 @@ void setup(void)
   web_setup();
   // Инициализация микрофона и создание задач
   microphone_init();
-  // WebSocket работает асинхронно - задача НЕ нужна!
-  // xTaskCreatePinnedToCore(webSocketTaskFunction, "WebSocket Task", 4096, NULL, 2, &webSocketTaskHandle, 1);
+  // Создание задачи WebSocket на ядре 1
+  xTaskCreatePinnedToCore(webSocketTaskFunction, "WebSocket Task", WEBSOCKET_TASK_STACK, NULL, WEBSOCKET_TASK_PRI, &webSocketTaskHandle, 1);
+  Serial.println("[WebSocket] Task created on core 1");
 }
 
 void loop()
 {
   loop_start_time = micros(); // Засекаем время начала цикла
-  webSocket.loop(); // Обработка WebSocket (требуется для links2004/WebSockets)
   unsigned long now = millis(); // read out the current "time" ("millis()" gives the time in ms since the Arduino started)
   // Обновляем интервал из настроек (на случай изменений)
   static int last_interval = 0;

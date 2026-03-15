@@ -5,6 +5,7 @@
 // Переменные
 QueueHandle_t samples_queue;
 TaskHandle_t INMP441_measurementTask;
+TaskHandle_t webSocketTaskHandle = NULL;
 
 // Static buffer for block of samples
 float samples[SAMPLES_SHORT] __attribute__((aligned(4)));
@@ -44,30 +45,26 @@ bool are_all_sensors_ready() {
   return true;
 }
 
-// Задача обновления дисплея (раз в 2 минуты)
+// Задача обновления дисплея (раз в 1 минуту)
 void DISPLAY_measurementTaskFunction(void *parameter)
 {
-    const unsigned long DISPLAY_INTERVAL = 120000;  // 2 минуты в миллисекундах
+    const unsigned long DISPLAY_INTERVAL = 60000;  // 1 минута в миллисекундах
     bool display_initialized = false;
-    
-    vTaskDelay(pdMS_TO_TICKS(2000));  // Ждём инициализации TFT и WiFi
-    
+
+    vTaskDelay(pdMS_TO_TICKS(1000));  // Ждём 1 сек для первичной инициализации
+
     Serial.println("[DISPLAY] Task started");
-    
+
     for (;;) {
-        // Проверяем готовность датчиков перед первой отрисовкой
+        display_all_data();
         if (!display_initialized) {
-            if (are_all_sensors_ready()) {
-                display_all_data();
-                display_initialized = true;
-                Serial.println("[DISPLAY] Initial data displayed");
-            }
+            display_initialized = true;
+            Serial.println("[DISPLAY] Initial data displayed");
         } else {
-            display_all_data();
             Serial.println("[DISPLAY] Updated");
         }
-        
-        // Ждём следующий цикл (2 минуты)
+
+        // Ждём следующий цикл (1 минута)
         vTaskDelay(pdMS_TO_TICKS(DISPLAY_INTERVAL));
     }
 }
@@ -442,5 +439,16 @@ void VEML_measurementTaskFunction(void *parameter)
         }
         sendJson("veml_uv", String(AIR_data.veml_uv));
         vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+// Задача обработки WebSocket (для links2004/WebSockets требуется периодический вызов loop())
+void webSocketTaskFunction(void *parameter)
+{
+    Serial.println("[WebSocket] Task started on core " + String(xPortGetCoreID()));
+    
+    for (;;) {
+        webSocket.loop();  // Обработка подключений и событий WebSocket
+        vTaskDelay(pdMS_TO_TICKS(10));  // Небольшая задержка для стабильности
     }
 }

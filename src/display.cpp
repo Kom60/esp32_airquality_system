@@ -92,6 +92,11 @@ void drawSensorRowFloat(const char* label, float value, int decimals, const char
   drawSensorRow(label, buf, unit, x, y, value_color);
 }
 
+// Отрисовка строки с заглушкой "---"
+void drawSensorRowPlaceholder(const char* label, const char* unit, int16_t x, int16_t y) {
+  drawSensorRow(label, "---", unit, x, y, TFT_DARKGREY);
+}
+
 // Отрисовка строки с int значением и адаптивным отступом
 void drawSensorRowInt(const char* label, int value, const char* unit, int16_t x, int16_t y, uint16_t value_color) {
   char buf[16];
@@ -133,20 +138,32 @@ void display_all_data()
 
   // Температура
   Thresholds temp_thresh = {-10, 40, -20, 50};
-  drawSensorRowFloat("Temperature:", AIR_data.bme_temperature, 1, "C", label_x, y, 
-                     getValueColor(AIR_data.bme_temperature, temp_thresh));
+  if (is_valid_float(AIR_data.bme_temperature)) {
+    drawSensorRowFloat("Temperature:", AIR_data.bme_temperature, 1, "C", label_x, y,
+                       getValueColor(AIR_data.bme_temperature, temp_thresh));
+  } else {
+    drawSensorRowPlaceholder("Temperature:", "C", label_x, y);
+  }
   y += row_height;
 
   // Давление
   Thresholds press_thresh = {980, 1040, 960, 1060};
-  drawSensorRowFloat("Pressure:", AIR_data.bme_pressure, 0, "GPa", label_x, y,
-                     getValueColor(AIR_data.bme_pressure, press_thresh));
+  if (is_valid_float(AIR_data.bme_pressure)) {
+    drawSensorRowFloat("Pressure:", AIR_data.bme_pressure, 0, "GPa", label_x, y,
+                       getValueColor(AIR_data.bme_pressure, press_thresh));
+  } else {
+    drawSensorRowPlaceholder("Pressure:", "GPa", label_x, y);
+  }
   y += row_height;
 
   // Влажность
   Thresholds hum_thresh = {20, 90, 10, 95};
-  drawSensorRowFloat("Humidity:", AIR_data.bme_humidity, 0, "%", label_x, y,
-                     getValueColor(AIR_data.bme_humidity, hum_thresh));
+  if (is_valid_float(AIR_data.bme_humidity)) {
+    drawSensorRowFloat("Humidity:", AIR_data.bme_humidity, 0, "%", label_x, y,
+                       getValueColor(AIR_data.bme_humidity, hum_thresh));
+  } else {
+    drawSensorRowPlaceholder("Humidity:", "%", label_x, y);
+  }
   y += row_height + 4;
 
   // ==================== INDOOR (HTU) ====================
@@ -155,24 +172,36 @@ void display_all_data()
   y += row_height + 2;
 
   // Температура
-  drawSensorRowFloat("Temperature:", AIR_data.htu_temperature, 1, "C", label_x, y,
-                     getValueColor(AIR_data.htu_temperature, temp_thresh));
+  if (is_valid_float(AIR_data.htu_temperature)) {
+    drawSensorRowFloat("Temperature:", AIR_data.htu_temperature, 1, "C", label_x, y,
+                       getValueColor(AIR_data.htu_temperature, temp_thresh));
+  } else {
+    drawSensorRowPlaceholder("Temperature:", "C", label_x, y);
+  }
   y += row_height;
 
   // Влажность
   Thresholds hum_indoor_thresh = {30, 60, 20, 80};
-  drawSensorRowFloat("Humidity:", AIR_data.htu_humidity, 0, "%", label_x, y,
-                     getValueColor(AIR_data.htu_humidity, hum_indoor_thresh));
+  if (is_valid_float(AIR_data.htu_humidity)) {
+    drawSensorRowFloat("Humidity:", AIR_data.htu_humidity, 0, "%", label_x, y,
+                       getValueColor(AIR_data.htu_humidity, hum_indoor_thresh));
+  } else {
+    drawSensorRowPlaceholder("Humidity:", "%", label_x, y);
+  }
   y += row_height + 4;
 
   // ==================== MS5611 ====================
   // Давление
-  drawSensorRowFloat("Pressure(MS):", AIR_data.ms5611_pressure, 0, "GPa", label_x, y,
-                     getValueColor(AIR_data.ms5611_pressure, press_thresh));
+  if (is_valid_float(AIR_data.ms5611_pressure)) {
+    drawSensorRowFloat("Pressure(MS):", AIR_data.ms5611_pressure, 0, "GPa", label_x, y,
+                       getValueColor(AIR_data.ms5611_pressure, press_thresh));
+  } else {
+    drawSensorRowPlaceholder("Pressure(MS):", "GPa", label_x, y);
+  }
   y += row_height;
-  
+
   // Температура (если доступна)
-  if (AIR_data.ms5611_temperature != 0) {
+  if (is_valid_float(AIR_data.ms5611_temperature) && AIR_data.ms5611_temperature != 0) {
     drawSensorRowFloat("Temperature(MS):", AIR_data.ms5611_temperature, 1, "C", label_x, y,
                        getValueColor(AIR_data.ms5611_temperature, temp_thresh));
     y += row_height;
@@ -181,62 +210,102 @@ void display_all_data()
   // ==================== SCD4X ====================
   // CO2
   Thresholds co2_thresh = {400, 1000, 400, 1400};
-  drawSensorRowFloat("CO2:", AIR_data.scd4x_co2, 0, "ppm", label_x, y,
-                     getValueColor(AIR_data.scd4x_co2, co2_thresh));
+  if (is_valid_float(AIR_data.scd4x_co2) && AIR_data.scd4x_co2 > 0 && AIR_data.scd4x_co2 <= 5000) {
+    drawSensorRowFloat("CO2:", AIR_data.scd4x_co2, 0, "ppm", label_x, y,
+                       getValueColor(AIR_data.scd4x_co2, co2_thresh));
+  } else {
+    drawSensorRowPlaceholder("CO2:", "ppm", label_x, y);
+  }
   y += row_height;
 
   // Температура SCD4X
-  drawSensorRowFloat("Temperature(SCD):", AIR_data.scd4x_temperature, 1, "C", label_x, y,
-                     getValueColor(AIR_data.scd4x_temperature, temp_thresh));
+  if (is_valid_float(AIR_data.scd4x_temperature)) {
+    drawSensorRowFloat("Temperature(SCD):", AIR_data.scd4x_temperature, 1, "C", label_x, y,
+                       getValueColor(AIR_data.scd4x_temperature, temp_thresh));
+  } else {
+    drawSensorRowPlaceholder("Temperature(SCD):", "C", label_x, y);
+  }
   y += row_height;
 
   // Влажность SCD4X
-  drawSensorRowFloat("Humidity(SCD):", AIR_data.scd4x_humidity, 0, "%", label_x, y,
-                     getValueColor(AIR_data.scd4x_humidity, hum_indoor_thresh));
+  if (is_valid_float(AIR_data.scd4x_humidity)) {
+    drawSensorRowFloat("Humidity(SCD):", AIR_data.scd4x_humidity, 0, "%", label_x, y,
+                       getValueColor(AIR_data.scd4x_humidity, hum_indoor_thresh));
+  } else {
+    drawSensorRowPlaceholder("Humidity(SCD):", "%", label_x, y);
+  }
   y += row_height + 4;
 
   // ==================== AIR QUALITY ====================
   // PM1.0
   Thresholds pm1_thresh = {0, 35, 0, 50};
-  drawSensorRowInt("PM1.0:", (int)AIR_data.pms_pm1, "ug/m3", label_x, y,
-                   getValueColor(AIR_data.pms_pm1, pm1_thresh));
+  if (AIR_data.pms_pm1 >= 0 && AIR_data.pms_pm1 <= 500) {
+    drawSensorRowInt("PM1.0:", (int)AIR_data.pms_pm1, "ug/m3", label_x, y,
+                     getValueColor(AIR_data.pms_pm1, pm1_thresh));
+  } else {
+    drawSensorRowPlaceholder("PM1.0:", "ug/m3", label_x, y);
+  }
   y += row_height;
 
   // PM2.5
   Thresholds pm25_thresh = {0, 25, 0, 50};
-  drawSensorRowInt("PM2.5:", (int)AIR_data.pms_pm2_5, "ug/m3", label_x, y,
-                   getValueColor(AIR_data.pms_pm2_5, pm25_thresh));
+  if (AIR_data.pms_pm2_5 >= 0 && AIR_data.pms_pm2_5 <= 500) {
+    drawSensorRowInt("PM2.5:", (int)AIR_data.pms_pm2_5, "ug/m3", label_x, y,
+                     getValueColor(AIR_data.pms_pm2_5, pm25_thresh));
+  } else {
+    drawSensorRowPlaceholder("PM2.5:", "ug/m3", label_x, y);
+  }
   y += row_height;
 
   // PM10
   Thresholds pm10_thresh = {0, 50, 0, 150};
-  drawSensorRowInt("PM10:", (int)AIR_data.pms_pm10, "ug/m3", label_x, y,
-                   getValueColor(AIR_data.pms_pm10, pm10_thresh));
+  if (AIR_data.pms_pm10 >= 0 && AIR_data.pms_pm10 <= 500) {
+    drawSensorRowInt("PM10:", (int)AIR_data.pms_pm10, "ug/m3", label_x, y,
+                     getValueColor(AIR_data.pms_pm10, pm10_thresh));
+  } else {
+    drawSensorRowPlaceholder("PM10:", "ug/m3", label_x, y);
+  }
   y += row_height;
 
   // CH2O
   Thresholds ch2o_thresh = {0, 0.08, 0, 0.1};
-  drawSensorRowFloat("CH2O:", AIR_data.ch2o_value, 3, "ppm", label_x, y,
-                     getValueColor(AIR_data.ch2o_value, ch2o_thresh));
+  if (is_valid_float(AIR_data.ch2o_value)) {
+    drawSensorRowFloat("CH2O:", AIR_data.ch2o_value, 3, "ppm", label_x, y,
+                       getValueColor(AIR_data.ch2o_value, ch2o_thresh));
+  } else {
+    drawSensorRowPlaceholder("CH2O:", "ppm", label_x, y);
+  }
   y += row_height + 4;
 
   // ==================== ENVIRONMENT ====================
   // Освещённость
   Thresholds light_thresh = {300, 1000, 100, 2000};
-  drawSensorRowFloat("Lighting:", AIR_data.bh1750_lighting, 0, "lux", label_x, y,
-                     getValueColor(AIR_data.bh1750_lighting, light_thresh));
+  if (is_valid_float(AIR_data.bh1750_lighting)) {
+    drawSensorRowFloat("Lighting:", AIR_data.bh1750_lighting, 0, "lux", label_x, y,
+                       getValueColor(AIR_data.bh1750_lighting, light_thresh));
+  } else {
+    drawSensorRowPlaceholder("Lighting:", "lux", label_x, y);
+  }
   y += row_height;
-  
+
   // UV индекс
   Thresholds uv_thresh = {0, 5, 0, 8};
-  drawSensorRowInt("UV:", (int)AIR_data.veml_uv, "idx", label_x, y,
-                   getValueColor(AIR_data.veml_uv, uv_thresh));
+  if (AIR_data.veml_uv >= 0) {
+    drawSensorRowInt("UV:", (int)AIR_data.veml_uv, "idx", label_x, y,
+                     getValueColor(AIR_data.veml_uv, uv_thresh));
+  } else {
+    drawSensorRowPlaceholder("UV:", "idx", label_x, y);
+  }
   y += row_height;
-  
+
   // Шум
   Thresholds noise_thresh = {30, 55, 20, 70};
-  drawSensorRowFloat("Noise:", AIR_data.microphone_noise, 0, "dB", label_x, y,
-                     getValueColor(AIR_data.microphone_noise, noise_thresh));
+  if (is_valid_float(AIR_data.microphone_noise)) {
+    drawSensorRowFloat("Noise:", AIR_data.microphone_noise, 0, "dB", label_x, y,
+                       getValueColor(AIR_data.microphone_noise, noise_thresh));
+  } else {
+    drawSensorRowPlaceholder("Noise:", "dB", label_x, y);
+  }
   y += row_height + 8;
 
   // ==================== SYSTEM INFO ====================
