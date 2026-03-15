@@ -1,6 +1,7 @@
 #include "webheaders.h"
 #include "headers.h"
 #include "settings.h"
+#include "secrets.h"
 
 // global variables of the LED selected and the intensity of that LED
 int random_intensity = 5;
@@ -223,4 +224,94 @@ void handleReboot(AsyncWebServerRequest *request) {
   request->send(200, "application/json", "{\"status\":\"ok\"}");
   delay(1000);
   ESP.restart();
+}
+
+// =====================================================
+// Отправка данных на ПК
+// =====================================================
+
+// Форматирование float значения для JSON
+static String format_float(float value, int decimals = 1)
+{
+  if (!is_valid_float(value))
+    value = 0.0;
+  char buf[16];
+  dtostrf(value, 1, decimals, buf);
+  return String(buf);
+}
+
+// Отправка данных на ПК
+void send_data_to_pc()
+{
+  HTTPClient http;
+
+  String url = "http://" + String(PC_IP) + ":" + String(PC_PORT) + "/api/data";
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+
+  // Формируем ВАЛИДНЫЙ JSON с использованием новых имен переменных
+  String json = "{";
+
+  // BME280 sensor data
+  json += "\"bme_temperature\":" + format_float(AIR_data.bme_temperature) + ",";
+  json += "\"bme_pressure\":" + format_float(AIR_data.bme_pressure) + ",";
+  json += "\"bme_humidity\":" + format_float(AIR_data.bme_humidity) + ",";
+
+  // HTU21DF sensor data
+  json += "\"htu_temperature\":" + format_float(AIR_data.htu_temperature) + ",";
+  json += "\"htu_humidity\":" + format_float(AIR_data.htu_humidity) + ",";
+
+  // SCD4X sensor data
+  json += "\"scd4x_co2\":" + String(is_valid_float(AIR_data.scd4x_co2) ? (int)AIR_data.scd4x_co2 : 0) + ",";
+  json += "\"scd4x_temperature\":" + format_float(AIR_data.scd4x_temperature) + ",";
+  json += "\"scd4x_humidity\":" + format_float(AIR_data.scd4x_humidity) + ",";
+
+  // PMS sensor data
+  json += "\"pms_pm1\":" + String(AIR_data.pms_pm1) + ",";
+  json += "\"pms_pm2_5\":" + String(AIR_data.pms_pm2_5) + ",";
+  json += "\"pms_pm10\":" + String(AIR_data.pms_pm10) + ",";
+
+  // MS5611 sensor data
+  json += "\"ms5611_pressure\":" + format_float(AIR_data.ms5611_pressure) + ",";
+  json += "\"ms5611_temperature\":" + format_float(AIR_data.ms5611_temperature) + ",";
+
+
+  // BH1750 sensor data
+  json += "\"bh1750_lighting\":" + format_float(AIR_data.bh1750_lighting) + ",";
+
+  // VEML6070 sensor data
+  json += "\"veml_uv\":" + String(AIR_data.veml_uv) + ",";
+
+  // CH2O sensor data
+  json += "\"ch2o_value\":" + format_float(AIR_data.ch2o_value, 3) + ",";
+
+  // Microphone data
+  json += "\"microphone_noise\":" + format_float(AIR_data.microphone_noise);
+
+  json += "}";
+
+  // Отладка: выводим JSON в Serial
+  Serial.print("[PC] Отправка: ");
+  Serial.println(json);
+
+  int httpResponseCode = http.POST(json);
+  // yield();
+  if (httpResponseCode == 200)
+  {
+    Serial.println("[PC] ✓ Данные приняты сервером");
+  }
+  else
+  {
+    Serial.print("[PC] ✗ Ошибка отправки. Код: ");
+    Serial.println(httpResponseCode);
+    // Доп. отладка при ошибке
+    if (httpResponseCode > 0)
+    {
+      String payload = http.getString();
+      Serial.print("[PC] Ответ сервера: ");
+      Serial.println(payload);
+    }
+  }
+
+  http.end();
 }

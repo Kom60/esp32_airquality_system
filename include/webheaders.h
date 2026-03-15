@@ -1,4 +1,5 @@
 #include <WiFi.h>              // needed to connect to WiFi
+#include <HTTPClient.h>        // needed for HTTP client requests
 #include <ESPAsyncWebServer.h> // needed to create a simple webserver
 #include <WebSocketsServer.h>  // needed for instant communication between client and server through Websockets
 #include <ArduinoJson.h>       // needed for JSON encapsulation
@@ -23,3 +24,6 @@ void handleGetSettings(AsyncWebServerRequest *request);
 void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t len);
 void handleResetSettings(AsyncWebServerRequest *request);
 void handleReboot(AsyncWebServerRequest *request);
+
+// Отправка данных на ПК
+void send_data_to_pc();
