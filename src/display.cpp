@@ -2,6 +2,32 @@
 #include <time.h>
 
 // Пороговые значения для цветовой индикации (как в logic.js)
+
+// Инициализация дисплея и создание задачи обновления
+void display_setup() {
+  tft.init();
+  tft.setRotation(0);
+  tft.fillScreen(TFT_BLACK);
+
+  // Показываем "Loading..." пока датчики инициализируются
+  tft.setTextColor(TFT_GREEN, TFT_BLACK);
+  tft.setTextSize(2);
+  tft.drawString("Loading...", 5, 5);
+
+  // Создаём задачу обновления дисплея (приоритет 1, ядро 1)
+  xTaskCreatePinnedToCore(
+    DISPLAY_measurementTaskFunction,   // Функция задачи
+    "Display Task",        // Имя задачи
+    4096,                  // Размер стека
+    NULL,                  // Параметры
+    1,                     // Приоритет
+    &DISPLAY_measurementTask,    // Дескриптор задачи
+    1                      // Ядро (1 = APP_CPU)
+  );
+  Serial.println("[DISPLAY] Task created");
+}
+
+// Пороговые значения для цветовой индикации (как в logic.js)
 struct Thresholds {
   float min;
   float max;

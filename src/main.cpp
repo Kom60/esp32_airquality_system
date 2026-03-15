@@ -118,14 +118,7 @@ void setup(void)
   CH2O_setup();
   VEML_setup();
   vTaskDelay(pdMS_TO_TICKS(100));
-  tft.init();
-  tft.setRotation(0);
-  tft.fillScreen(TFT_BLACK);
-
-  // Показываем "Loading..." пока датчики инициализируются
-  tft.setTextColor(TFT_GREEN, TFT_BLACK);
-  tft.setTextSize(2);
-  tft.drawString("Loading...", 5, 5);
+  display_setup();
 
   if (!SPIFFS.begin())
   {
@@ -194,18 +187,6 @@ void setup(void)
   webSocket.onEvent(webSocketEvent); // define a callback function -> what does the ESP32 need to do when an event from the websocket is received? -> run function "webSocketEvent()"
   SCD40_setup();
   server.begin();
-
-  // Создаём задачу обновления дисплея (приоритет 1, ядро 1)
-  xTaskCreatePinnedToCore(
-    DISPLAY_measurementTaskFunction,   // Функция задачи
-    "Display Task",        // Имя задачи
-    4096,                  // Размер стека
-    NULL,                  // Параметры
-    1,                     // Приоритет
-    &DISPLAY_measurementTask,    // Дескриптор задачи
-    1                      // Ядро (1 = APP_CPU)
-  );
-  Serial.println("[DISPLAY] Task created");
 
   // Инициализация микрофона и создание задач
   microphone_init();
