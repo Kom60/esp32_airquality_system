@@ -40,6 +40,7 @@ void SCD40_setup();
 void PMS_setup();
 void CH2O_setup();
 void VEML_setup();
+void sensors_setup();
 
 void BME_280_printValues();
 void SCD40_printValues();

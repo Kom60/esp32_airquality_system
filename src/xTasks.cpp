@@ -6,6 +6,7 @@
 QueueHandle_t samples_queue;
 TaskHandle_t INMP441_measurementTask;
 TaskHandle_t webSocketTaskHandle = NULL;
+TaskHandle_t sendDataTaskHandle = NULL;
 
 // Static buffer for block of samples
 float samples[SAMPLES_SHORT] __attribute__((aligned(4)));
@@ -449,6 +450,96 @@ void webSocketTaskFunction(void *parameter)
     
     for (;;) {
         webSocket.loop();  // Обработка подключений и событий WebSocket
+        vTaskDelay(pdMS_TO_TICKS(10));  // Небольшая задержка для стабильности
+    }
+}
+
+// Переменные для задачи отправки данных
+static unsigned long send_data_previousMillis = 0;
+static unsigned long send_data_loop_start_time = 0;
+static unsigned long send_data_loop_total_time = 0;
+static unsigned long send_data_loop_count = 0;
+static float send_data_cpu_load_percent = 0.0;
+
+// Задача периодической отправки данных датчиков в WebSocket и на ПК
+void sendDataTaskFunction(void *parameter)
+{
+    Serial.println("[SendData] Task started on core " + String(xPortGetCoreID()));
+    
+    for (;;) {
+        unsigned long now = millis();
+        
+        // Получаем текущий интервал из настроек
+        int current_interval = settings.update_interval * 1000;
+        
+        if ((unsigned long)(now - send_data_previousMillis) > (unsigned long)current_interval) {
+            send_data_previousMillis = now;
+            
+            // Отправка данных датчиков в WebSocket
+            // BME280 sensor data
+            sendJson("bme_temperature", String(AIR_data.bme_temperature));
+            sendJson("bme_pressure", String(AIR_data.bme_pressure));
+            sendJson("bme_humidity", String(AIR_data.bme_humidity));
+            
+            // HTU21DF sensor data
+            sendJson("htu_temperature", String(AIR_data.htu_temperature));
+            sendJson("htu_humidity", String(AIR_data.htu_humidity));
+            
+            // SCD4X sensor data
+            sendJson("scd4x_co2", String(AIR_data.scd4x_co2));
+            sendJson("scd4x_temperature", String(AIR_data.scd4x_temperature));
+            sendJson("scd4x_humidity", String(AIR_data.scd4x_humidity));
+            
+            // PMS sensor data
+            sendJson("pms_pm1", String(AIR_data.pms_pm1));
+            sendJson("pms_pm2_5", String(AIR_data.pms_pm2_5));
+            sendJson("pms_pm10", String(AIR_data.pms_pm10));
+            
+            // MS5611 sensor data
+            sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure));
+            sendJson("ms5611_temperature", String(AIR_data.ms5611_temperature));
+            
+            // BH1750 sensor data
+            sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting));
+            
+            // VEML6070 sensor data
+            sendJson("veml_uv", String(AIR_data.veml_uv));
+            
+            // CH2O sensor data
+            sendJson("ch2o_value", String(AIR_data.ch2o_value));
+            
+            // Microphone data
+            sendJson("microphone_noise", String(AIR_data.microphone_noise));
+            
+            // Отправка данных о системе
+            sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
+            sendJson("esp32_cpu_temp", String(temperatureRead()));
+            sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
+            
+            // Расчёт загрузки CPU на основе времени выполнения loop
+            send_data_cpu_load_percent = (float)send_data_loop_total_time / (send_data_loop_count * current_interval * 1000) * 100.0;
+            if (send_data_cpu_load_percent > 100)
+                send_data_cpu_load_percent = 100;
+            sendJson("esp32_cpu_load", String(send_data_cpu_load_percent));
+            
+            // Сброс счётчиков каждые 100 циклов
+            if (send_data_loop_count >= 100) {
+                send_data_loop_total_time = 0;
+                send_data_loop_count = 0;
+            }
+            
+            sendJson("wifi_rssi", String(WiFi.RSSI()));
+            
+            // Отправка данных на ПК
+            send_data_to_pc();
+        }
+        
+        // Измеряем время выполнения цикла (для расчёта CPU load в main loop)
+        unsigned long loop_time = micros() - send_data_loop_start_time;
+        send_data_loop_total_time += loop_time;
+        send_data_loop_count++;
+        send_data_loop_start_time = micros();
+        
         vTaskDelay(pdMS_TO_TICKS(10));  // Небольшая задержка для стабильности
     }
 }

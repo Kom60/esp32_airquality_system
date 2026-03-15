@@ -32,10 +32,6 @@ IPAddress local_IP(192, 168, 1, 1);
 IPAddress gateway(192, 168, 1, 2);
 IPAddress subnet(255, 255, 255, 0);
 
-// We want to periodically send values to the clients, so we need to define an "interval" and remember the last time we sent data to the client (with "previousMillis")
-int interval = 10000;              // будет обновлено из settings.update_interval
-unsigned long previousMillis = 0; // we use the "millis()" command for time reference and this will output an unsigned long
-
 // Обработчики API настроек
 void handleGetSettings(AsyncWebServerRequest *request);
 void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t len);

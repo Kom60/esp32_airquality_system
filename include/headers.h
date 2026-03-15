@@ -5,6 +5,7 @@
 #include "Meteo.h"
 #include "webheaders.h"
 #include "tasks.h"
+#include "network.h"
 #include <SPIFFS.h>
 #include "esp32/clk.h"
 #include "sensors.h"

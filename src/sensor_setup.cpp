@@ -2,6 +2,45 @@
 
 extern SemaphoreHandle_t i2c_mutex;
 
+// Инициализация I2C шины и создание mutex
+void sensors_setup()
+{
+  // Создаём mutex для защиты I2C шины
+  i2c_mutex = xSemaphoreCreateMutex();
+
+  // Инициализация I2C
+  Wire.begin();
+  Wire.setClock(100000); // 100 kHz для стабильности всех датчиков
+  Serial.println("[I2C] Mutex создан, частота 100 kHz");
+
+  // Группа 1: Быстрые I2C датчики (HTU, MS5611, BME)
+  htu_setup();
+  vTaskDelay(pdMS_TO_TICKS(50));
+
+  MS5611_setup();
+  vTaskDelay(pdMS_TO_TICKS(50));
+
+  bme_setup();
+  vTaskDelay(pdMS_TO_TICKS(50));
+
+  // Группа 2: Остальные I2C датчики (BH1750, VEML)
+  BH1750_setup();
+  vTaskDelay(pdMS_TO_TICKS(50));
+
+  VEML_setup();
+  vTaskDelay(pdMS_TO_TICKS(50));
+
+  // Группа 3: UART и Analog датчики (не требуют I2C задержек)
+  PMS_setup();
+  CH2O_setup();
+  vTaskDelay(pdMS_TO_TICKS(50));
+
+  // SCD40 требует особой последовательности инициализации
+  SCD40_setup();
+
+  Serial.println("[SENSORS] Все датчики инициализированы");
+}
+
 void bme_setup(){
     while(!Serial);    // time to get serial running
     Serial.println(F("BME280 test"));
