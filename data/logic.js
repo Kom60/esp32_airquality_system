@@ -97,10 +97,14 @@ function calculateIAQ(co2, pm25, pm10, ch2o) {
     else aqi += Math.round(50 + Math.min((pm10 - 50) / 100, 50));
   }
   
-  // Формальдегид вклад (0-100 баллов)
+  // Формальдегид вклад (0-100 баллов) - мг/м³
+  // 0-0.08: хорошо, 0.08-0.1: умеренно, 0.1-0.2: вредно чувствительным, 0.2-0.5: вредно, >0.5: очень вредно
   if (ch2o !== null && !isNaN(ch2o)) {
     if (ch2o <= 0.08) aqi += Math.round((ch2o / 0.08) * 50);
-    else aqi += Math.round(50 + Math.min((ch2o - 0.08) / 0.02, 50));
+    else if (ch2o <= 0.1) aqi += Math.round(50 + ((ch2o - 0.08) / 0.02) * 50);
+    else if (ch2o <= 0.2) aqi += Math.round(100 + ((ch2o - 0.1) / 0.1) * 50);
+    else if (ch2o <= 0.5) aqi += Math.round(150 + ((ch2o - 0.2) / 0.3) * 50);
+    else aqi += Math.round(200 + Math.min((ch2o - 0.5) / 0.5, 50));
   }
   
   return Math.min(aqi, 500);  // Максимум 500

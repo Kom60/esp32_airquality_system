@@ -28,7 +28,7 @@ const AQI_THRESHOLDS = {
   pm25: { good: 12, moderate: 35, unhealthy_sensitive: 55, unhealthy: 150, very_unhealthy: 250 },
   pm10: { good: 54, moderate: 154, unhealthy_sensitive: 254, unhealthy: 354, very_unhealthy: 424 },
   co2: { good: 800, moderate: 1000, unhealthy_sensitive: 1400, unhealthy: 2000, very_unhealthy: 5000 },
-  ch2o: { good: 0.03, moderate: 0.08, unhealthy_sensitive: 0.1, unhealthy: 0.2, very_unhealthy: 0.5 }
+  ch2o: { good: 0.08, moderate: 0.1, unhealthy_sensitive: 0.2, unhealthy: 0.5, very_unhealthy: 1.0 }
 };
 
 // Initialize charts
