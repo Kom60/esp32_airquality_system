@@ -6,6 +6,13 @@
   --header-text-size:calc(2.6vw);
 }
 
+.text sub {
+  font-size: 0.6em;
+  vertical-align: baseline;
+  position: relative;
+  top: 0.8em;
+}
+
 
 .board {
   margin-top: 0.5%;
@@ -31,7 +38,8 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
-  margin-right: 0.3%;
+  margin-right: 0.15%;
+  margin-left: 0.15%;
   padding-bottom: 1%;
   /*border-style: solid;
     border-color: red;*/
@@ -42,7 +50,8 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
-  margin-left: 0.3%;
+  margin-left: 0.15%;
+  margin-right: 0.15%;
   padding-bottom: 1%;
   /*border-style: solid;
     border-color: red;*/
@@ -81,7 +90,6 @@
   display:flex;
     vertical-align: center;
     /*height: var(--dark-mode-button-height);*/
-    width: var(--column-width);
     /*border-style: solid;
     border-color: red;*/
     text-align: left;
