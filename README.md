@@ -36,3 +36,8 @@ This project implements an air quality monitoring system using the ESP32 microco
 <img width="4369" height="2210" alt="bme_pressure_20260222_213930" src="https://github.com/user-attachments/assets/2b115d8a-ea4a-40bc-9287-2a4c06b9621c" />
 <img width="4263" height="2210" alt="bme_temperature_20260222_213511" src="https://github.com/user-attachments/assets/584e9cc7-e25e-4868-91fa-8b1ac0738603" />
 <img src="https://github.com/Kom60/esp32_airquality_system/blob/main/222.jpg" />
+<img width="1234" height="763" alt="image" src="https://github.com/user-attachments/assets/8e18eee6-f9ba-4119-b5d3-224d0dc8f607" />
+<img width="1237" height="852" alt="image" src="https://github.com/user-attachments/assets/8e68e797-f1c4-46e4-a7d1-0b030840f532" />
+
+
+
