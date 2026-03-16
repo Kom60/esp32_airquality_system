@@ -1,6 +1,6 @@
 :root {
-  --dungeon-width: 100vw;
-  --dungeon-line-width: 92vw;
+  --dungeon-width: 100%;
+  --dungeon-line-width: 100%;
   --dungeon-font-size-value: calc(1.8vw);
   --dungen-text-size:calc(2.6vw);
   --dungeon-padding:calc(1vw);
@@ -19,7 +19,7 @@
   margin-top: 0;
   margin-bottom: auto;
   margin-left: auto;
-  margin-right: 0;
+  margin-right: auto;
   }
 
 
