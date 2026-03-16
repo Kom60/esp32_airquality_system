@@ -13,6 +13,13 @@
   top: 0.8em;
 }
 
+.text .material-symbols-outlined {
+  font-size: 0.8em;
+  vertical-align: middle;
+  position: relative;
+  top: 100em;
+}
+
 
 .board {
   margin-top: 0.5%;
