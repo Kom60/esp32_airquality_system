@@ -46,6 +46,7 @@
 .dungeon-text {
   /*border: solid;*/
   padding-top: 1%;
+  padding-left: 3%;
   text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
   font-family: "Press Start 2P", system-ui;
   font-size: var(--dungeon-font-size-value);
