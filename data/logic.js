@@ -11,6 +11,9 @@ const sensorData = {
   scd4x_co2: null,
   scd4x_temperature: null,
   scd4x_humidity: null,
+  pms_pm1: null,
+  pms_pm2_5: null,
+  pms_pm10: null,
   bh1750_lighting: null,
   veml_uv: null,
   ch2o_value: null,
@@ -260,6 +263,478 @@ function getLightingRecommendation(lux) {
   }
 }
 
+// 11. Дефицит точки росы (разница между температурой и точкой росы)
+function calculateDewPointDeficit(temp, dewPoint) {
+  if (temp === null || dewPoint === null || isNaN(temp) || isNaN(dewPoint)) return null;
+  return temp - dewPoint;
+}
+
+function getDewPointDeficitDescription(deficit) {
+  if (deficit === null || isNaN(deficit)) return null;
+  if (deficit > 15) return { text: 'Очень сухо', class: 'deficit-very-dry' };
+  if (deficit > 10) return { text: 'Сухо', class: 'deficit-dry' };
+  if (deficit > 5) return { text: 'Норма', class: 'deficit-normal' };
+  return { text: 'Влажно', class: 'deficit-humid' };
+}
+
+// 12. Энтальпия воздуха (кДж/кг) - формула для влажного воздуха
+function calculateEnthalpy(temp, humidity) {
+  if (temp === null || humidity === null || isNaN(temp) || isNaN(humidity)) return null;
+  // Упрощённая формула: h = 1.006*t + w*(2501 + 1.86*t)
+  // где w - влажность в кг воды/кг сухого воздуха
+  const p = 101325; // атмосферное давление, Па
+  const ws = 0.622 * (610.78 * Math.exp(17.2694 * temp / (temp + 238.3))) / (p - 610.78 * Math.exp(17.2694 * temp / (temp + 238.3)));
+  const w = (humidity / 100) * ws;
+  return 1.006 * temp + w * (2501 + 1.86 * temp);
+}
+
+function getEnthalpyDescription(enthalpy) {
+  if (enthalpy === null || isNaN(enthalpy)) return null;
+  if (enthalpy < 25) return { text: 'Холодный', class: 'enthalpy-cold' };
+  if (enthalpy < 40) return { text: 'Прохладный', class: 'enthalpy-cool' };
+  if (enthalpy < 55) return { text: 'Комфортный', class: 'enthalpy-comfort' };
+  if (enthalpy < 70) return { text: 'Тёплый', class: 'enthalpy-warm' };
+  return { text: 'Горячий', class: 'enthalpy-hot' };
+}
+
+// 13. Риск плесени (на основе влажности и точки росы)
+function calculateMoldRisk(humidity, dewPoint, temp) {
+  if (humidity === null || dewPoint === null || temp === null) return null;
+  if (isNaN(humidity) || isNaN(dewPoint) || isNaN(temp)) return null;
+  
+  let risk = 0;
+  // Высокая влажность (>70%) — основной фактор
+  if (humidity > 80) risk += 40;
+  else if (humidity > 70) risk += 25;
+  else if (humidity > 60) risk += 10;
+  
+  // Точка росы >15°C — риск конденсата
+  if (dewPoint > 18) risk += 35;
+  else if (dewPoint > 15) risk += 20;
+  else if (dewPoint > 12) risk += 10;
+  
+  // Маленькая разница между температурой и точкой росы
+  const deficit = temp - dewPoint;
+  if (deficit < 3) risk += 25;
+  else if (deficit < 5) risk += 15;
+  
+  return Math.min(100, risk);
+}
+
+function getMoldRiskDescription(risk) {
+  if (risk === null || isNaN(risk)) return null;
+  if (risk < 20) return { text: 'Низкий', class: 'mold-low' };
+  if (risk < 40) return { text: 'Умеренный', class: 'mold-moderate' };
+  if (risk < 60) return { text: 'Высокий', class: 'mold-high' };
+  return { text: 'Опасный', class: 'mold-danger' };
+}
+
+// 14. Риск статического электричества (на основе влажности)
+function calculateStaticElectricityRisk(humidity) {
+  if (humidity === null || isNaN(humidity)) return null;
+  if (humidity < 20) return { text: 'Высокий', class: 'static-high' };
+  if (humidity < 30) return { text: 'Средний', class: 'static-medium' };
+  if (humidity < 40) return { text: 'Низкий', class: 'static-low' };
+  return { text: 'Нет', class: 'static-none' };
+}
+
+// 15. Ощущаемая температура (Feels Like) - комбинация Heat Index и Wind Chill
+function calculateFeelsLike(temp, humidity) {
+  if (temp === null || humidity === null || isNaN(temp) || isNaN(humidity)) return null;
+  
+  // Для высоких температур используем индекс жары
+  if (temp >= 27) {
+    return calculateHeatIndex(temp, humidity);
+  }
+  
+  // Для низких температур — упрощённый wind chill
+  if (temp <= 10) {
+    // Wind chill формула для °C
+    const wc = 13.12 + 0.6215 * temp - 11.37 * Math.pow(0.5, 0.16) + 0.3965 * temp * Math.pow(0.5, 0.16);
+    return wc;
+  }
+  
+  // Для умеренных температур — просто температура
+  return temp;
+}
+
+// 16. Время до проветривания (прогноз достижения CO2 = 1000 ppm)
+function calculateVentilationTime(co2) {
+  if (co2 === null || isNaN(co2)) return null;
+  if (co2 >= 1000) return 0; // Уже пора
+  
+  // Сохраняем историю CO2 для расчёта тренда
+  if (!sensorData.co2_history) sensorData.co2_history = [];
+  sensorData.co2_history.push({ value: co2, time: Date.now() });
+  
+  // Храним последние 30 минут
+  const thirtyMinAgo = Date.now() - 30 * 60 * 1000;
+  sensorData.co2_history = sensorData.co2_history.filter(item => item.time > thirtyMinAgo);
+  
+  // Если есть история, считаем скорость роста
+  if (sensorData.co2_history.length >= 2) {
+    const first = sensorData.co2_history[0];
+    const last = sensorData.co2_history[sensorData.co2_history.length - 1];
+    const timeDiffHours = (last.time - first.time) / (1000 * 60 * 60);
+    if (timeDiffHours > 0) {
+      const co2RatePerHour = (last.value - first.value) / timeDiffHours;
+      if (co2RatePerHour > 0) {
+        const minutesTo1000 = ((1000 - co2) / co2RatePerHour) * 60;
+        return Math.max(0, Math.round(minutesTo1000));
+      }
+    }
+  }
+  
+  // Если нет тренда, предполагаем среднюю скорость роста 50 ppm/час
+  const defaultRate = 50; // ppm/час
+  return Math.round(((1000 - co2) / defaultRate) * 60);
+}
+
+function getVentilationTimeDescription(minutes) {
+  if (minutes === null) return null;
+  if (minutes <= 0) return { text: 'Сейчас!', class: 'vent-now' };
+  if (minutes < 15) return { text: 'Скоро', class: 'vent-soon' };
+  if (minutes < 30) return { text: '15-30', class: 'vent-moderate' };
+  return { text: '>30', class: 'vent-later' };
+}
+
+// 17. Качество сна (на основе температуры, влажности и CO2)
+function calculateSleepQuality(temp, humidity, co2) {
+  if (temp === null || humidity === null || co2 === null) return null;
+  if (isNaN(temp) || isNaN(humidity) || isNaN(co2)) return null;
+  
+  let score = 100;
+  
+  // Температура (оптимум для сна: 18-20°C)
+  if (temp >= 18 && temp <= 20) score += 0;
+  else if (temp >= 16 && temp <= 22) score -= 10;
+  else if (temp >= 14 && temp <= 24) score -= 25;
+  else score -= 40;
+  
+  // Влажность (оптимум: 40-60%)
+  if (humidity >= 40 && humidity <= 60) score += 0;
+  else if (humidity >= 30 && humidity <= 70) score -= 10;
+  else if (humidity >= 20 && humidity <= 80) score -= 25;
+  else score -= 40;
+  
+  // CO2 (оптимум: <800 ppm)
+  if (co2 < 800) score += 0;
+  else if (co2 < 1000) score -= 15;
+  else if (co2 < 1400) score -= 30;
+  else score -= 45;
+  
+  return Math.max(0, Math.min(100, score));
+}
+
+function getSleepQualityDescription(score) {
+  if (score === null || isNaN(score)) return null;
+  if (score >= 85) return { text: 'Отлично', class: 'sleep-excellent' };
+  if (score >= 70) return { text: 'Хорошо', class: 'sleep-good' };
+  if (score >= 50) return { text: 'Нормально', class: 'sleep-fair' };
+  return { text: 'Плохо', class: 'sleep-poor' };
+}
+
+// 18. AQI по PM2.5 (по шкале ВОЗ)
+function calculatePM25AQI(pm25) {
+  if (pm25 === null || isNaN(pm25)) return null;
+  
+  // Шкала AQI ВОЗ для PM2.5 (мкг/м³)
+  if (pm25 <= 15) return Math.round((pm25 / 15) * 50);
+  if (pm25 <= 25) return Math.round(50 + ((pm25 - 15) / 10) * 50);
+  if (pm25 <= 50) return Math.round(100 + ((pm25 - 25) / 25) * 50);
+  if (pm25 <= 100) return Math.round(150 + ((pm25 - 50) / 50) * 50);
+  if (pm25 <= 200) return Math.round(200 + ((pm25 - 100) / 100) * 100);
+  return Math.min(500, Math.round(300 + ((pm25 - 200) / 100) * 200));
+}
+
+function getPM25AQIDescription(aqi) {
+  if (aqi === null || isNaN(aqi)) return null;
+  if (aqi <= 50) return { text: 'Отлично', class: 'aqi-good' };
+  if (aqi <= 100) return { text: 'Нормально', class: 'aqi-moderate' };
+  if (aqi <= 150) return { text: 'Посредственно', class: 'aqi-unhealthy-sensitive' };
+  if (aqi <= 200) return { text: 'Плохо', class: 'aqi-unhealthy' };
+  if (aqi <= 300) return { text: 'Очень плохо', class: 'aqi-very-unhealthy' };
+  return { text: 'Опасно', class: 'aqi-hazardous' };
+}
+
+// ============================================================
+// === НОВЫЕ РАСЧЁТНЫЕ ПОКАЗАТЕЛИ (10) =========================
+// ============================================================
+
+// 19. Точка замерзания (температура образования инея)
+function calculateFreezingPoint(temp, dewPoint) {
+  if (temp === null || dewPoint === null || isNaN(temp) || isNaN(dewPoint)) return null;
+  // Упрощённая формула: 0.5 * (Температура + Точка росы)
+  return 0.5 * (temp + dewPoint);
+}
+
+function getFreezingPointDescription(freezePoint) {
+  if (freezePoint === null || isNaN(freezePoint)) return null;
+  if (freezePoint <= -5) return { text: 'Риск инея', class: 'freeze-danger' };
+  if (freezePoint <= 0) return { text: 'Около нуля', class: 'freeze-warning' };
+  return { text: 'Без риска', class: 'freeze-safe' };
+}
+
+// 20. Индекс загрязнения (комплексный индекс частиц)
+function calculatePollutionIndex(pm25, pm10) {
+  if (pm25 === null || pm10 === null || isNaN(pm25) || isNaN(pm10)) return null;
+  // PM2.5 * 0.7 + PM10 * 0.3 (PM2.5 более вредные)
+  return pm25 * 0.7 + pm10 * 0.3;
+}
+
+function getPollutionIndexDescription(index) {
+  if (index === null || isNaN(index)) return null;
+  if (index <= 25) return { text: 'Чисто', class: 'pollution-excellent' };
+  if (index <= 50) return { text: 'Нормально', class: 'pollution-good' };
+  if (index <= 75) return { text: 'Загрязнено', class: 'pollution-moderate' };
+  if (index <= 100) return { text: 'Плохо', class: 'pollution-unhealthy' };
+  return { text: 'Опасно', class: 'pollution-hazardous' };
+}
+
+// 21. Время безопасного пребывания (прогноз достижения CO2 = 1400 ppm)
+function calculateSafeExposureTime(co2) {
+  if (co2 === null || isNaN(co2)) return null;
+  if (co2 >= 1400) return 0; // Уже опасно
+
+  // Сохраняем историю CO2 для расчёта тренда
+  if (!sensorData.co2_history) sensorData.co2_history = [];
+  sensorData.co2_history.push({ value: co2, time: Date.now() });
+
+  // Храним последние 30 минут
+  const thirtyMinAgo = Date.now() - 30 * 60 * 1000;
+  sensorData.co2_history = sensorData.co2_history.filter(item => item.time > thirtyMinAgo);
+
+  // Если есть история, считаем скорость роста
+  if (sensorData.co2_history.length >= 2) {
+    const first = sensorData.co2_history[0];
+    const last = sensorData.co2_history[sensorData.co2_history.length - 1];
+    const timeDiffMinutes = (last.time - first.time) / (1000 * 60);
+    if (timeDiffMinutes > 0) {
+      const co2RatePerMin = (last.value - first.value) / timeDiffMinutes;
+      if (co2RatePerMin > 0) {
+        const minutesTo1400 = ((1400 - co2) / co2RatePerMin);
+        return Math.max(0, Math.round(minutesTo1400));
+      }
+    }
+  }
+
+  // Если нет тренда, предполагаем среднюю скорость роста 50 ppm/час
+  const defaultRate = 50 / 60; // ppm/мин
+  return Math.round(((1400 - co2) / defaultRate));
+}
+
+function getSafeExposureTimeDescription(minutes) {
+  if (minutes === null) return null;
+  if (minutes <= 0) return { text: 'Сейчас!', class: 'safe-now' };
+  if (minutes < 15) return { text: '<15', class: 'safe-soon' };
+  if (minutes < 30) return { text: '15-30', class: 'safe-moderate' };
+  if (minutes < 60) return { text: '30-60', class: 'safe-good' };
+  return { text: '>60', class: 'safe-excellent' };
+}
+
+// 22. Эффективность проветривания (скорость снижения CO2)
+function calculateVentilationEfficiency() {
+  if (!sensorData.co2_history || sensorData.co2_history.length < 2) return null;
+  
+  const first = sensorData.co2_history[0];
+  const last = sensorData.co2_history[sensorData.co2_history.length - 1];
+  const timeDiffMinutes = (last.time - first.time) / (1000 * 60);
+  
+  if (timeDiffMinutes <= 0) return null;
+  const co2Change = first.value - last.value; // Отрицательное = рост, положительное = снижение
+  
+  return co2Change / timeDiffMinutes; // ppm/мин
+}
+
+function getVentilationEfficiencyDescription(efficiency) {
+  if (efficiency === null) return null;
+  if (efficiency > 10) return { text: 'Отлично', class: 'vent-eff-excellent' };
+  if (efficiency > 5) return { text: 'Хорошо', class: 'vent-eff-good' };
+  if (efficiency > 0) return { text: 'Нормально', class: 'vent-eff-fair' };
+  if (efficiency > -5) return { text: 'Слабо', class: 'vent-eff-poor' };
+  return { text: 'Растёт CO2', class: 'vent-eff-bad' };
+}
+
+// 23. Индекс духоты (Simpson Comfort Index)
+function calculateDiscomfortIndex(temp, humidity) {
+  if (temp === null || humidity === null || isNaN(temp) || isNaN(humidity)) return null;
+  // Упрощённая формула: Temp + 0.33*Humidity - 0.7
+  return temp + 0.33 * humidity - 0.7;
+}
+
+function getDiscomfortIndexDescription(index) {
+  if (index === null || isNaN(index)) return null;
+  if (index < 21) return { text: 'Холодно', class: 'discomfort-cold' };
+  if (index < 24) return { text: 'Комфортно', class: 'discomfort-comfort' };
+  if (index < 27) return { text: 'Тепло', class: 'discomfort-warm' };
+  if (index < 30) return { text: 'Душно', class: 'discomfort-stuffy' };
+  return { text: 'Жарко', class: 'discomfort-hot' };
+}
+
+// 24. Риск аллергии (комбинированный риск по частицам и влажности)
+function calculateAllergyRisk(pm25, pm10, humidity) {
+  if (pm25 === null || pm10 === null || humidity === null) return null;
+  if (isNaN(pm25) || isNaN(pm10) || isNaN(humidity)) return null;
+
+  let risk = 0;
+  // PM2.5 и PM10 вклад (0-50 баллов)
+  risk += Math.min(pm25, 50) * 0.6;
+  risk += Math.min(pm10, 50) * 0.4;
+  
+  // Высокая влажность (>60%) увеличивает риск плесени и клещей
+  if (humidity > 70) risk += 20;
+  else if (humidity > 60) risk += 10;
+  
+  // Низкая влажность (<30%) увеличивает риск раздражения
+  if (humidity < 25) risk += 10;
+  
+  return Math.min(100, risk);
+}
+
+function getAllergyRiskDescription(risk) {
+  if (risk === null || isNaN(risk)) return null;
+  if (risk < 20) return { text: 'Низкий', class: 'allergy-low' };
+  if (risk < 40) return { text: 'Умеренный', class: 'allergy-moderate' };
+  if (risk < 60) return { text: 'Высокий', class: 'allergy-high' };
+  return { text: 'Опасный', class: 'allergy-danger' };
+}
+
+// 25. Оптимальное время для сна (рекомендация)
+function calculateOptimalSleepTime(temp, humidity, co2, noise) {
+  if (temp === null || humidity === null || co2 === null) return null;
+  
+  let score = 100;
+  const hour = new Date().getHours();
+  
+  // Температура (оптимум для сна: 18-20°C)
+  if (temp >= 18 && temp <= 20) score += 0;
+  else if (temp >= 16 && temp <= 22) score -= 10;
+  else if (temp >= 14 && temp <= 24) score -= 25;
+  else score -= 40;
+  
+  // Влажность (оптимум: 40-60%)
+  if (humidity >= 40 && humidity <= 60) score += 0;
+  else if (humidity >= 30 && humidity <= 70) score -= 10;
+  else score -= 25;
+  
+  // CO2 (оптимум: <800 ppm)
+  if (co2 < 800) score += 0;
+  else if (co2 < 1000) score -= 15;
+  else if (co2 < 1400) score -= 30;
+  else score -= 45;
+  
+  // Шум (оптимум: <35 дБ)
+  if (noise !== null && !isNaN(noise)) {
+    if (noise < 35) score += 0;
+    else if (noise < 45) score -= 10;
+    else if (noise < 55) score -= 25;
+    else score -= 40;
+  }
+  
+  score = Math.max(0, Math.min(100, score));
+  
+  // Определяем оптимальное время
+  if (score >= 85) return { text: 'Сейчас!', class: 'sleep-time-now', value: hour };
+  if (score >= 70) return { text: 'Через 1-2ч', class: 'sleep-time-soon', value: (hour + 1) % 24 };
+  if (score >= 50) return { text: 'Лучше позже', class: 'sleep-time-later', value: (hour + 2) % 24 };
+  return { text: 'Не сейчас', class: 'sleep-time-wait', value: null };
+}
+
+// 26. Индекс продуктивности (влияние на работоспособность)
+function calculateProductivityIndex(co2, temp, lux) {
+  if (co2 === null || temp === null || lux === null) return null;
+  if (isNaN(co2) || isNaN(temp) || isNaN(lux)) return null;
+  
+  let score = 100;
+  
+  // CO2 влияние (при >1000 ppm продуктивность падает)
+  if (co2 < 800) score += 0;
+  else if (co2 < 1000) score -= 10;
+  else if (co2 < 1400) score -= 25;
+  else if (co2 < 2000) score -= 40;
+  else score -= 60;
+  
+  // Температура (оптимум: 21-23°C)
+  if (temp >= 21 && temp <= 23) score += 0;
+  else if (temp >= 19 && temp <= 25) score -= 10;
+  else if (temp >= 17 && temp <= 27) score -= 25;
+  else score -= 40;
+  
+  // Освещение (оптимум для работы: 500-1000 лк)
+  if (lux >= 500 && lux <= 1000) score += 0;
+  else if (lux >= 300 && lux <= 1500) score -= 10;
+  else if (lux >= 150 && lux <= 2000) score -= 25;
+  else score -= 40;
+  
+  return Math.max(0, Math.min(100, score));
+}
+
+function getProductivityIndexDescription(score) {
+  if (score === null || isNaN(score)) return null;
+  if (score >= 85) return { text: 'Отлично', class: 'prod-excellent' };
+  if (score >= 70) return { text: 'Хорошо', class: 'prod-good' };
+  if (score >= 50) return { text: 'Нормально', class: 'prod-fair' };
+  if (score >= 30) return { text: 'Низко', class: 'prod-poor' };
+  return { text: 'Критично', class: 'prod-critical' };
+}
+
+// 27. Баланс кислорода (косвенная оценка по CO2 и давлению)
+function calculateOxygenBalance(co2, pressure) {
+  if (co2 === null || pressure === null) return null;
+  if (isNaN(co2) || isNaN(pressure)) return null;
+  
+  // Нормальный уровень O2 ~20.9% при нормальном давлении
+  // При росте CO2 доля O2 уменьшается
+  const normalO2 = 20.9;
+  const co2Impact = (co2 - 400) / 10000; // Влияние CO2 на O2
+  const pressureImpact = (pressure - 1013) / 1013 * normalO2; // Влияние давления
+  
+  const estimatedO2 = normalO2 - co2Impact + pressureImpact * 0.1;
+  return Math.max(0, Math.min(100, (estimatedO2 / normalO2) * 100));
+}
+
+function getOxygenBalanceDescription(balance) {
+  if (balance === null || isNaN(balance)) return null;
+  if (balance >= 95) return { text: 'Норма', class: 'o2-normal' };
+  if (balance >= 85) return { text: 'Снижен', class: 'o2-low' };
+  if (balance >= 70) return { text: 'Низкий', class: 'o2-very-low' };
+  return { text: 'Гипоксия', class: 'o2-danger' };
+}
+
+// 28. Тепловая нагрузка (WBGT - Wet Bulb Globe Temperature)
+function calculateHeatStressIndex(temp, humidity, lux) {
+  if (temp === null || humidity === null || lux === null) return null;
+  if (isNaN(temp) || isNaN(humidity) || isNaN(lux)) return null;
+  
+  // Упрощённый расчёт WBGT
+  // Tw (влажный термометр) - аппроксимация по температуре и влажности
+  const Tw = temp * Math.atan(0.151977 * Math.pow(humidity + 8.313659, 0.5)) 
+           + Math.atan(temp + humidity) 
+           - Math.atan(humidity - 1.676331) 
+           + Math.pow(0.00391838 * humidity, 1.5) * Math.atan(0.023101 * humidity) 
+           - 4.686035;
+  
+  // Tg (температура глобуса) - аппроксимация по освещению
+  const Tg = temp + (lux / 1000) * 5; // Упрощённо
+  
+  // Ta (температура воздуха)
+  const Ta = temp;
+  
+  // WBGT = 0.7*Tw + 0.2*Tg + 0.1*Ta
+  const wbgt = 0.7 * Tw + 0.2 * Tg + 0.1 * Ta;
+  
+  return wbgt;
+}
+
+function getHeatStressIndexDescription(wbgt) {
+  if (wbgt === null || isNaN(wbgt)) return null;
+  if (wbgt < 18) return { text: 'Холодно', class: 'wbgt-cold' };
+  if (wbgt < 24) return { text: 'Комфортно', class: 'wbgt-comfort' };
+  if (wbgt < 28) return { text: 'Тепло', class: 'wbgt-warm' };
+  if (wbgt < 32) return { text: 'Жарко', class: 'wbgt-hot' };
+  return { text: 'Опасно', class: 'wbgt-danger' };
+}
+
 // Обновление всех расчётных показателей
 function updateCalculatedValues() {
   // Точка росы (по HTU21DF -室内)
@@ -355,11 +830,11 @@ function updateCalculatedValues() {
   }
   if (trendCard) {
     trendCard.setAttribute('title', pressureTrend !== null
-      ? `Изменение давления за 3 часа: ${pressureTrend.value > 0 ? '+' : ''}${pressureTrend.value.toFixed(1)} гПа\n\n` +
+      ? `Барометрическая тенденция за 3 часа\n\n` +
         `Народная примета:\n` +
-        `Растёт -> к улучшению погоды (ясно, сухо)\n` +
-        `Падает -> к ухудшению (дождь, ветер)\n` +
-        `Стабильно -> погода без изменений\n\n` +
+        `Растёт → к улучшению погоды (ясно, сухо)\n` +
+        `Падает → к ухудшению (дождь, ветер)\n` +
+        `Стабильно → погода без изменений\n\n` +
         `Быстрое изменение (>2 гПа/3ч) указывает на приближение фронта.`
       : 'Нет данных для расчёта. Требуется минимум 3 часа данных.');
   }
@@ -490,7 +965,7 @@ function updateCalculatedValues() {
     else lightRecEl.classList.add('value-info');
   }
   if (lightCard) {
-    lightCard.setAttribute('title', sensorData.bh1750_lighting !== null 
+    lightCard.setAttribute('title', sensorData.bh1750_lighting !== null
       ? `Освещённость: ${sensorData.bh1750_lighting.toFixed(0)} лк\n\n` +
         `Нормы освещённости:\n` +
         `• 300-500 лк: Офисная работа\n` +
@@ -501,6 +976,432 @@ function updateCalculatedValues() {
         `и снижает продуктивность.`
       : 'Нет данных датчика освещения');
   }
+
+  // 11. Дефицит точки росы
+  const dewPointDeficit = calculateDewPointDeficit(sensorData.htu_temperature, dewPoint);
+  const dewPointDeficitEl = document.querySelector('.calculated_value.dew_point_deficit');
+  const dewPointDeficitCard = document.querySelector('[data-analytics="dew_point_deficit"]');
+  if (dewPointDeficitEl) {
+    dewPointDeficitEl.innerHTML = dewPointDeficit !== null ? dewPointDeficit.toFixed(1) : '---';
+    dewPointDeficitEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (dewPointDeficit !== null) {
+      if (dewPointDeficit > 5 && dewPointDeficit <= 10) dewPointDeficitEl.classList.add('value-good');
+      else if (dewPointDeficit > 10) dewPointDeficitEl.classList.add('value-warning');
+      else dewPointDeficitEl.classList.add('value-info');
+    }
+  }
+  if (dewPointDeficitCard) {
+    const deficitDesc = getDewPointDeficitDescription(dewPointDeficit);
+    dewPointDeficitCard.setAttribute('title', dewPointDeficit !== null
+      ? `Дефицит точки росы: ${dewPointDeficit.toFixed(1)}°C\n\n` +
+        `Разница между температурой и точкой росы.\n\n` +
+        `>15°C: Очень сухо\n10-15°C: Сухо\n5-10°C: Норма\n<5°C: Влажно\n\n` +
+        `Низкий дефицит указывает на высокую влажность.`
+      : 'Нет данных для расчёта');
+  }
+
+  // 12. Энтальпия воздуха
+  const enthalpy = calculateEnthalpy(sensorData.htu_temperature, sensorData.htu_humidity);
+  const enthalpyEl = document.querySelector('.calculated_value.enthalpy');
+  const enthalpyCard = document.querySelector('[data-analytics="enthalpy"]');
+  if (enthalpyEl) {
+    enthalpyEl.innerHTML = enthalpy !== null ? enthalpy.toFixed(1) : '---';
+    enthalpyEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (enthalpy !== null) {
+      if (enthalpy >= 40 && enthalpy <= 55) enthalpyEl.classList.add('value-good');
+      else if (enthalpy < 25 || enthalpy > 70) enthalpyEl.classList.add('value-critical');
+      else enthalpyEl.classList.add('value-warning');
+    }
+  }
+  if (enthalpyCard) {
+    const enthalpyDesc = getEnthalpyDescription(enthalpy);
+    enthalpyCard.setAttribute('title', enthalpy !== null
+      ? `Энтальпия воздуха: ${enthalpy.toFixed(1)} кДж/кг\n\n` +
+        `Полная энергия влажного воздуха.\n\n` +
+        `<25: Холодный\n25-40: Прохладный\n40-55: Комфортный\n55-70: Тёплый\n>70: Горячий\n\n` +
+        `Используется для расчёта HVAC систем.`
+      : 'Нет данных для расчёта');
+  }
+
+  // 13. Риск плесени
+  const moldRisk = calculateMoldRisk(sensorData.htu_humidity, dewPoint, sensorData.htu_temperature);
+  const moldRiskEl = document.querySelector('.calculated_value.mold_risk');
+  const moldRiskCard = document.querySelector('[data-analytics="mold_risk"]');
+  if (moldRiskEl) {
+    const moldDesc = getMoldRiskDescription(moldRisk);
+    moldRiskEl.innerHTML = moldRisk !== null ? `${moldRisk}%` : '---';
+    moldRiskEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (moldRisk !== null) {
+      if (moldRisk < 20) moldRiskEl.classList.add('value-good');
+      else if (moldRisk < 40) moldRiskEl.classList.add('value-warning');
+      else moldRiskEl.classList.add('value-critical');
+    }
+  }
+  if (moldRiskCard) {
+    moldRiskCard.setAttribute('title', moldRisk !== null
+      ? `Риск плесени: ${moldRisk}%\n\n` +
+        `Оценивается по влажности, точке росы и температуре.\n\n` +
+        `<20%: Низкий риск\n20-40%: Умеренный\n40-60%: Высокий\n>60%: Опасный\n\n` +
+        `Для снижения риска: проветривайте, используйте осушитель.`
+      : 'Нет данных для расчёта');
+  }
+
+  // 14. Статическое электричество
+  const staticRisk = calculateStaticElectricityRisk(sensorData.htu_humidity);
+  const staticRiskEl = document.querySelector('.calculated_value.static_electricity');
+  const staticRiskCard = document.querySelector('[data-analytics="static_electricity"]');
+  if (staticRiskEl && staticRisk) {
+    staticRiskEl.innerHTML = staticRisk.text;
+    staticRiskEl.className = 'calculated_value static_electricity ' + staticRisk.class;
+    staticRiskEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (staticRisk.class === 'static-none' || staticRisk.class === 'static-low') staticRiskEl.classList.add('value-good');
+    else if (staticRisk.class === 'static-medium') staticRiskEl.classList.add('value-warning');
+    else staticRiskEl.classList.add('value-critical');
+  }
+  if (staticRiskCard) {
+    staticRiskCard.setAttribute('title', `Риск статического электричества\n\n` +
+      `Зависит от влажности воздуха:\n` +
+      `<20%: Высокий риск разрядов\n20-30%: Средний риск\n30-40%: Низкий риск\n>40%: Риска нет\n\n` +
+      `Для снижения: увлажняйте воздух, используйте антистатик.`
+    );
+  }
+
+  // 15. Ощущаемая температура
+  const feelsLike = calculateFeelsLike(sensorData.htu_temperature, sensorData.htu_humidity);
+  const feelsLikeEl = document.querySelector('.calculated_value.feels_like');
+  const feelsLikeCard = document.querySelector('[data-analytics="feels_like"]');
+  if (feelsLikeEl) {
+    feelsLikeEl.innerHTML = feelsLike !== null ? feelsLike.toFixed(1) : '---';
+    feelsLikeEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (feelsLike !== null) {
+      if (feelsLike >= 18 && feelsLike <= 26) feelsLikeEl.classList.add('value-good');
+      else if (feelsLike < 10 || feelsLike > 32) feelsLikeEl.classList.add('value-critical');
+      else feelsLikeEl.classList.add('value-warning');
+    }
+  }
+  if (feelsLikeCard) {
+    feelsLikeCard.setAttribute('title', feelsLike !== null
+      ? `Ощущается как: ${feelsLike.toFixed(1)}°C\n\n` +
+        `Температура, которую ощущает человек.\n\n` +
+        `Учитывает:\n` +
+        `• При t>27°C: индекс жары (влажность)\n` +
+        `• При t<10°C: wind chill (охлаждение)\n` +
+        `• При 10-27°C: фактическая температура`
+      : 'Нет данных для расчёта');
+  }
+
+  // 16. Время до проветривания
+  const ventTime = calculateVentilationTime(sensorData.scd4x_co2);
+  const ventTimeEl = document.querySelector('.calculated_value.ventilation_time');
+  const ventTimeCard = document.querySelector('[data-analytics="ventilation_time"]');
+  if (ventTimeEl) {
+    const ventTimeDesc = getVentilationTimeDescription(ventTime);
+    ventTimeEl.innerHTML = ventTime !== null ? (ventTimeDesc ? ventTimeDesc.text : Math.round(ventTime)) : '---';
+    ventTimeEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (ventTime !== null) {
+      if (ventTime > 30) ventTimeEl.classList.add('value-good');
+      else if (ventTime > 15) ventTimeEl.classList.add('value-warning');
+      else ventTimeEl.classList.add('value-critical');
+    }
+  }
+  if (ventTimeCard) {
+    ventTimeCard.setAttribute('title', ventTime !== null
+      ? `Прогноз до проветривания: ${Math.round(ventTime)} мин\n\n` +
+        `Время до достижения CO2 = 1000 ppm.\n\n` +
+        `Рассчитывается по текущему уровню CO2\n` +
+        `и скорости его роста за последние 30 мин.\n\n` +
+        `0 мин = Пора проветривать!`
+      : 'Нет данных для расчёта');
+  }
+
+  // 17. Качество сна
+  const sleepQuality = calculateSleepQuality(sensorData.htu_temperature, sensorData.htu_humidity, sensorData.scd4x_co2);
+  const sleepQualityEl = document.querySelector('.calculated_value.sleep_quality');
+  const sleepQualityCard = document.querySelector('[data-analytics="sleep_quality"]');
+  if (sleepQualityEl) {
+    const sleepDesc = getSleepQualityDescription(sleepQuality);
+    sleepQualityEl.innerHTML = sleepQuality !== null ? `${sleepQuality}%` : '---';
+    sleepQualityEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (sleepQuality !== null) {
+      if (sleepQuality >= 70) sleepQualityEl.classList.add('value-good');
+      else if (sleepQuality >= 50) sleepQualityEl.classList.add('value-warning');
+      else sleepQualityEl.classList.add('value-critical');
+    }
+  }
+  if (sleepQualityCard) {
+    sleepQualityCard.setAttribute('title', sleepQuality !== null
+      ? `Качество сна: ${sleepQuality}%\n\n` +
+        `Оценка условий для сна.\n\n` +
+        `Оптимум:\n` +
+        `• Температура: 18-20°C\n` +
+        `• Влажность: 40-60%\n` +
+        `• CO2: <800 ppm\n\n` +
+        `>85%: Отлично\n70-85%: Хорошо\n50-70%: Нормально\n<50%: Плохо`
+      : 'Нет данных для расчёта');
+  }
+
+  // 18. AQI по PM2.5
+  const pm25Aqi = calculatePM25AQI(sensorData.pms_pm2_5);
+  const pm25AqiEl = document.querySelector('.calculated_value.pm25_aqi');
+  const pm25AqiCard = document.querySelector('[data-analytics="pm25_aqi"]');
+  if (pm25AqiEl) {
+    const pm25Desc = getPM25AQIDescription(pm25Aqi);
+    pm25AqiEl.innerHTML = pm25Aqi !== null ? pm25Aqi.toString() : '---';
+    // Применяем класс цвета из описания
+    pm25AqiEl.className = 'calculated_value pm25_aqi';
+    if (pm25Desc) {
+      pm25AqiEl.classList.add(pm25Desc.class);
+    }
+    // Цветовая дифференциация для fallback
+    pm25AqiEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (pm25Aqi !== null) {
+      if (pm25Aqi <= 50) pm25AqiEl.classList.add('value-good');
+      else if (pm25Aqi <= 150) pm25AqiEl.classList.add('value-warning');
+      else pm25AqiEl.classList.add('value-critical');
+    }
+    // Отладка
+    console.log('AQI PM2.5:', pm25Aqi, 'PM2.5:', sensorData.pms_pm2_5);
+  }
+  if (pm25AqiCard) {
+    const pm25Val = sensorData.pms_pm2_5;
+    pm25AqiCard.setAttribute('title', pm25Aqi !== null
+      ? `AQI PM2.5: ${pm25Aqi}\n\n` +
+        `Индекс качества воздуха по мелким частицам.\n\n` +
+        `Шкала ВОЗ (мкг/м³):\n` +
+        `0-50: Отлично (<15)\n51-100: Нормально (15-25)\n` +
+        `101-150: Посредственно (25-50)\n` +
+        `151-200: Плохо (50-100)\n` +
+        `201-300: Очень плохо (100-200)\n` +
+        `>300: Опасно (>200)\n\n` +
+        `PM2.5: ${pm25Val !== null ? pm25Val.toFixed(1) : '---'} мкг/м³\n\n` +
+        `PM2.5 проникает глубоко в лёгкие.`
+      : 'Нет данных для расчёта');
+  }
+
+  // ============================================================
+  // === ОБНОВЛЕНИЕ НОВЫХ ПОКАЗАТЕЛЕЙ (10) =======================
+  // ============================================================
+
+  // 19. Точка замерзания
+  const freezingPoint = calculateFreezingPoint(sensorData.htu_temperature, dewPoint);
+  const freezingPointEl = document.querySelector('.calculated_value.freezing_point');
+  const freezingPointCard = document.querySelector('[data-analytics="freezing_point"]');
+  if (freezingPointEl) {
+    freezingPointEl.innerHTML = freezingPoint !== null ? freezingPoint.toFixed(1) : '---';
+    freezingPointEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (freezingPoint !== null) {
+      if (freezingPoint > 0) freezingPointEl.classList.add('value-good');
+      else if (freezingPoint > -5) freezingPointEl.classList.add('value-warning');
+      else freezingPointEl.classList.add('value-critical');
+    }
+  }
+  if (freezingPointCard) {
+    freezingPointCard.setAttribute('title', freezingPoint !== null
+      ? `Точка замерзания: ${freezingPoint.toFixed(1)}°C\n\n` +
+        `Температура, при которой образуется иней.\n\n` +
+        `≤-5°C: Риск инея\n-5...0°C: Около нуля\n>0°C: Без риска\n\n` +
+        `Важно для растений и уличных работ.`
+      : 'Нет данных для расчёта');
+  }
+
+  // 20. Индекс загрязнения
+  const pollutionIndex = calculatePollutionIndex(sensorData.pms_pm2_5, sensorData.pms_pm10);
+  const pollutionIndexEl = document.querySelector('.calculated_value.pollution_index');
+  const pollutionIndexCard = document.querySelector('[data-analytics="pollution_index"]');
+  if (pollutionIndexEl) {
+    const pollDesc = getPollutionIndexDescription(pollutionIndex);
+    pollutionIndexEl.innerHTML = pollutionIndex !== null ? pollutionIndex.toFixed(0) : '---';
+    pollutionIndexEl.className = 'calculated_value pollution_index';
+    if (pollDesc) pollutionIndexEl.classList.add(pollDesc.class);
+    // Отладка
+    console.log('Pollution Index:', pollutionIndex, 'PM2.5:', sensorData.pms_pm2_5, 'PM10:', sensorData.pms_pm10);
+  }
+  if (pollutionIndexCard) {
+    pollutionIndexCard.setAttribute('title', pollutionIndex !== null
+      ? `Индекс загрязнения: ${pollutionIndex.toFixed(0)}\n\n` +
+        `Комплексная оценка загрязнения частицами.\n\n` +
+        `Формула: PM2.5*0.7 + PM10*0.3\n\n` +
+        `≤25: Чисто\n26-50: Нормально\n51-75: Загрязнено\n` +
+        `76-100: Плохо\n>100: Опасно`
+      : 'Нет данных для расчёта');
+  }
+
+  // 21. Время безопасного пребывания
+  const safeTime = calculateSafeExposureTime(sensorData.scd4x_co2);
+  const safeTimeEl = document.querySelector('.calculated_value.safe_exposure_time');
+  const safeTimeCard = document.querySelector('[data-analytics="safe_exposure_time"]');
+  if (safeTimeEl) {
+    const safeTimeDesc = getSafeExposureTimeDescription(safeTime);
+    safeTimeEl.innerHTML = safeTime !== null ? (safeTimeDesc ? safeTimeDesc.text : Math.round(safeTime)) : '---';
+    safeTimeEl.classList.remove('value-good', 'value-warning', 'value-critical');
+    if (safeTime !== null) {
+      if (safeTime > 60) safeTimeEl.classList.add('value-good');
+      else if (safeTime > 30) safeTimeEl.classList.add('value-warning');
+      else safeTimeEl.classList.add('value-critical');
+    }
+  }
+  if (safeTimeCard) {
+    safeTimeCard.setAttribute('title', safeTime !== null
+      ? `Время до CO2=1400 ppm: ~${Math.round(safeTime)} мин\n\n` +
+        `Прогноз безопасного пребывания в помещении.\n\n` +
+        `Рассчитывается по текущему CO2 и скорости роста.\n\n` +
+        `0 мин = Пора проветривать!\n>60 мин = Запас времени есть.`
+      : 'Нет данных для расчёта');
+  }
+
+  // 22. Эффективность проветривания
+  const ventEfficiency = calculateVentilationEfficiency();
+  const ventEfficiencyEl = document.querySelector('.calculated_value.ventilation_efficiency');
+  const ventEfficiencyCard = document.querySelector('[data-analytics="ventilation_efficiency"]');
+  if (ventEfficiencyEl) {
+    const ventEffDesc = getVentilationEfficiencyDescription(ventEfficiency);
+    ventEfficiencyEl.innerHTML = ventEfficiency !== null ? ventEfficiency.toFixed(1) : '---';
+    ventEfficiencyEl.className = 'calculated_value ventilation_efficiency';
+    if (ventEffDesc) ventEfficiencyEl.classList.add(ventEffDesc.class);
+  }
+  if (ventEfficiencyCard) {
+    ventEfficiencyCard.setAttribute('title', ventEfficiency !== null
+      ? `Эффективность проветривания: ${ventEfficiency.toFixed(1)} ppm/мин\n\n` +
+        `Скорость изменения CO2 за последние 30 мин.\n\n` +
+        `>10: Отличная вентиляция\n5-10: Хорошая\n0-5: Слабая\n` +
+        `<0: CO2 растёт (нет вентиляции)`
+      : 'Нет данных для расчёта. Нужна история CO2.');
+  }
+
+  // 23. Индекс духоты
+  const discomfortIndex = calculateDiscomfortIndex(sensorData.htu_temperature, sensorData.htu_humidity);
+  const discomfortIndexEl = document.querySelector('.calculated_value.discomfort_index');
+  const discomfortIndexCard = document.querySelector('[data-analytics="discomfort_index"]');
+  if (discomfortIndexEl) {
+    const discDesc = getDiscomfortIndexDescription(discomfortIndex);
+    discomfortIndexEl.innerHTML = discomfortIndex !== null ? discomfortIndex.toFixed(1) : '---';
+    discomfortIndexEl.className = 'calculated_value discomfort_index';
+    if (discDesc) discomfortIndexEl.classList.add(discDesc.class);
+  }
+  if (discomfortIndexCard) {
+    discomfortIndexCard.setAttribute('title', discomfortIndex !== null
+      ? `Индекс духоты: ${discomfortIndex.toFixed(1)}\n\n` +
+        `Упрощённый индекс дискомфорта.\n\n` +
+        `Формула: Temp + 0.33*Humidity - 0.7\n\n` +
+        `<21: Холодно\n21-24: Комфортно\n24-27: Тепло\n` +
+        `27-30: Душно\n>30: Жарко`
+      : 'Нет данных для расчёта');
+  }
+
+  // 24. Риск аллергии
+  const allergyRisk = calculateAllergyRisk(sensorData.pms_pm2_5, sensorData.pms_pm10, sensorData.htu_humidity);
+  const allergyRiskEl = document.querySelector('.calculated_value.allergy_risk');
+  const allergyRiskCard = document.querySelector('[data-analytics="allergy_risk"]');
+  if (allergyRiskEl) {
+    const allergyDesc = getAllergyRiskDescription(allergyRisk);
+    allergyRiskEl.innerHTML = allergyRisk !== null ? allergyRisk.toFixed(0) : '---';
+    allergyRiskEl.className = 'calculated_value allergy_risk';
+    if (allergyDesc) allergyRiskEl.classList.add(allergyDesc.class);
+    // Отладка
+    console.log('Allergy Risk:', allergyRisk, 'PM2.5:', sensorData.pms_pm2_5, 'PM10:', sensorData.pms_pm10, 'Hum:', sensorData.htu_humidity);
+  }
+  if (allergyRiskCard) {
+    allergyRiskCard.setAttribute('title', allergyRisk !== null
+      ? `Риск аллергии: ${allergyRisk.toFixed(0)}%\n\n` +
+        `Комбинированный риск по частицам и влажности.\n\n` +
+        `Учитывает:\n` +
+        `• PM2.5 и PM10 (пыльца, пыль)\n` +
+        `• Высокая влажность (плесень, клещи)\n` +
+        `• Низкая влажность (раздражение)\n\n` +
+        `<20%: Низкий\n20-40%: Умеренный\n40-60%: Высокий\n>60%: Опасный`
+      : 'Нет данных для расчёта');
+  }
+
+  // 25. Оптимальное время для сна
+  const optimalSleep = calculateOptimalSleepTime(
+    sensorData.htu_temperature,
+    sensorData.htu_humidity,
+    sensorData.scd4x_co2,
+    sensorData.microphone_noise
+  );
+  const optimalSleepEl = document.querySelector('.calculated_value.optimal_sleep_time');
+  const optimalSleepCard = document.querySelector('[data-analytics="optimal_sleep_time"]');
+  if (optimalSleepEl && optimalSleep) {
+    optimalSleepEl.innerHTML = optimalSleep.text;
+    optimalSleepEl.className = 'calculated_value optimal_sleep_time ' + optimalSleep.class;
+  }
+  if (optimalSleepCard) {
+    optimalSleepCard.setAttribute('title', optimalSleep
+      ? `Оптимальное время для сна\n\n` +
+        `Оценка условий: ${optimalSleep.text}\n\n` +
+        `Учитываются:\n` +
+        `• Температура (оптимум: 18-20°C)\n` +
+        `• Влажность (оптимум: 40-60%)\n` +
+        `• CO2 (оптимум: <800 ppm)\n` +
+        `• Шум (оптимум: <35 дБ)`
+      : 'Нет данных для расчёта');
+  }
+
+  // 26. Индекс продуктивности
+  const productivity = calculateProductivityIndex(sensorData.scd4x_co2, sensorData.htu_temperature, sensorData.bh1750_lighting);
+  const productivityEl = document.querySelector('.calculated_value.productivity_index');
+  const productivityCard = document.querySelector('[data-analytics="productivity_index"]');
+  if (productivityEl) {
+    const prodDesc = getProductivityIndexDescription(productivity);
+    productivityEl.innerHTML = productivity !== null ? productivity.toFixed(0) : '---';
+    productivityEl.className = 'calculated_value productivity_index';
+    if (prodDesc) productivityEl.classList.add(prodDesc.class);
+  }
+  if (productivityCard) {
+    productivityCard.setAttribute('title', productivity !== null
+      ? `Индекс продуктивности: ${productivity.toFixed(0)}%\n\n` +
+        `Влияние условий на работоспособность.\n\n` +
+        `Учитываются:\n` +
+        `• CO2 (влияет на концентрацию)\n` +
+        `• Температура (комфорт)\n` +
+        `• Освещение (продуктивность)\n\n` +
+        `≥85%: Отлично\n70-84%: Хорошо\n50-69%: Нормально\n` +
+        `30-49%: Низко\n<30%: Критично`
+      : 'Нет данных для расчёта');
+  }
+
+  // 27. Баланс кислорода
+  const oxygenBalance = calculateOxygenBalance(sensorData.scd4x_co2, sensorData.bme_pressure);
+  const oxygenBalanceEl = document.querySelector('.calculated_value.oxygen_balance');
+  const oxygenBalanceCard = document.querySelector('[data-analytics="oxygen_balance"]');
+  if (oxygenBalanceEl) {
+    const o2Desc = getOxygenBalanceDescription(oxygenBalance);
+    oxygenBalanceEl.innerHTML = oxygenBalance !== null ? oxygenBalance.toFixed(0) : '---';
+    oxygenBalanceEl.className = 'calculated_value oxygen_balance';
+    if (o2Desc) oxygenBalanceEl.classList.add(o2Desc.class);
+  }
+  if (oxygenBalanceCard) {
+    oxygenBalanceCard.setAttribute('title', oxygenBalance !== null
+      ? `Баланс кислорода: ${oxygenBalance.toFixed(0)}%\n\n` +
+        `Косвенная оценка уровня O2.\n\n` +
+        `Рассчитывается по:\n` +
+        `• CO2 (при росте CO2 доля O2 падает)\n` +
+        `• Давлению (влияет на парциальное давление)\n\n` +
+        `≥95%: Норма\n85-94%: Снижен\n70-84%: Низкий\n<70%: Гипоксия`
+      : 'Нет данных для расчёта');
+  }
+
+  // 28. Тепловая нагрузка (WBGT)
+  const heatStress = calculateHeatStressIndex(sensorData.htu_temperature, sensorData.htu_humidity, sensorData.bh1750_lighting);
+  const heatStressEl = document.querySelector('.calculated_value.heat_stress_index');
+  const heatStressCard = document.querySelector('[data-analytics="heat_stress_index"]');
+  if (heatStressEl) {
+    const heatDesc = getHeatStressIndexDescription(heatStress);
+    heatStressEl.innerHTML = heatStress !== null ? heatStress.toFixed(1) : '---';
+    heatStressEl.className = 'calculated_value heat_stress_index';
+    if (heatDesc) heatStressEl.classList.add(heatDesc.class);
+  }
+  if (heatStressCard) {
+    heatStressCard.setAttribute('title', heatStress !== null
+      ? `Тепловая нагрузка (WBGT): ${heatStress.toFixed(1)}°C\n\n` +
+        `Wet Bulb Globe Temperature - индекс теплового стресса.\n\n` +
+        `Формула: 0.7*Tw + 0.2*Tg + 0.1*Ta\n\n` +
+        `<18°C: Холодно\n18-24°C: Комфортно\n24-28°C: Тепло\n` +
+        `28-32°C: Жарко\n>32°C: Опасно\n\n` +
+        `Важно для спортивных нагрузок и физических работ.`
+      : 'Нет данных для расчёта');
+  }
+
 }
 
 // Форматирование значения с плавающей точкой
@@ -625,6 +1526,7 @@ function handleWebSocketMessage(event) {
       // Сохраняем данные для расчётных показателей
       if (sensorData.hasOwnProperty(type)) {
         sensorData[type] = rawValue / s.div;
+        console.log('Saved to sensorData:', type, '=', sensorData[type]);
       }
 
       // Автовыбор темы по освещению
@@ -702,6 +1604,9 @@ function autoDarkMode(){
 }
 
 function applyAutoTheme() {
+  // Если тема была переключена вручную, не применяем автовыбор
+  if (localStorage.getItem('darkModeManual') === 'true') return;
+  
   // Автовыбор темы по освещению: < 300 лк = тёмная, >= 300 лк = светлая
   const lux = sensorData.bh1750_lighting;
   if (lux !== null && !isNaN(lux)) {
@@ -712,6 +1617,9 @@ function applyAutoTheme() {
 }
 
 function toggleDarkMode() {
+  // Устанавливаем флаг ручного переключения темы
+  localStorage.setItem('darkModeManual', 'true');
+  
   document.body.classList.toggle('dark-mode');
   const isDark = document.body.classList.contains('dark-mode');
   localStorage.setItem('darkMode', isDark);
@@ -735,6 +1643,7 @@ setInterval(function() {
 }, 1000);
 
 // Вызываем сразу при загрузке
+
 window.onload = function() {
   CurrentTime();
   CurrentDate();

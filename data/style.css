@@ -578,3 +578,214 @@ body.dark-mode .analytics-card[title]:hover::before {
     padding: 10px 12px;
   }
 }
+
+/* ============================================================
+   === НОВЫЕ ПОКАЗАТЕЛИ: ЦВЕТОВАЯ ИНДИКАЦИЯ ===================
+   ============================================================ */
+
+/* Дефицит точки росы */
+.deficit-very-dry { color: #ff6f00 !important; }
+.deficit-dry { color: #ffa000 !important; }
+.deficit-normal { color: #43a047 !important; }
+.deficit-humid { color: #1e88e5 !important; }
+
+body.dark-mode .deficit-very-dry { color: #ff8f00 !important; }
+body.dark-mode .deficit-dry { color: #ffb74d !important; }
+body.dark-mode .deficit-normal { color: #81c784 !important; }
+body.dark-mode .deficit-humid { color: #64b5f6 !important; }
+
+/* Энтальпия */
+.enthalpy-cold { color: #0288d1 !important; }
+.enthalpy-cool { color: #039be5 !important; }
+.enthalpy-comfort { color: #43a047 !important; }
+.enthalpy-warm { color: #f57c00 !important; }
+.enthalpy-hot { color: #d32f2f !important; }
+
+body.dark-mode .enthalpy-cold { color: #4fc3f7 !important; }
+body.dark-mode .enthalpy-cool { color: #81d4fa !important; }
+body.dark-mode .enthalpy-comfort { color: #81c784 !important; }
+body.dark-mode .enthalpy-warm { color: #ffb74d !important; }
+body.dark-mode .enthalpy-hot { color: #e57373 !important; }
+
+/* Риск плесени */
+.mold-low { color: #43a047 !important; }
+.mold-moderate { color: #fdd835 !important; }
+.mold-high { color: #fb8c00 !important; }
+.mold-danger { color: #d32f2f !important; }
+
+body.dark-mode .mold-low { color: #81c784 !important; }
+body.dark-mode .mold-moderate { color: #fff176 !important; }
+body.dark-mode .mold-high { color: #ffb74d !important; }
+body.dark-mode .mold-danger { color: #e57373 !important; }
+
+/* Статическое электричество */
+.static-none { color: #43a047 !important; }
+.static-low { color: #7cb342 !important; }
+.static-medium { color: #fdd835 !important; }
+.static-high { color: #d32f2f !important; }
+
+body.dark-mode .static-none { color: #81c784 !important; }
+body.dark-mode .static-low { color: #9ccc65 !important; }
+body.dark-mode .static-medium { color: #fff176 !important; }
+body.dark-mode .static-high { color: #e57373 !important; }
+
+/* Качество сна */
+.sleep-excellent { color: #2e7d32 !important; }
+.sleep-good { color: #66bb6a !important; }
+.sleep-fair { color: #ffa726 !important; }
+.sleep-poor { color: #ef5350 !important; }
+
+body.dark-mode .sleep-excellent { color: #66bb6a !important; }
+body.dark-mode .sleep-good { color: #81c784 !important; }
+body.dark-mode .sleep-fair { color: #ffb74d !important; }
+body.dark-mode .sleep-poor { color: #e57373 !important; }
+
+/* AQI PM2.5 - шкала ВОЗ с цветовой индикацией */
+.aqi-good { color: #2e7d32 !important; }
+.aqi-moderate { color: #f9a825 !important; }
+.aqi-unhealthy-sensitive { color: #ef6c00 !important; }
+.aqi-unhealthy { color: #c62828 !important; }
+.aqi-very-unhealthy { color: #7b1fa2 !important; }
+.aqi-hazardous { color: #4a148c !important; font-weight: bold !important; }
+
+body.dark-mode .aqi-good { color: #81c784 !important; }
+body.dark-mode .aqi-moderate { color: #fff176 !important; }
+body.dark-mode .aqi-unhealthy-sensitive { color: #ffb74d !important; }
+body.dark-mode .aqi-unhealthy { color: #e57373 !important; }
+body.dark-mode .aqi-very-unhealthy { color: #ce93d8 !important; }
+body.dark-mode .aqi-hazardous { color: #e1bee7 !important; font-weight: bold !important; }
+
+/* Время до проветривания */
+.vent-now { color: #d32f2f !important; font-weight: bold !important; }
+.vent-soon { color: #f57c00 !important; }
+.vent-moderate { color: #fdd835 !important; }
+.vent-later { color: #43a047 !important; }
+
+body.dark-mode .vent-now { color: #e57373 !important; }
+body.dark-mode .vent-soon { color: #ffb74d !important; }
+body.dark-mode .vent-moderate { color: #fff176 !important; }
+body.dark-mode .vent-later { color: #81c784 !important; }
+
+/* ============================================================
+   === НОВЫЕ ПОКАЗАТЕЛИ (10) - ЦВЕТОВАЯ ИНДИКАЦИЯ ==============
+   ============================================================ */
+
+/* 19. Точка замерзания */
+.freeze-safe { color: #43a047 !important; }
+.freeze-warning { color: #ff9800 !important; }
+.freeze-danger { color: #f44336 !important; }
+
+body.dark-mode .freeze-safe { color: #81c784 !important; }
+body.dark-mode .freeze-warning { color: #ffb74d !important; }
+body.dark-mode .freeze-danger { color: #e57373 !important; }
+
+/* 20. Индекс загрязнения */
+.pollution-excellent { color: #2e7d32 !important; }
+.pollution-good { color: #558b2f !important; }
+.pollution-moderate { color: #f9a825 !important; }
+.pollution-unhealthy { color: #ef6c00 !important; }
+.pollution-hazardous { color: #c62828 !important; font-weight: bold !important; }
+
+body.dark-mode .pollution-excellent { color: #81c784 !important; }
+body.dark-mode .pollution-good { color: #a5d6a7 !important; }
+body.dark-mode .pollution-moderate { color: #fff176 !important; }
+body.dark-mode .pollution-unhealthy { color: #ffb74d !important; }
+body.dark-mode .pollution-hazardous { color: #e57373 !important; }
+
+/* 21. Время безопасного пребывания */
+.safe-excellent { color: #2e7d32 !important; }
+.safe-good { color: #66bb6a !important; }
+.safe-moderate { color: #fdd835 !important; }
+.safe-soon { color: #ff9800 !important; }
+.safe-now { color: #f44336 !important; font-weight: bold !important; }
+
+body.dark-mode .safe-excellent { color: #81c784 !important; }
+body.dark-mode .safe-good { color: #a5d6a7 !important; }
+body.dark-mode .safe-moderate { color: #fff176 !important; }
+body.dark-mode .safe-soon { color: #ffb74d !important; }
+body.dark-mode .safe-now { color: #ef5350 !important; font-weight: bold !important; }
+
+/* 22. Эффективность проветривания */
+.vent-eff-excellent { color: #2e7d32 !important; }
+.vent-eff-good { color: #66bb6a !important; }
+.vent-eff-fair { color: #fdd835 !important; }
+.vent-eff-poor { color: #ff9800 !important; }
+.vent-eff-bad { color: #f44336 !important; }
+
+body.dark-mode .vent-eff-excellent { color: #81c784 !important; }
+body.dark-mode .vent-eff-good { color: #a5d6a7 !important; }
+body.dark-mode .vent-eff-fair { color: #fff176 !important; }
+body.dark-mode .vent-eff-poor { color: #ffb74d !important; }
+body.dark-mode .vent-eff-bad { color: #ef5350 !important; }
+
+/* 23. Индекс духоты */
+.discomfort-cold { color: #0288d1 !important; }
+.discomfort-comfort { color: #43a047 !important; }
+.discomfort-warm { color: #f9a825 !important; }
+.discomfort-stuffy { color: #ef6c00 !important; }
+.discomfort-hot { color: #d32f2f !important; }
+
+body.dark-mode .discomfort-cold { color: #4fc3f7 !important; }
+body.dark-mode .discomfort-comfort { color: #81c784 !important; }
+body.dark-mode .discomfort-warm { color: #fff176 !important; }
+body.dark-mode .discomfort-stuffy { color: #ffb74d !important; }
+body.dark-mode .discomfort-hot { color: #e57373 !important; }
+
+/* 24. Риск аллергии */
+.allergy-low { color: #43a047 !important; }
+.allergy-moderate { color: #fdd835 !important; }
+.allergy-high { color: #fb8c00 !important; }
+.allergy-danger { color: #d32f2f !important; }
+
+body.dark-mode .allergy-low { color: #81c784 !important; }
+body.dark-mode .allergy-moderate { color: #fff176 !important; }
+body.dark-mode .allergy-high { color: #ffb74d !important; }
+body.dark-mode .allergy-danger { color: #e57373 !important; }
+
+/* 25. Оптимальное время для сна */
+.sleep-time-now { color: #2e7d32 !important; font-weight: bold !important; }
+.sleep-time-soon { color: #66bb6a !important; }
+.sleep-time-later { color: #f9a825 !important; }
+.sleep-time-wait { color: #757575 !important; }
+
+body.dark-mode .sleep-time-now { color: #81c784 !important; font-weight: bold !important; }
+body.dark-mode .sleep-time-soon { color: #a5d6a7 !important; }
+body.dark-mode .sleep-time-later { color: #fff176 !important; }
+body.dark-mode .sleep-time-wait { color: #9e9e9e !important; }
+
+/* 26. Индекс продуктивности */
+.prod-excellent { color: #2e7d32 !important; }
+.prod-good { color: #558b2f !important; }
+.prod-fair { color: #f9a825 !important; }
+.prod-poor { color: #ef6c00 !important; }
+.prod-critical { color: #c62828 !important; font-weight: bold !important; }
+
+body.dark-mode .prod-excellent { color: #81c784 !important; }
+body.dark-mode .prod-good { color: #a5d6a7 !important; }
+body.dark-mode .prod-fair { color: #fff176 !important; }
+body.dark-mode .prod-poor { color: #ffb74d !important; }
+body.dark-mode .prod-critical { color: #e57373 !important; font-weight: bold !important; }
+
+/* 27. Баланс кислорода */
+.o2-normal { color: #43a047 !important; }
+.o2-low { color: #f9a825 !important; }
+.o2-very-low { color: #ef6c00 !important; }
+.o2-danger { color: #d32f2f !important; }
+
+body.dark-mode .o2-normal { color: #81c784 !important; }
+body.dark-mode .o2-low { color: #fff176 !important; }
+body.dark-mode .o2-very-low { color: #ffb74d !important; }
+body.dark-mode .o2-danger { color: #e57373 !important; }
+
+/* 28. Тепловая нагрузка (WBGT) */
+.wbgt-cold { color: #0288d1 !important; }
+.wbgt-comfort { color: #43a047 !important; }
+.wbgt-warm { color: #f9a825 !important; }
+.wbgt-hot { color: #ef6c00 !important; }
+.wbgt-danger { color: #d32f2f !important; font-weight: bold !important; }
+
+body.dark-mode .wbgt-cold { color: #4fc3f7 !important; }
+body.dark-mode .wbgt-comfort { color: #81c784 !important; }
+body.dark-mode .wbgt-warm { color: #fff176 !important; }
+body.dark-mode .wbgt-hot { color: #ffb74d !important; }
+body.dark-mode .wbgt-danger { color: #e57373 !important; font-weight: bold !important; }
