@@ -1412,20 +1412,50 @@ function formatValue(rawValue, decimals = 1) {
   return val.toFixed(decimals);
 }
 
-// Обновление значения датчика с цветовой индикацией
+// Применение анимации к элементу
+function applyUpdateAnimation(element) {
+  if (!element) return;
+  
+  // Force reflow для перезапуска анимации
+  element.style.animation = 'none';
+  element.offsetHeight; // trigger reflow
+  element.style.animation = null;
+  
+  element.classList.add('value-updated');
+  
+  // Удаляем класс после завершения анимации
+  setTimeout(() => {
+    element.classList.remove('value-updated');
+  }, 300);
+}
+
+// Обновление значения датчика с цветовой индикацией и анимацией
 function updateSensorValue(type, value) {
   const el = document.querySelector(`.measured_value.${type}`);
   if (!el) return;
+
+  const oldValue = parseFloat(el.dataset.lastValue) || null;
+  const newValue = parseFloat(value);
   
+  // Сохраняем последнее значение
+  el.dataset.lastValue = value;
+  
+  // Обновляем отображаемое значение
   el.innerHTML = value;
-  
+
+  // Применяем анимацию при изменении
+  if (oldValue !== null && oldValue !== newValue) {
+    console.log('Animating:', type, oldValue, '→', newValue);
+    applyUpdateAnimation(el);
+  }
+
   // Получаем пороги для этого датчика
   const thresholds = SENSOR_THRESHOLDS[type];
   if (!thresholds) return;
-  
+
   // Удаляем старые классы статуса
   el.classList.remove('status-ok', 'status-warning', 'status-critical');
-  
+
   // Определяем и применяем новый статус
   const numValue = parseFloat(value);
   if (!isNaN(numValue)) {
