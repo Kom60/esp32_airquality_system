@@ -827,9 +827,9 @@ body.dark-mode .wbgt-danger { color: #e57373 !important; font-weight: bold !impo
 .tab-btn {
   flex: 1 1 auto;
   min-width: 120px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   font-family: "Press Start 2P", system-ui;
-  font-size: 0.7em;
+  font-size: clamp(0.5em, 2.5vw, 0.7em);
   font-weight: 400;
   border: 2px solid #666;
   border-radius: 8px;
@@ -842,6 +842,7 @@ body.dark-mode .wbgt-danger { color: #e57373 !important; font-weight: bold !impo
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+  line-height: 1.2;
 }
 
 .tab-btn:hover {
@@ -905,21 +906,24 @@ body.dark-mode .tab-btn.active {
   .analytics-tabs {
     gap: 6px;
   }
-  
+
   .tab-btn {
-    min-width: 100px;
-    padding: 10px 12px;
-    font-size: 0.65em;
+    min-width: 80px;
+    padding: 8px 10px;
+    font-size: clamp(0.45em, 2vw, 0.6em);
   }
 }
 
 @media (max-width: 480px) {
   .analytics-tabs {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
-  
+
   .tab-btn {
-    min-width: auto;
-    width: 100%;
+    min-width: calc(50% - 4px);
+    width: calc(50% - 4px);
+    padding: 8px 6px;
+    font-size: clamp(0.4em, 1.8vw, 0.55em);
   }
 }
