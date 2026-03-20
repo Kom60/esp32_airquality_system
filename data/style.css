@@ -809,3 +809,117 @@ body.dark-mode .wbgt-comfort { color: #81c784 !important; }
 body.dark-mode .wbgt-warm { color: #fff176 !important; }
 body.dark-mode .wbgt-hot { color: #ffb74d !important; }
 body.dark-mode .wbgt-danger { color: #e57373 !important; font-weight: bold !important; }
+
+/* ============================================================
+   === ТАБЫ ДЛЯ АНАЛИТИКИ ======================================
+   ============================================================ */
+
+/* Контейнер табов */
+.analytics-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+  padding: 0 1%;
+}
+
+/* Кнопки табов */
+.tab-btn {
+  flex: 1 1 auto;
+  min-width: 120px;
+  padding: 12px 16px;
+  font-family: "Press Start 2P", system-ui;
+  font-size: 0.7em;
+  font-weight: 400;
+  border: 2px solid #666;
+  border-radius: 8px;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 1px 1px 2px rgba(117, 117, 114, 0.5);
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.tab-btn:hover {
+  background: rgba(100, 100, 100, 0.1);
+  border-color: #999;
+  color: #999;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #4CAF50, #8BC34A);
+  border-color: #2E7D32;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Контент табов */
+.tab-content {
+  display: none;
+  animation: tabFadeIn 0.3s ease;
+}
+
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ночная тема для табов */
+body.dark-mode .tab-btn {
+  border-color: #555;
+  color: #888;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .tab-btn:hover {
+  background: rgba(150, 150, 150, 0.1);
+  border-color: #777;
+  color: #aaa;
+}
+
+body.dark-mode .tab-btn.active {
+  background: linear-gradient(135deg, #2E7D32, #4CAF50);
+  border-color: #4CAF50;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .analytics-tabs {
+    gap: 6px;
+  }
+  
+  .tab-btn {
+    min-width: 100px;
+    padding: 10px 12px;
+    font-size: 0.65em;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-tabs {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    min-width: auto;
+    width: 100%;
+  }
+}

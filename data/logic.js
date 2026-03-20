@@ -1649,7 +1649,7 @@ function applyAutoTheme() {
 function toggleDarkMode() {
   // Устанавливаем флаг ручного переключения темы
   localStorage.setItem('darkModeManual', 'true');
-  
+
   document.body.classList.toggle('dark-mode');
   const isDark = document.body.classList.contains('dark-mode');
   localStorage.setItem('darkMode', isDark);
@@ -1657,6 +1657,45 @@ function toggleDarkMode() {
     document.querySelector('.dark-mode-button').src = 'on_bubl.png';
   } else {
     document.querySelector('.dark-mode-button').src = 'off_bubl.png';
+  }
+}
+
+// === Переключение табов аналитики ===
+function initAnalyticsTabs() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const tabId = button.getAttribute('data-tab');
+      
+      // Удаляем активный класс у всех кнопок и контента
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+      
+      // Добавляем активный класс текущей кнопке и контенту
+      button.classList.add('active');
+      const targetContent = document.getElementById('tab-' + tabId);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+      
+      // Сохраняем выбранный таб в localStorage
+      localStorage.setItem('analyticsTab', tabId);
+    });
+  });
+  
+  // Восстанавливаем последний выбранный таб
+  const savedTab = localStorage.getItem('analyticsTab');
+  if (savedTab) {
+    const savedButton = document.querySelector('.tab-btn[data-tab="' + savedTab + '"]');
+    const savedContent = document.getElementById('tab-' + savedTab);
+    if (savedButton && savedContent) {
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+      savedButton.classList.add('active');
+      savedContent.classList.add('active');
+    }
   }
 }
 
@@ -1679,5 +1718,6 @@ window.onload = function() {
   CurrentDate();
   setTextColor();
   autoDarkMode();
+  initAnalyticsTabs();
   initWebSocket();
 };
