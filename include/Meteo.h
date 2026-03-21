@@ -84,10 +84,15 @@ public:
     
     // Microphone noise data
     float microphone_noise{};
-    
+
+    // INA226 sensor data
+    float ina226_voltage{};
+    float ina226_current{};
+    float ina226_power{};
+
     // Constructor
     Meteo_data();
-    
+
     // Print methods
     void print_values();
     void print_bme_values();
@@ -99,7 +104,8 @@ public:
     void print_veml_values();
     void print_ch2o_values();
     void print_microphone_values();
-    
+    void print_ina226_values();
+
     // Update methods
     void update_bme_data(float temperature, float pressure, float humidity);
     void update_htu_data(float temperature, float humidity);
@@ -110,6 +116,7 @@ public:
     void update_veml_data(uint16_t uv_val);
     void update_ch2o_data(float ch2o_val);
     void update_microphone_data(float noise_val);
+    void update_ina226_data(float voltage, float current, float power);
 };
 
 extern Meteo_data AIR_data;

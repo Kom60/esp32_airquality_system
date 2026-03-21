@@ -1,12 +1,16 @@
 #include "headers.h"
 #include "settings.h"
 #include "microphone.h"
+#include "ina226.h"
 
 // Переменные
 QueueHandle_t samples_queue;
 TaskHandle_t INMP441_measurementTask;
 TaskHandle_t webSocketTaskHandle = NULL;
 TaskHandle_t sendDataTaskHandle = NULL;
+
+// External sensor objects
+extern INA226_Sensor ina226;
 
 // Static buffer for block of samples
 float samples[SAMPLES_SHORT] __attribute__((aligned(4)));
@@ -19,7 +23,7 @@ bool is_valid_float(float value) {
 TaskHandle_t CO2_measurementTask, BME_measurementTask,
     HTU_measurementTask, BH1750_measurementTask, CH2O_measurementTask,
     PMS_measurementTask, MS5611_measurementTask, VEML_measurementTask,
-    DISPLAY_measurementTask;
+    DISPLAY_measurementTask, INA226_measurementTask;
 
 // Проверка готовности данных от всех датчиков
 bool are_all_sensors_ready() {
@@ -52,7 +56,7 @@ void DISPLAY_measurementTaskFunction(void *parameter)
     const unsigned long DISPLAY_INTERVAL = 60000;  // 1 минута в миллисекундах
     bool display_initialized = false;
 
-    vTaskDelay(pdMS_TO_TICKS(1000));  // Ждём 1 сек для первичной инициализации
+    vTaskDelay(pdMS_TO_TICKS(500));  // Ждём 0.5 сек для первичной инициализации
 
     Serial.println("[DISPLAY] Task started");
 
@@ -510,7 +514,12 @@ void sendDataTaskFunction(void *parameter)
             
             // Microphone data
             sendJson("microphone_noise", String(AIR_data.microphone_noise));
-            
+
+            // INA226 sensor data
+            sendJson("ina226_voltage", String(AIR_data.ina226_voltage));
+            sendJson("ina226_current", String(AIR_data.ina226_current));
+            sendJson("ina226_power", String(AIR_data.ina226_power));
+
             // Отправка данных о системе
             sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
             sendJson("esp32_cpu_temp", String(temperatureRead()));
@@ -539,7 +548,37 @@ void sendDataTaskFunction(void *parameter)
         send_data_loop_total_time += loop_time;
         send_data_loop_count++;
         send_data_loop_start_time = micros();
-        
+
         vTaskDelay(pdMS_TO_TICKS(10));  // Небольшая задержка для стабильности
     }
 }
+
+// Задача измерения INA226 (ток, напряжение, мощность)
+void INA226_measurementTaskFunction(void *parameter)
+{
+    vTaskDelay(pdMS_TO_TICKS(500));  // Ждём инициализации I2C
+    
+    Serial.println("[INA226] Task started");
+    
+    if (!ina226.begin()) {
+        Serial.println("[INA226] Initialization failed!");
+        vTaskDelete(NULL);
+        return;
+    }
+    
+    for (;;) {
+        ina226.read();
+
+        AIR_data.update_ina226_data(
+            ina226.bus_voltage,
+            ina226.current,
+            ina226.power
+        );
+
+        Serial.printf("[INA226] V: %.3fV, I: %.3fA, P: %.3fW\n",
+                      ina226.bus_voltage, ina226.current, ina226.power);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));  // Обновление раз в секунду
+    }
+}
+

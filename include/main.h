@@ -2,6 +2,7 @@
 #include "microphone.h"
 #include "webheaders.h"
 #include "secrets.h"
+#include "ina226.h"
 
 SCD4X co2;
 double co2Value = 0, temperature = 0, humidity = 0;
@@ -18,6 +19,7 @@ MS5611 ms5611;
 BH1750 lightMeter(0x23);
 Adafruit_BME280 bme; // I2C 0x77 adress
 Adafruit_VEML6070 uv = Adafruit_VEML6070();
+extern INA226_Sensor ina226;
 
 
 TFT_eSPI tft = TFT_eSPI();  // Create object "tft"
@@ -40,4 +42,7 @@ void handleReboot(AsyncWebServerRequest *request);
 
 // Инициализация WiFi
 void wifi_setup();
+
+// Задача INA226
+extern TaskHandle_t INA226_measurementTask;
 

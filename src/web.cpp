@@ -85,6 +85,9 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     sendJson("veml_uv", String(AIR_data.veml_uv));
     sendJson("ch2o_value", String(AIR_data.ch2o_value));
     sendJson("microphone_noise", String(AIR_data.microphone_noise));
+    sendJson("ina226_voltage", String(AIR_data.ina226_voltage));
+    sendJson("ina226_current", String(AIR_data.ina226_current));
+    sendJson("ina226_power", String(AIR_data.ina226_power));
     sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
     sendJson("esp32_cpu_temp", String(temperatureRead()));
     sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
@@ -286,7 +289,12 @@ void send_data_to_pc()
   json += "\"ch2o_value\":" + format_float(AIR_data.ch2o_value, 3) + ",";
 
   // Microphone data
-  json += "\"microphone_noise\":" + format_float(AIR_data.microphone_noise);
+  json += "\"microphone_noise\":" + format_float(AIR_data.microphone_noise) + ",";
+
+  // INA226 sensor data
+  json += "\"ina226_voltage\":" + format_float(AIR_data.ina226_voltage, 3) + ",";
+  json += "\"ina226_current\":" + format_float(AIR_data.ina226_current, 3) + ",";
+  json += "\"ina226_power\":" + format_float(AIR_data.ina226_power, 3);
 
   json += "}";
 

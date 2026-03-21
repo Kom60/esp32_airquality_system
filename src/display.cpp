@@ -351,4 +351,54 @@ void display_all_data()
   char heap_str[16];
   sprintf(heap_str, "%d KB", (int)(free_heap / 1024));
   tft.drawString(heap_str, label_x + 70, y);
+  y += 12;
+
+  // ==================== INA226 POWER ====================
+  // Напряжение
+  if (is_valid_float(AIR_data.ina226_voltage)) {
+    float voltage = AIR_data.ina226_voltage;
+    uint16_t voltage_color = (voltage < 2.8 || voltage > 3.8) ? TFT_RED : 
+                             (voltage < 3.0 || voltage > 3.6) ? TFT_YELLOW : TFT_GREEN;
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawString("INA226 V:", label_x, y);
+    tft.setTextColor(voltage_color, TFT_BLACK);
+    char voltage_str[16];
+    sprintf(voltage_str, "%.3f V", voltage);
+    tft.drawString(voltage_str, label_x + 65, y);
+  } else {
+    tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+    tft.drawString("INA226 V: ---", label_x, y);
+  }
+  y += 12;
+
+  // Ток
+  if (is_valid_float(AIR_data.ina226_current)) {
+    float current = AIR_data.ina226_current;
+    uint16_t current_color = (current > 2.0) ? TFT_RED : ((current > 1.5) ? TFT_YELLOW : TFT_GREEN);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawString("INA226 A:", label_x, y);
+    tft.setTextColor(current_color, TFT_BLACK);
+    char current_str[16];
+    sprintf(current_str, "%.3f A", current);
+    tft.drawString(current_str, label_x + 65, y);
+  } else {
+    tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+    tft.drawString("INA226 A: ---", label_x, y);
+  }
+  y += 12;
+
+  // Мощность
+  if (is_valid_float(AIR_data.ina226_power)) {
+    float power = AIR_data.ina226_power;
+    uint16_t power_color = (power > 5.0) ? TFT_RED : ((power > 3.0) ? TFT_YELLOW : TFT_GREEN);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawString("INA226 W:", label_x, y);
+    tft.setTextColor(power_color, TFT_BLACK);
+    char power_str[16];
+    sprintf(power_str, "%.3f W", power);
+    tft.drawString(power_str, label_x + 65, y);
+  } else {
+    tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+    tft.drawString("INA226 W: ---", label_x, y);
+  }
 }

@@ -18,6 +18,9 @@ Meteo_data::Meteo_data()
       ,veml_uv{0}
       ,ch2o_value{0}
       ,microphone_noise{0}
+      ,ina226_voltage{0}
+      ,ina226_current{0}
+      ,ina226_power{0}
 {
 
 }
@@ -136,6 +139,23 @@ void Meteo_data::print_microphone_values()
   Serial.println();
 }
 
+void Meteo_data::print_ina226_values()
+{
+  Serial.println("INA226 SENSOR:");
+  Serial.print("Voltage:\t");
+  Serial.print(ina226_voltage, 3);
+  Serial.println(" V");
+
+  Serial.print("Current:\t");
+  Serial.print(ina226_current, 3);
+  Serial.println(" A");
+
+  Serial.print("Power:\t");
+  Serial.print(ina226_power, 3);
+  Serial.println(" W");
+  Serial.println();
+}
+
 void Meteo_data::print_values()
 {
   print_bme_values();
@@ -147,6 +167,7 @@ void Meteo_data::print_values()
   print_veml_values();
   print_ch2o_values();
   print_microphone_values();
+  print_ina226_values();
 }
 
 void Meteo_data::update_bme_data(float temperature, float pressure, float humidity)
@@ -200,4 +221,11 @@ void Meteo_data::update_ch2o_data(float ch2o_val)
 void Meteo_data::update_microphone_data(float noise_val)
 {
   microphone_noise = noise_val;
+}
+
+void Meteo_data::update_ina226_data(float voltage, float current, float power)
+{
+  ina226_voltage = voltage;
+  ina226_current = current;
+  ina226_power = power;
 }

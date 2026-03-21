@@ -7,7 +7,7 @@
 // Структура настроек
 struct StationSettings {
   // Интервал обновления
-  int update_interval = 90;  // секунды
+  int update_interval = 10;  // секунды
   
   // WiFi настройки
   char wifi_ssid[33] = "";

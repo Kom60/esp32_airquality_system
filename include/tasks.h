@@ -17,6 +17,7 @@ void PMS_measurementTaskFunction(void *parameter);
 void MS5611_measurementTaskFunction(void *parameter);
 void VEML_measurementTaskFunction(void *parameter);
 void DISPLAY_measurementTaskFunction(void *parameter);
+void INA226_measurementTaskFunction(void *parameter);
 void microphone_init(void);
 void webSocketTaskFunction(void *parameter);
 void sendDataTaskFunction(void *parameter);

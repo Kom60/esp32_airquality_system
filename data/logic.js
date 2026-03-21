@@ -1526,6 +1526,30 @@ function handleWebSocketMessage(event) {
       }
       return;
     }
+    
+    // INA226 sensor data
+    if (type === 'ina226_voltage') {
+      const el = document.querySelector('.dungen_value.ina226_voltage');
+      if (el) {
+        el.innerHTML = rawValue.toFixed(3);
+        // Цветовая индикация напряжения
+        el.classList.remove('good', 'warning', 'critical');
+        if (rawValue >= 3.0 && rawValue <= 3.6) el.classList.add('good');
+        else if (rawValue >= 2.8 && rawValue <= 3.8) el.classList.add('warning');
+        else el.classList.add('critical');
+      }
+      return;
+    }
+    if (type === 'ina226_current') {
+      const el = document.querySelector('.dungen_value.ina226_current');
+      if (el) el.innerHTML = rawValue.toFixed(3);
+      return;
+    }
+    if (type === 'ina226_power') {
+      const el = document.querySelector('.dungen_value.ina226_power');
+      if (el) el.innerHTML = rawValue.toFixed(3);
+      return;
+    }
 
     // Датчики - форматирование и отображение
     const sensors = {
