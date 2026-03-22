@@ -9,7 +9,7 @@ int random_intensity = 5;
 const int ARRAY_LENGTH=10;
 float sens_vals[ARRAY_LENGTH];
 
-AsyncWebServer server(80);                         // the server uses port 80 (standard port for websites
+AsyncWebServer server(80);                         // the server uses port 80 (standard port for this website
 WebSocketsServer webSocket = WebSocketsServer(81); // the websocket uses port 81
 
 // Инициализация веб-сервера и WebSocket
@@ -65,29 +65,27 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     Serial.println("[WS] Client " + String(num) + " connected");
     Serial.println("[WS] Sending initial data...");
 
-    // send variables to newly connected web client
-    sendJson("bme_temperature", String(AIR_data.bme_temperature));
-    Serial.println("[WS] Sent bme_temperature: " + String(AIR_data.bme_temperature));
-    
-    sendJson("bme_pressure", String(AIR_data.bme_pressure));
-    sendJson("bme_humidity", String(AIR_data.bme_humidity));
-    sendJson("htu_temperature", String(AIR_data.htu_temperature));
-    sendJson("htu_humidity", String(AIR_data.htu_humidity));
-    sendJson("scd4x_co2", String(AIR_data.scd4x_co2));
-    sendJson("scd4x_temperature", String(AIR_data.scd4x_temperature));
-    sendJson("scd4x_humidity", String(AIR_data.scd4x_humidity));
-    sendJson("pms_pm1", String(AIR_data.pms_pm1));
-    sendJson("pms_pm2_5", String(AIR_data.pms_pm2_5));
-    sendJson("pms_pm10", String(AIR_data.pms_pm10));
-    sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure));
-    sendJson("ms5611_temperature", String(AIR_data.ms5611_temperature));
-    sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting));
-    sendJson("veml_uv", String(AIR_data.veml_uv));
-    sendJson("ch2o_value", String(AIR_data.ch2o_value));
-    sendJson("microphone_noise", String(AIR_data.microphone_noise));
-    sendJson("ina226_voltage", String(AIR_data.ina226_voltage));
-    sendJson("ina226_current", String(AIR_data.ina226_current));
-    sendJson("ina226_power", String(AIR_data.ina226_power));
+    // send variables to newly connected web client (используем скользящее среднее)
+    sendJson("bme_temperature", String(meteo_buffer.get_avg_bme_temperature()));
+    sendJson("bme_pressure", String(meteo_buffer.get_avg_bme_pressure()));
+    sendJson("bme_humidity", String(meteo_buffer.get_avg_bme_humidity()));
+    sendJson("htu_temperature", String(meteo_buffer.get_avg_htu_temperature()));
+    sendJson("htu_humidity", String(meteo_buffer.get_avg_htu_humidity()));
+    sendJson("scd4x_co2", String((int)meteo_buffer.get_avg_scd4x_co2()));
+    sendJson("scd4x_temperature", String(meteo_buffer.get_avg_scd4x_temperature()));
+    sendJson("scd4x_humidity", String(meteo_buffer.get_avg_scd4x_humidity()));
+    sendJson("pms_pm1", String(meteo_buffer.get_avg_pms_pm1()));
+    sendJson("pms_pm2_5", String(meteo_buffer.get_avg_pms_pm2_5()));
+    sendJson("pms_pm10", String(meteo_buffer.get_avg_pms_pm10()));
+    sendJson("ms5611_pressure", String(meteo_buffer.get_avg_ms5611_pressure()));
+    sendJson("ms5611_temperature", String(meteo_buffer.get_avg_ms5611_temperature()));
+    sendJson("bh1750_lighting", String(meteo_buffer.get_avg_bh1750_lighting()));
+    sendJson("veml_uv", String(meteo_buffer.get_avg_veml_uv()));
+    sendJson("ch2o_value", String(meteo_buffer.get_avg_ch2o_value()));
+    sendJson("microphone_noise", String(meteo_buffer.get_ema_microphone_noise()));
+    sendJson("ina226_voltage", String(meteo_buffer.get_avg_ina226_voltage()));
+    sendJson("ina226_current", String(meteo_buffer.get_avg_ina226_current()));
+    sendJson("ina226_power", String(meteo_buffer.get_avg_ina226_power()));
     sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
     sendJson("esp32_cpu_temp", String(temperatureRead()));
     sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
@@ -134,11 +132,11 @@ void sendJson(String l_type, String l_value)
   object["type"] = l_type;
   object["value"] = l_value;
   serializeJson(doc, jsonString);
-  
+
   // Отладка
   //Serial.print("[WS] Sending: ");
   //Serial.println(jsonString);
-  
+
   webSocket.broadcastTXT(jsonString);
 }
 
@@ -175,15 +173,15 @@ void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t le
     request->send(400, "application/json", "{\"error\":\"No data\"}");
     return;
   }
-  
+
   StaticJsonDocument<1024> doc;
   DeserializationError error = deserializeJson(doc, data, len);
-  
+
   if (error) {
     request->send(400, "application/json", "{\"error\":\"Invalid JSON\"}");
     return;
   }
-  
+
   // WiFi настройки
   const char* ssid = doc["wifi_ssid"];
   const char* password = doc["wifi_password"];
@@ -195,7 +193,7 @@ void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t le
     strncpy(settings.wifi_password, password, 64);
     settings.wifi_password[64] = '\0';
   }
-  
+
   // Сохраняем остальные настройки
   settings.update_interval = doc["update_interval"] | 10;
   settings.temp_offset_bme = doc["temp_offset_bme"] | 0.0;
@@ -211,7 +209,7 @@ void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t le
   settings.pm25_critical = doc["pm25_critical"] | 50;
   settings.night_mode_start = doc["night_mode_start"] | 23;
   settings.night_mode_end = doc["night_mode_end"] | 7;
-  
+
   settings_save();
   request->send(200, "application/json", "{\"status\":\"ok\"}");
 }
@@ -243,7 +241,7 @@ static String format_float(float value, int decimals = 1)
   return String(buf);
 }
 
-// Отправка данных на ПК
+// Отправка данных на ПК (используем скользящее среднее)
 void send_data_to_pc()
 {
   HTTPClient http;
@@ -252,49 +250,49 @@ void send_data_to_pc()
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
 
-  // Формируем ВАЛИДНЫЙ JSON с использованием новых имен переменных
+  // Формируем ВАЛИДНЫЙ JSON с использованием скользящего среднего
   String json = "{";
 
-  // BME280 sensor data
-  json += "\"bme_temperature\":" + format_float(AIR_data.bme_temperature) + ",";
-  json += "\"bme_pressure\":" + format_float(AIR_data.bme_pressure) + ",";
-  json += "\"bme_humidity\":" + format_float(AIR_data.bme_humidity) + ",";
+  // BME280 sensor data (скользящее среднее)
+  json += "\"bme_temperature\":" + format_float(meteo_buffer.get_avg_bme_temperature()) + ",";
+  json += "\"bme_pressure\":" + format_float(meteo_buffer.get_avg_bme_pressure()) + ",";
+  json += "\"bme_humidity\":" + format_float(meteo_buffer.get_avg_bme_humidity()) + ",";
 
-  // HTU21DF sensor data
-  json += "\"htu_temperature\":" + format_float(AIR_data.htu_temperature) + ",";
-  json += "\"htu_humidity\":" + format_float(AIR_data.htu_humidity) + ",";
+  // HTU21DF sensor data (скользящее среднее)
+  json += "\"htu_temperature\":" + format_float(meteo_buffer.get_avg_htu_temperature()) + ",";
+  json += "\"htu_humidity\":" + format_float(meteo_buffer.get_avg_htu_humidity()) + ",";
 
-  // SCD4X sensor data
-  json += "\"scd4x_co2\":" + String(is_valid_float(AIR_data.scd4x_co2) ? (int)AIR_data.scd4x_co2 : 0) + ",";
-  json += "\"scd4x_temperature\":" + format_float(AIR_data.scd4x_temperature) + ",";
-  json += "\"scd4x_humidity\":" + format_float(AIR_data.scd4x_humidity) + ",";
+  // SCD4X sensor data (скользящее среднее)
+  json += "\"scd4x_co2\":" + String((int)meteo_buffer.get_avg_scd4x_co2()) + ",";
+  json += "\"scd4x_temperature\":" + format_float(meteo_buffer.get_avg_scd4x_temperature()) + ",";
+  json += "\"scd4x_humidity\":" + format_float(meteo_buffer.get_avg_scd4x_humidity()) + ",";
 
-  // PMS sensor data
-  json += "\"pms_pm1\":" + String(AIR_data.pms_pm1) + ",";
-  json += "\"pms_pm2_5\":" + String(AIR_data.pms_pm2_5) + ",";
-  json += "\"pms_pm10\":" + String(AIR_data.pms_pm10) + ",";
+  // PMS sensor data (скользящее среднее)
+  json += "\"pms_pm1\":" + String(meteo_buffer.get_avg_pms_pm1()) + ",";
+  json += "\"pms_pm2_5\":" + String(meteo_buffer.get_avg_pms_pm2_5()) + ",";
+  json += "\"pms_pm10\":" + String(meteo_buffer.get_avg_pms_pm10()) + ",";
 
-  // MS5611 sensor data
-  json += "\"ms5611_pressure\":" + format_float(AIR_data.ms5611_pressure) + ",";
-  json += "\"ms5611_temperature\":" + format_float(AIR_data.ms5611_temperature) + ",";
+  // MS5611 sensor data (скользящее среднее)
+  json += "\"ms5611_pressure\":" + format_float(meteo_buffer.get_avg_ms5611_pressure()) + ",";
+  json += "\"ms5611_temperature\":" + format_float(meteo_buffer.get_avg_ms5611_temperature()) + ",";
 
 
-  // BH1750 sensor data
-  json += "\"bh1750_lighting\":" + format_float(AIR_data.bh1750_lighting) + ",";
+  // BH1750 sensor data (скользящее среднее)
+  json += "\"bh1750_lighting\":" + format_float(meteo_buffer.get_avg_bh1750_lighting()) + ",";
 
-  // VEML6070 sensor data
-  json += "\"veml_uv\":" + String(AIR_data.veml_uv) + ",";
+  // VEML6070 sensor data (скользящее среднее)
+  json += "\"veml_uv\":" + String(meteo_buffer.get_avg_veml_uv()) + ",";
 
-  // CH2O sensor data
-  json += "\"ch2o_value\":" + format_float(AIR_data.ch2o_value, 3) + ",";
+  // CH2O sensor data (скользящее среднее)
+  json += "\"ch2o_value\":" + format_float(meteo_buffer.get_avg_ch2o_value(), 3) + ",";
 
-  // Microphone data
-  json += "\"microphone_noise\":" + format_float(AIR_data.microphone_noise) + ",";
+  // Microphone data (EMA)
+  json += "\"microphone_noise\":" + format_float(meteo_buffer.get_ema_microphone_noise()) + ",";
 
-  // INA226 sensor data
-  json += "\"ina226_voltage\":" + format_float(AIR_data.ina226_voltage, 3) + ",";
-  json += "\"ina226_current\":" + format_float(AIR_data.ina226_current, 3) + ",";
-  json += "\"ina226_power\":" + format_float(AIR_data.ina226_power, 3);
+  // INA226 sensor data (скользящее среднее)
+  json += "\"ina226_voltage\":" + format_float(meteo_buffer.get_avg_ina226_voltage(), 3) + ",";
+  json += "\"ina226_current\":" + format_float(meteo_buffer.get_avg_ina226_current(), 3) + ",";
+  json += "\"ina226_power\":" + format_float(meteo_buffer.get_avg_ina226_power(), 3);
 
   json += "}";
 

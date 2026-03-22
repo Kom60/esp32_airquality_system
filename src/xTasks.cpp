@@ -25,35 +25,36 @@ TaskHandle_t CO2_measurementTask, BME_measurementTask,
     PMS_measurementTask, MS5611_measurementTask, VEML_measurementTask,
     DISPLAY_measurementTask, INA226_measurementTask;
 
-// Проверка готовности данных от всех датчиков
+// Проверка готовности данных от всех датчиков (используем скользящее среднее)
 bool are_all_sensors_ready() {
-  // Проверяем основные датчики
-  if (!is_valid_float(AIR_data.bme_temperature)) return false;
-  if (!is_valid_float(AIR_data.bme_pressure)) return false;
-  if (!is_valid_float(AIR_data.bme_humidity)) return false;
-  
-  if (!is_valid_float(AIR_data.htu_temperature)) return false;
-  if (!is_valid_float(AIR_data.htu_humidity)) return false;
-  
-  if (!is_valid_float(AIR_data.ms5611_pressure)) return false;
-  
-  if (AIR_data.scd4x_co2 <= 0 || AIR_data.scd4x_co2 > 5000) return false;
-  
-  if (AIR_data.pms_pm1 < 0 || AIR_data.pms_pm1 > 500) return false;
-  if (AIR_data.pms_pm2_5 < 0 || AIR_data.pms_pm2_5 > 500) return false;
-  if (AIR_data.pms_pm10 < 0 || AIR_data.pms_pm10 > 500) return false;
-  
-  if (!is_valid_float(AIR_data.bh1750_lighting)) return false;
-  if (!is_valid_float(AIR_data.ch2o_value)) return false;
-  if (!is_valid_float(AIR_data.microphone_noise)) return false;
-  
+  // Проверяем основные датчики через скользящее среднее
+  if (!is_valid_float(meteo_buffer.get_avg_bme_temperature())) return false;
+  if (!is_valid_float(meteo_buffer.get_avg_bme_pressure())) return false;
+  if (!is_valid_float(meteo_buffer.get_avg_bme_humidity())) return false;
+
+  if (!is_valid_float(meteo_buffer.get_avg_htu_temperature())) return false;
+  if (!is_valid_float(meteo_buffer.get_avg_htu_humidity())) return false;
+
+  if (!is_valid_float(meteo_buffer.get_avg_ms5611_pressure())) return false;
+
+  float avg_co2 = meteo_buffer.get_avg_scd4x_co2();
+  if (avg_co2 <= 0 || avg_co2 > 5000) return false;
+
+  if (meteo_buffer.get_avg_pms_pm1() > 500) return false;
+  if (meteo_buffer.get_avg_pms_pm2_5() > 500) return false;
+  if (meteo_buffer.get_avg_pms_pm10() > 500) return false;
+
+  if (!is_valid_float(meteo_buffer.get_avg_bh1750_lighting())) return false;
+  if (!is_valid_float(meteo_buffer.get_avg_ch2o_value())) return false;
+  if (!is_valid_float(meteo_buffer.get_avg_microphone_noise())) return false;
+
   return true;
 }
 
-// Задача обновления дисплея (раз в 1 минуту)
+// Задача обновления дисплея (раз в 20 секунд)
 void DISPLAY_measurementTaskFunction(void *parameter)
 {
-    const unsigned long DISPLAY_INTERVAL = 60000;  // 1 минута в миллисекундах
+    const unsigned long DISPLAY_INTERVAL = 20000;  // 20 секунд в миллисекундах
     bool display_initialized = false;
 
     vTaskDelay(pdMS_TO_TICKS(500));  // Ждём 0.5 сек для первичной инициализации
@@ -69,7 +70,7 @@ void DISPLAY_measurementTaskFunction(void *parameter)
             Serial.println("[DISPLAY] Updated");
         }
 
-        // Ждём следующий цикл (1 минута)
+        // Ждём следующий цикл (20 секунд)
         vTaskDelay(pdMS_TO_TICKS(DISPLAY_INTERVAL));
     }
 }
@@ -254,6 +255,7 @@ void CO2_measurementTaskFunction(void *parameter)
                         temperature += settings.temp_offset_scd;
 
                         AIR_data.update_scd4x_data(co2Value, temperature, humidity);
+                        meteo_buffer.push();
 
                         Serial.printf("CO2: %.0f ppm, Temperature: %.1f °C, Humidity: %.0f %%RH\n", co2Value, temperature, humidity);
 
@@ -313,19 +315,21 @@ void BME_measurementTaskFunction(void *parameter)
             xSemaphoreTake(i2c_mutex, portMAX_DELAY);
             // BME280 возвращает: температура (°C), давление (Па), влажность (%)
             // Делим на 100 для конвертации в гПа
+            // BME280: время измерения 16ms (typ), 1Hz достаточно
             AIR_data.update_bme_data(bme.readTemperature(), bme.readPressure() / 100.0F, bme.readHumidity());
+            meteo_buffer.push();
             xSemaphoreGive(i2c_mutex);
         }
-        
+
         // Применяем калибровку ЗА пределами mutex
         AIR_data.bme_temperature += settings.temp_offset_bme;
         AIR_data.bme_pressure += settings.press_offset_bme;
         AIR_data.bme_humidity += settings.hum_offset_bme;
 
-        sendJson("bme_temperature", String(AIR_data.bme_temperature));  // Температура в °C (без *100)
-        sendJson("bme_pressure", String(AIR_data.bme_pressure));         // Давление в гПа
-        sendJson("bme_humidity", String(AIR_data.bme_humidity));         // Влажность в % (без *100)
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        sendJson("bme_temperature", String(meteo_buffer.get_avg_bme_temperature()));
+        sendJson("bme_pressure", String(meteo_buffer.get_avg_bme_pressure()));
+        sendJson("bme_humidity", String(meteo_buffer.get_avg_bme_humidity()));
+        vTaskDelay(pdMS_TO_TICKS(1000));  // BME280: 1Hz (оптимально для баланса шум/скорость)
     }
 }
 
@@ -339,19 +343,21 @@ void HTU_measurementTaskFunction(void *parameter)
     {
         if (i2c_mutex != NULL) {
             xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+            // HTU21DF: время измерения T=14bit/RH=12bit, ~50ms
             temp = htu.readTemperature();
             hum = htu.readHumidity();
             xSemaphoreGive(i2c_mutex);
         }
         AIR_data.update_htu_data(temp, hum);
+        meteo_buffer.push();
 
         // Применяем калибровку ЗА пределами mutex
         AIR_data.htu_temperature += settings.temp_offset_htu;
         AIR_data.htu_humidity += settings.hum_offset_htu;
 
-        sendJson("htu_temperature", String(AIR_data.htu_temperature));  // Температура в °C (без *100)
-        sendJson("htu_humidity", String(AIR_data.htu_humidity));        // Влажность в % (без *100)
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        sendJson("htu_temperature", String(meteo_buffer.get_avg_htu_temperature()));
+        sendJson("htu_humidity", String(meteo_buffer.get_avg_htu_humidity()));
+        vTaskDelay(pdMS_TO_TICKS(2000));  // HTU21DF: 0.5Hz (температура/влажность меняются медленно)
     }
 }
 
@@ -363,6 +369,7 @@ void BH1750_measurementTaskFunction(void *parameter)
     {
         if (i2c_mutex != NULL) {
             xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+            // BH1750: время измерения 120ms (Continuous H-Resolution Mode)
             if (lightMeter.measurementReady())
             {
                 float lux = lightMeter.readLightLevel();
@@ -375,8 +382,10 @@ void BH1750_measurementTaskFunction(void *parameter)
             }
             xSemaphoreGive(i2c_mutex);
         }
-        sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting));  // Освещённость в lux (без *10)
-        vTaskDelay(pdMS_TO_TICKS(500));
+        meteo_buffer.push();
+        meteo_buffer.update_ema();  // Обновляем EMA для освещённости
+        sendJson("bh1750_lighting", String(meteo_buffer.get_avg_bh1750_lighting()));
+        vTaskDelay(pdMS_TO_TICKS(500));  // BH1750: 2Hz (освещённость может меняться быстро)
     }
 }
 
@@ -384,24 +393,28 @@ void CH2O_measurementTaskFunction(void *parameter)
 {
     while (true)
     {
+        // Аналоговый датчик: время отклика ~60 сек, 10 сек достаточно
         float formaldehyde = analogRead(formaldehyde_Pin) / 496.36;
         AIR_data.update_ch2o_data(formaldehyde);
-        sendJson("ch2o_value", String(AIR_data.ch2o_value));  // Формальдегид в мг/м³
-        vTaskDelay(pdMS_TO_TICKS(6000));
+        meteo_buffer.push();
+        sendJson("ch2o_value", String(meteo_buffer.get_avg_ch2o_value()));
+        vTaskDelay(pdMS_TO_TICKS(10000));  // CH2O: 0.1Hz (медленный электрохимический датчик)
     }
 }
 
 void PMS_measurementTaskFunction(void *parameter)
 {
-    vTaskDelay(pdMS_TO_TICKS(6000));
+    vTaskDelay(pdMS_TO_TICKS(6000));  // PMS: время прогрева и первого измерения
     while (true)
     {
+        // PMS5003: время измерения ~1.2 сек, но рекомендуется 2.3 сек интервал
         pms.read();
         AIR_data.update_pms_data(pms.pm01, pms.pm25, pms.pm10);
-        sendJson("pms_pm1", String(pms.pm01));    // PM1.0 в µg/m³ (без *10)
-        sendJson("pms_pm2_5", String(pms.pm25));  // PM2.5 в µg/m³ (без *10)
-        sendJson("pms_pm10", String(pms.pm10));   // PM10 в µg/m³ (без *10)
-        vTaskDelay(pdMS_TO_TICKS(6000));
+        meteo_buffer.push();
+        sendJson("pms_pm1", String(meteo_buffer.get_avg_pms_pm1()));
+        sendJson("pms_pm2_5", String(meteo_buffer.get_avg_pms_pm2_5()));
+        sendJson("pms_pm10", String(meteo_buffer.get_avg_pms_pm10()));
+        vTaskDelay(pdMS_TO_TICKS(2300));  // PMS5003: мин. 2.3 сек между измерениями
     }
 }
 
@@ -411,7 +424,7 @@ void MS5611_measurementTaskFunction(void *parameter)
 
     while (true)
     {
-        vTaskDelay(pdMS_TO_TICKS(500));
+        // MS5611: время измерения 0.5ms (Ultra High Resolution), 1Hz достаточно
         double pressure_pa = 0;  // Давление в Паскалях
         float temperature = 0;
 
@@ -429,10 +442,11 @@ void MS5611_measurementTaskFunction(void *parameter)
         temperature += settings.temp_offset_bme;  // Используем тот же offset что и для BME
 
         AIR_data.update_ms5611_data(pressure_hpa, temperature);  // Сохраняем в гПа
-        sendJson("ms5611_pressure", String(pressure_hpa));       // Давление в гПа
-        sendJson("ms5611_temperature", String(temperature));     // Температура в °C (без *100)
+        meteo_buffer.push();
+        sendJson("ms5611_pressure", String(meteo_buffer.get_avg_ms5611_pressure()));
+        sendJson("ms5611_temperature", String(meteo_buffer.get_avg_ms5611_temperature()));
 
-        vTaskDelay(pdMS_TO_TICKS(6000));
+        vTaskDelay(pdMS_TO_TICKS(1000));  // MS5611: 1Hz (давление меняется медленно)
     }
 }
 
@@ -444,11 +458,14 @@ void VEML_measurementTaskFunction(void *parameter)
     {
         if (i2c_mutex != NULL) {
             xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+            // VEML6070: время измерения 56ms (typical)
             AIR_data.update_veml_data(uv.readUV());
             xSemaphoreGive(i2c_mutex);
         }
-        sendJson("veml_uv", String(AIR_data.veml_uv));
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        meteo_buffer.push();
+        meteo_buffer.update_ema();  // Обновляем EMA для UV
+        sendJson("veml_uv", String(meteo_buffer.get_avg_veml_uv()));
+        vTaskDelay(pdMS_TO_TICKS(1000));  // VEML6070: 1Hz (UV индекс меняется медленно)
     }
 }
 
@@ -484,46 +501,46 @@ void sendDataTaskFunction(void *parameter)
         if ((unsigned long)(now - send_data_previousMillis) > (unsigned long)current_interval) {
             send_data_previousMillis = now;
             
-            // Отправка данных датчиков в WebSocket
+            // Отправка данных датчиков в WebSocket (скользящее среднее)
             // BME280 sensor data
-            sendJson("bme_temperature", String(AIR_data.bme_temperature));
-            sendJson("bme_pressure", String(AIR_data.bme_pressure));
-            sendJson("bme_humidity", String(AIR_data.bme_humidity));
-            
+            sendJson("bme_temperature", String(meteo_buffer.get_avg_bme_temperature()));
+            sendJson("bme_pressure", String(meteo_buffer.get_avg_bme_pressure()));
+            sendJson("bme_humidity", String(meteo_buffer.get_avg_bme_humidity()));
+
             // HTU21DF sensor data
-            sendJson("htu_temperature", String(AIR_data.htu_temperature));
-            sendJson("htu_humidity", String(AIR_data.htu_humidity));
-            
+            sendJson("htu_temperature", String(meteo_buffer.get_avg_htu_temperature()));
+            sendJson("htu_humidity", String(meteo_buffer.get_avg_htu_humidity()));
+
             // SCD4X sensor data
-            sendJson("scd4x_co2", String(AIR_data.scd4x_co2));
-            sendJson("scd4x_temperature", String(AIR_data.scd4x_temperature));
-            sendJson("scd4x_humidity", String(AIR_data.scd4x_humidity));
-            
+            sendJson("scd4x_co2", String((int)meteo_buffer.get_avg_scd4x_co2()));
+            sendJson("scd4x_temperature", String(meteo_buffer.get_avg_scd4x_temperature()));
+            sendJson("scd4x_humidity", String(meteo_buffer.get_avg_scd4x_humidity()));
+
             // PMS sensor data
-            sendJson("pms_pm1", String(AIR_data.pms_pm1));
-            sendJson("pms_pm2_5", String(AIR_data.pms_pm2_5));
-            sendJson("pms_pm10", String(AIR_data.pms_pm10));
-            
+            sendJson("pms_pm1", String(meteo_buffer.get_avg_pms_pm1()));
+            sendJson("pms_pm2_5", String(meteo_buffer.get_avg_pms_pm2_5()));
+            sendJson("pms_pm10", String(meteo_buffer.get_avg_pms_pm10()));
+
             // MS5611 sensor data
-            sendJson("ms5611_pressure", String(AIR_data.ms5611_pressure));
-            sendJson("ms5611_temperature", String(AIR_data.ms5611_temperature));
-            
+            sendJson("ms5611_pressure", String(meteo_buffer.get_avg_ms5611_pressure()));
+            sendJson("ms5611_temperature", String(meteo_buffer.get_avg_ms5611_temperature()));
+
             // BH1750 sensor data
-            sendJson("bh1750_lighting", String(AIR_data.bh1750_lighting));
-            
+            sendJson("bh1750_lighting", String(meteo_buffer.get_avg_bh1750_lighting()));
+
             // VEML6070 sensor data
-            sendJson("veml_uv", String(AIR_data.veml_uv));
-            
+            sendJson("veml_uv", String(meteo_buffer.get_avg_veml_uv()));
+
             // CH2O sensor data
-            sendJson("ch2o_value", String(AIR_data.ch2o_value));
-            
-            // Microphone data
-            sendJson("microphone_noise", String(AIR_data.microphone_noise));
+            sendJson("ch2o_value", String(meteo_buffer.get_avg_ch2o_value()));
+
+            // Microphone data (EMA)
+            sendJson("microphone_noise", String(meteo_buffer.get_ema_microphone_noise()));
 
             // INA226 sensor data
-            sendJson("ina226_voltage", String(AIR_data.ina226_voltage));
-            sendJson("ina226_current", String(AIR_data.ina226_current));
-            sendJson("ina226_power", String(AIR_data.ina226_power));
+            sendJson("ina226_voltage", String(meteo_buffer.get_avg_ina226_voltage()));
+            sendJson("ina226_current", String(meteo_buffer.get_avg_ina226_current()));
+            sendJson("ina226_power", String(meteo_buffer.get_avg_ina226_power()));
 
             // Отправка данных о системе
             sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));

@@ -3,6 +3,9 @@
 
 #include "Arduino.h"
 
+// Размер окна скользящего среднего (количество экземпляров для усреднения)
+#define METEO_WINDOW_SIZE 10
+
 /*
 class Meteo_data
 {
@@ -120,8 +123,75 @@ public:
     void update_ch2o_data(float ch2o_val);
     void update_microphone_data(float noise_val);
     void update_ina226_data(float voltage, float current, float power);
+
+    // Filtered/combined humidity methods (мгновенные значения с 3 датчиков)
+    float get_filtered_humidity();
+    float get_average_humidity();
+    float get_weighted_humidity();
+};
+
+// Класс для хранения истории измерений и расчёта скользящего среднего
+class MeteoBuffer
+{
+public:
+    MeteoBuffer();
+    
+    // Добавить текущее значение AIR_data в буфер
+    void push();
+    
+    // Получить скользящее среднее для любого параметра
+    float get_avg_bme_temperature();
+    float get_avg_bme_pressure();
+    float get_avg_bme_humidity();
+    
+    float get_avg_htu_temperature();
+    float get_avg_htu_humidity();
+    
+    float get_avg_scd4x_co2();
+    float get_avg_scd4x_temperature();
+    float get_avg_scd4x_humidity();
+    
+    unsigned int get_avg_pms_pm1();
+    unsigned int get_avg_pms_pm2_5();
+    unsigned int get_avg_pms_pm10();
+    
+    float get_avg_ms5611_pressure();
+    float get_avg_ms5611_temperature();
+    
+    float get_avg_bh1750_lighting();
+    uint16_t get_avg_veml_uv();
+    
+    float get_avg_ch2o_value();
+    float get_avg_microphone_noise();
+    
+    float get_avg_ina226_voltage();
+    float get_avg_ina226_current();
+    float get_avg_ina226_power();
+    
+    // Комбинированная влажность (скользящее среднее + взвешивание датчиков)
+    float get_weighted_humidity();
+    
+    // EMA (экспоненциальное скользящее среднее) для быстрых датчиков
+    // alpha = 0.3 (новые значения имеют больший вес)
+    void update_ema();
+    float get_ema_bh1750_lighting();
+    float get_ema_veml_uv();
+    float get_ema_microphone_noise();
+
+private:
+    Meteo_data buffer[METEO_WINDOW_SIZE];
+    uint8_t index;
+    bool filled;
+    
+    // EMA состояния
+    float ema_bh1750{0};
+    float ema_veml_uv{0};
+    float ema_microphone{0};
+    bool ema_initialized{false};
+    float ema_alpha{0.3f};  // Коэффициент сглаживания (0.3 = 30% новое, 70% старое)
 };
 
 extern Meteo_data AIR_data;
+extern MeteoBuffer meteo_buffer;
 
 #endif // METEO_H
