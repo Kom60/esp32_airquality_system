@@ -1,3 +1,6 @@
+#ifndef METEO_H
+#define METEO_H
+
 #include "Arduino.h"
 
 /*
@@ -36,7 +39,7 @@ class Meteo_data
     void update_CO2_data(float CO2_val);
     void update_UV_data(uint16_t UV_val);
     void update_noise_data(float noise_val);
-    
+
     //void update_indoor_temp(float temperature, float pressure, float humidity);
     //void update_indoor_temp();
     //void update_indoor_press();
@@ -54,34 +57,34 @@ public:
     float bme_temperature{};
     float bme_pressure{};
     float bme_humidity{};
-    
+
     // HTU21DF sensor data
     float htu_temperature{};
     float htu_humidity{};
-    
+
     // SCD4X sensor data
     float scd4x_co2{};
     float scd4x_temperature{};
     float scd4x_humidity{};
-    
+
     // PMS sensor data
     unsigned int pms_pm1{};
     unsigned int pms_pm2_5{};
     unsigned int pms_pm10{};
-    
+
     // MS5611 sensor data
     double ms5611_pressure{};
     float ms5611_temperature{};
 
     // BH1750 sensor data
     float bh1750_lighting{};
-    
+
     // VEML6070 sensor data
     uint16_t veml_uv{};
-    
+
     // CH2O (formaldehyde) sensor data
     float ch2o_value{};
-    
+
     // Microphone noise data
     float microphone_noise{};
 
@@ -120,3 +123,5 @@ public:
 };
 
 extern Meteo_data AIR_data;
+
+#endif // METEO_H

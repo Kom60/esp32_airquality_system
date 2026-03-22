@@ -366,7 +366,12 @@ void BH1750_measurementTaskFunction(void *parameter)
             if (lightMeter.measurementReady())
             {
                 float lux = lightMeter.readLightLevel();
-                AIR_data.update_bh1750_data(lux);
+                // Проверяем на валидность и реалистичность перед записью
+                if (is_valid_float(lux) && lux >= 0 && lux <= 150000) {
+                    AIR_data.update_bh1750_data(lux);
+                } else {
+                    Serial.println("[BH1750] Некорректное значение: " + String(lux));
+                }
             }
             xSemaphoreGive(i2c_mutex);
         }

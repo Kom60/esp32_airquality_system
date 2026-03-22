@@ -1,4 +1,5 @@
 #include "Meteo.h"
+#include "headers.h"
 
 Meteo_data::Meteo_data()
       :bme_temperature{0}
@@ -205,7 +206,12 @@ void Meteo_data::update_ms5611_data(double pressure, float temperature)  // ОБ
 
 void Meteo_data::update_bh1750_data(float lighting_val)
 {
-  bh1750_lighting = lighting_val;
+  // Проверяем на валидность и реалистичность (макс. освещённость солнца ~120000 lux)
+  if (is_valid_float(lighting_val) && lighting_val >= 0 && lighting_val <= 150000)
+  {
+    bh1750_lighting = lighting_val;
+  }
+  // При невалидном значении сохраняем предыдущее корректное значение
 }
 
 void Meteo_data::update_veml_data(uint16_t uv_val)

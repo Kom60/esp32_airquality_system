@@ -1,4 +1,5 @@
 #include "headers.h"
+#include "ina226.h"
 
 extern SemaphoreHandle_t i2c_mutex;
 
@@ -37,6 +38,12 @@ void sensors_setup()
 
   // SCD40 требует особой последовательности инициализации
   SCD40_setup();
+
+  // INA226 (ток, напряжение, мощность)
+  INA226_setup();
+
+  // Микрофон и I2S задачи
+  microphone_init();
 
   Serial.println("[SENSORS] Все датчики инициализированы");
 }
@@ -158,7 +165,20 @@ void VEML_setup(){
     } else {
         uv.begin(VEML6070_1_T);  // pass in the integration time constant
     }
-    
+
     Serial.println("[VEML6070] Connected");
     xTaskCreatePinnedToCore(VEML_measurementTaskFunction, "VEMLMeasurementTask", 2048, NULL, 1, &VEML_measurementTask, 0);
+}
+
+void INA226_setup(){
+    // Инициализация INA226 (ток, напряжение, мощность)
+    if (ina226.begin()) {
+        xTaskCreate(INA226_measurementTaskFunction, "INA226 Measurement",
+                    2048, NULL, 2, &INA226_measurementTask);
+        // Ждём первые данные от INA226 (1 секунда)
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        Serial.println("[INA226] Инициализирован");
+    } else {
+        Serial.println("[INA226] Не найден");
+    }
 }

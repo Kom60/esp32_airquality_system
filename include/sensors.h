@@ -40,7 +40,9 @@ void SCD40_setup();
 void PMS_setup();
 void CH2O_setup();
 void VEML_setup();
+void INA226_setup();
 void sensors_setup();
+void microphone_init(void);
 
 void BME_280_printValues();
 void SCD40_printValues();
