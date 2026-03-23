@@ -190,7 +190,7 @@ void INMP441_measurementTaskFunction(void *parameter)
     uint32_t Leq_samples = 0;
     double Leq_sum_sqr = 0;
     double Leq_dB = 0;
-    Serial.println("!!!!!!!!!!!!!!!!");
+    LOG_WARNING(MICROPHONE, "!!!!!!!!!!!!!!!!");
     // Read sum of samaples, calculated by 'i2s_reader_task'
     while (xQueueReceive(samples_queue, &q, portMAX_DELAY))
     {

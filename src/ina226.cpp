@@ -1,4 +1,5 @@
 #include "ina226.h"
+#include "logger.h"
 #include <Wire.h>
 
 INA226_Sensor ina226;
@@ -19,7 +20,7 @@ bool INA226_Sensor::begin() {
     // Проверка наличия устройства
     Wire.beginTransmission(INA226_ADDRESS);
     if (Wire.endTransmission() != 0) {
-        Serial.println("[INA226] Device not found!");
+        LOG_ERROR(INA226, "Device not found!");
         return false;
     }
 
@@ -29,7 +30,7 @@ bool INA226_Sensor::begin() {
     // Calibration = 0.00512 / (Current_LSB * Shunt)
     calibration = (uint16_t)(0.00512 / (ina226_currentLSB * INA226_SHUNT));
 
-    Serial.printf("[INA226] Calibration: %d, Current_LSB: %.6f A\n", calibration, ina226_currentLSB);
+    LOG_DEBUG_FMT(INA226, "Calibration: %d, Current_LSB: %.6f A", calibration, ina226_currentLSB);
 
     // Запись калибровки
     writeRegister(INA226_REG_CALIBRATION, calibration);
@@ -44,7 +45,7 @@ bool INA226_Sensor::begin() {
     // Задержка на стабилизацию
     delay(100);
 
-    Serial.println("[INA226] Initialized");
+    LOG_INFO(INA226, "Initialized");
     return true;
 }
 
@@ -68,7 +69,7 @@ void INA226_Sensor::read() {
     power = power_raw * 25 * ina226_currentLSB;  // Power_LSB = 25 × Current_LSB → Watts
 
     // Отладка
-    Serial.printf("[INA226] V: %.3fV, I: %.3fA, P: %.3fW (I_raw=%d, P_raw=%d)\n",
+    LOG_DEBUG_FMT(INA226, "V: %.3fV, I: %.3fA, P: %.3fW (I_raw=%d, P_raw=%d)",
                   bus_voltage, current, power, current_raw, power_raw);
 }
 

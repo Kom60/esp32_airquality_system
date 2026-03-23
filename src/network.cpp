@@ -17,7 +17,7 @@ void wifi_setup()
   // Применяем WiFi настройки из NVS если они есть
   if (strlen(settings.wifi_ssid) > 0)
   {
-    Serial.println("Using WiFi settings from NVS: " + String(settings.wifi_ssid));
+    LOG_INFO(WIFI, "Using WiFi settings from NVS: " + String(settings.wifi_ssid));
     WiFi.begin(settings.wifi_ssid, settings.wifi_password);
   }
   else
@@ -26,29 +26,27 @@ void wifi_setup()
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   }
 
-  Serial.println("Establishing connection to WiFi with SSID: " + String(WiFi.SSID()));
+  LOG_INFO_FMT(WIFI, "Establishing connection to WiFi with SSID: %s", WiFi.SSID());
 
   // Ожидание подключения
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(1000);
-    Serial.print(".");
+    LOG_D(WIFI, ".");
   }
-  Serial.print("Connected to network with IP address: ");
-  Serial.println(WiFi.localIP());
+  LOG_INFO_FMT(WIFI, "Connected to network with IP address: %s", WiFi.localIP().toString().c_str());
 
   // Инициализация времени через NTP
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  Serial.println("[NTP] Waiting for time sync...");
-  
+  LOG_INFO(NTP, "Waiting for time sync...");
+
   struct tm timeinfo;
   if (getLocalTime(&timeinfo, 5000)) {
-    Serial.println("[NTP] Time synchronized successfully");
+    LOG_INFO(NTP, "Time synchronized successfully");
     char timeStringBuff[50];
     strftime(timeStringBuff, sizeof(timeStringBuff), "%Y-%m-%d %H:%M:%S", &timeinfo);
-    Serial.print("[NTP] Current time: ");
-    Serial.println(timeStringBuff);
+    LOG_INFO_FMT(NTP, "Current time: %s", timeStringBuff);
   } else {
-    Serial.println("[NTP] Failed to get time from NTP server");
+    LOG_ERROR(NTP, "Failed to get time from NTP server");
   }
 }

@@ -59,11 +59,11 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
   switch (type)
   {
   case WStype_DISCONNECTED:
-    Serial.println("[WS] Client " + String(num) + " disconnected");
+    LOG_INFO(WEBSOCKET, "Client disconnected");
     break;
   case WStype_CONNECTED:
-    Serial.println("[WS] Client " + String(num) + " connected");
-    Serial.println("[WS] Sending initial data...");
+    LOG_INFO_FMT(WEBSOCKET, "Client %d connected", num);
+    LOG_INFO(WEBSOCKET, "Sending initial data...");
 
     // send variables to newly connected web client (используем скользящее среднее)
     sendJson("bme_temperature", String(meteo_buffer.get_avg_bme_temperature()));
@@ -91,7 +91,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
     sendJson("wifi_rssi", String(WiFi.RSSI()));
 
-    Serial.println("[WS] Initial data sent!");
+    LOG_INFO(WEBSOCKET, "Initial data sent!");
     break;
   case WStype_TEXT:
     // try to decipher the JSON string received
@@ -99,8 +99,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     DeserializationError error = deserializeJson(doc, payload);
     if (error)
     {
-      Serial.print(F("deserializeJson() failed: "));
-      Serial.println(error.f_str());
+      LOG_ERROR_FMT(WEBSOCKET, "deserializeJson() failed: %s", error.f_str());
       return;
     }
     else
@@ -108,8 +107,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
       // JSON string was received correctly, so information can be retrieved:
       const char *l_type = doc["type"];
       const int l_value = doc["value"];
-      Serial.println("Type: " + String(l_type));
-      Serial.println("Value: " + String(l_value));
+      LOG_DEBUG_FMT(WEBSOCKET, "Type: %s, Value: %d", l_type, l_value);
 
       // if random_intensity value is received -> update and write to all web clients
       if (String(l_type) == "random_intensity")
@@ -118,7 +116,6 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
         sendJson("random_intensity", String(l_value));
       }
     }
-    Serial.println("");
     break;
   }
 }
@@ -297,25 +294,22 @@ void send_data_to_pc()
   json += "}";
 
   // Отладка: выводим JSON в Serial
-  Serial.print("[PC] Отправка: ");
-  Serial.println(json);
+  LOG_DEBUG_FMT(NETWORK, "Отправка: %s", json.c_str());
 
   int httpResponseCode = http.POST(json);
   // yield();
   if (httpResponseCode == 200)
   {
-    Serial.println("[PC] ✓ Данные приняты сервером");
+    LOG_INFO(NETWORK, "Данные приняты сервером");
   }
   else
   {
-    Serial.print("[PC] ✗ Ошибка отправки. Код: ");
-    Serial.println(httpResponseCode);
+    LOG_ERROR_FMT(NETWORK, "Ошибка отправки. Код: %d", httpResponseCode);
     // Доп. отладка при ошибке
     if (httpResponseCode > 0)
     {
       String payload = http.getString();
-      Serial.print("[PC] Ответ сервера: ");
-      Serial.println(payload);
+      LOG_DEBUG_FMT(NETWORK, "Ответ сервера: %s", payload.c_str());
     }
   }
 

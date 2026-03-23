@@ -1,38 +1,16 @@
 #include "headers.h"
 
 void BME_280_printValues() {
-
-    Serial.print("Temperature = ");
-    Serial.print(bme.readTemperature());
-
-    Serial.println(" °C");
-
-    Serial.print("Pressure = ");
-
-    Serial.print(bme.readPressure() / 100.0F);  // Конвертируем из Па в гПа
-    Serial.println(" hPa");
-
-    Serial.print("Approx. Altitude = ");
-    Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-    Serial.println(" m");
-
-    Serial.print("Humidity = ");
-    Serial.print(bme.readHumidity());
-    Serial.println(" %");
-
-    Serial.println();
-
+    LOG_DEBUG_FMT(BME, "Temperature = %.2f C, Pressure = %.2f hPa, Altitude = %.0f m, Humidity = %.2f %%",
+                  bme.readTemperature(),
+                  bme.readPressure() / 100.0F,
+                  bme.readAltitude(SEALEVELPRESSURE_HPA),
+                  bme.readHumidity());
 }
 
 void SCD40_printValues() {
-        Serial.print("Co2:");
-        Serial.print(co2Value);
-        Serial.print("\t");
-        Serial.print("Temperature:");
-        Serial.print(temperature);
-        Serial.print("\t");
-        Serial.print("Humidity:");
-        Serial.println(humidity);
+    LOG_DEBUG_FMT(SCD4X, "Co2: %.0f ppm, Temperature: %.1f C, Humidity: %.0f %%",
+                  co2Value, temperature, humidity);
 }
 /*
 void display_bme()
@@ -92,22 +70,23 @@ void display_indoor()
 
 void display_Info()
 {
-  Serial.print("1");
+  LOG_DEBUG(SENSORS, "1");
 }
+
 void PME5003_printValues(SerialPM pms){
   pms.read();
   if (pms)
   { // successfull read
     // print formatted results
-    Serial.printf("PM1.0 %2d, PM2.5 %2d, PM10 %2d [ug/m3]\n",
+    LOG_DEBUG_FMT(PMS, "PM1.0 %d, PM2.5 %d, PM10 %d [ug/m3]",
                   pms.pm01, pms.pm25, pms.pm10);
 
     if (pms.has_number_concentration())
-      Serial.printf("N0.3 %4d, N0.5 %3d, N1.0 %2d, N2.5 %2d, N5.0 %2d, N10 %2d [#/100cc]\n",
+      LOG_DEBUG_FMT(PMS, "N0.3 %d, N0.5 %d, N1.0 %d, N2.5 %d, N5.0 %d, N10 %d [#/100cc]",
                     pms.n0p3, pms.n0p5, pms.n1p0, pms.n2p5, pms.n5p0, pms.n10p0);
 
     if (pms.has_temperature_humidity() || pms.has_formaldehyde())
-      Serial.printf("%5.1f °C, %5.1f %%rh, %5.2f mg/m3 HCHO\n",
+      LOG_DEBUG_FMT(PMS, "T=%.1f C, RH=%.1f %%, HCHO=%.2f mg/m3",
                     pms.temp, pms.rhum, pms.hcho);
   }
   else
@@ -117,47 +96,41 @@ void PME5003_printValues(SerialPM pms){
     case pms.OK: // should never come here
       break;     // included to compile without warnings
     case pms.ERROR_TIMEOUT:
-      Serial.println(F(PMS_ERROR_TIMEOUT));
+      LOG_ERROR(PMS, PMS_ERROR_TIMEOUT);
       break;
     case pms.ERROR_MSG_UNKNOWN:
-      Serial.println(F(PMS_ERROR_MSG_UNKNOWN));
+      LOG_ERROR(PMS, PMS_ERROR_MSG_UNKNOWN);
       break;
     case pms.ERROR_MSG_HEADER:
-      Serial.println(F(PMS_ERROR_MSG_HEADER));
+      LOG_ERROR(PMS, PMS_ERROR_MSG_HEADER);
       break;
     case pms.ERROR_MSG_BODY:
-      Serial.println(F(PMS_ERROR_MSG_BODY));
+      LOG_ERROR(PMS, PMS_ERROR_MSG_BODY);
       break;
     case pms.ERROR_MSG_START:
-      Serial.println(F(PMS_ERROR_MSG_START));
+      LOG_ERROR(PMS, PMS_ERROR_MSG_START);
       break;
     case pms.ERROR_MSG_LENGTH:
-      Serial.println(F(PMS_ERROR_MSG_LENGTH));
+      LOG_ERROR(PMS, PMS_ERROR_MSG_LENGTH);
       break;
     case pms.ERROR_MSG_CKSUM:
-      Serial.println(F(PMS_ERROR_MSG_CKSUM));
+      LOG_ERROR(PMS, PMS_ERROR_MSG_CKSUM);
       break;
     case pms.ERROR_PMS_TYPE:
-      Serial.println(F(PMS_ERROR_PMS_TYPE));
+      LOG_ERROR(PMS, PMS_ERROR_PMS_TYPE);
       break;
     }
   }
 }
+
 void HTU21_prinValues(){
     float temp = htu.readTemperature();
     float hum = htu.readHumidity();
-    Serial.print("Temperature(°C): "); 
-    Serial.print(temp); 
-    Serial.print("\t\t");
-    Serial.print("Humidity(%): "); 
-    Serial.println(hum);
+    LOG_DEBUG_FMT(HTU, "Temperature=%.1f C, Humidity=%.1f %%", temp, hum);
 }
 
 void MS5611_printValues(){
-  Serial.print("Temperature [0.01 C]: ");
-  Serial.println(ms5611.readTemperature());
-  Serial.print("Pressure [Pa]: ");
-  Serial.println(ms5611.readPressure());
-  Serial.println("---");
+  LOG_DEBUG_FMT(MS5611, "Temperature=%d [0.01 C], Pressure=%d [Pa]",
+                ms5611.readTemperature(), ms5611.readPressure());
 }
 

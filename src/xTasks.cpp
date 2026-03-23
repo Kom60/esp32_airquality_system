@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "microphone.h"
 #include "ina226.h"
+#include "logger.h"
 
 // Переменные
 QueueHandle_t samples_queue;
@@ -59,15 +60,15 @@ void DISPLAY_measurementTaskFunction(void *parameter)
 
     vTaskDelay(pdMS_TO_TICKS(500));  // Ждём 0.5 сек для первичной инициализации
 
-    Serial.println("[DISPLAY] Task started");
+    LOG_INFO(DISPLAY, "Task started");
 
     for (;;) {
         display_all_data();
         if (!display_initialized) {
             display_initialized = true;
-            Serial.println("[DISPLAY] Initial data displayed");
+            LOG_INFO(DISPLAY, "Initial data displayed");
         } else {
-            Serial.println("[DISPLAY] Updated");
+            LOG_DEBUG(DISPLAY, "Updated");
         }
 
         // Ждём следующий цикл (20 секунд)
@@ -83,18 +84,18 @@ void microphone_init(void)
 
     // Create the I2S reader FreeRTOS task
     xTaskCreate(mic_i2s_reader_task, "Mic I2S Reader", I2S_TASK_STACK, NULL, I2S_TASK_PRI, NULL);
-    
+
     // Create INMP441 measurement task
     xTaskCreatePinnedToCore(INMP441_measurementTaskFunction, "INMP441MeasurementTask", 2048, NULL, 1, &INMP441_measurementTask, 0);
-    
-    Serial.println("[MIC] Tasks created");
+
+    LOG_INFO(MICROPHONE, "Tasks created");
 }
 
 void CO2_measurementTaskFunction(void *parameter)
 {
     vTaskDelay(pdMS_TO_TICKS(1500));  // Ждём завершения инициализации других датчиков
 
-    Serial.println("[SCD40] === Инициализация SCD40 ===");
+    LOG_INFO(SCD4X, "=== Инициализация SCD40 ===");
 
     // Инициализация SCD40 с защитой I2C mutex
     if (i2c_mutex != NULL) {
@@ -106,45 +107,45 @@ void CO2_measurementTaskFunction(void *parameter)
         // Проверяем наличие датчика на шине
         Wire.beginTransmission(0x62);
         uint8_t i2cErr = Wire.endTransmission();
-        
+
         xSemaphoreGive(i2c_mutex);
-        
+
         // Вывод отладки ЗА пределами mutex
         if (i2cErr == 0) {
-            Serial.println("[SCD40] Датчик найден на адресе 0x62");
+            LOG_INFO(SCD4X, "Датчик найден на адресе 0x62");
         } else {
-            Serial.printf("[SCD40] ОШИБКА: Датчик не найден на 0x62 (error=%d)\n", i2cErr);
-            Serial.println("[SCD40] Проверьте подключение и питание!");
+            LOG_ERROR_FMT(SCD4X, "ОШИБКА: Датчик не найден на 0x62 (error=%d)", i2cErr);
+            LOG_ERROR(SCD4X, "Проверьте подключение и питание!");
         }
 
         xSemaphoreTake(i2c_mutex, portMAX_DELAY);
         uint8_t err = co2.begin();
         xSemaphoreGive(i2c_mutex);
-        
+
         // Вывод отладки ЗА пределами mutex
         if (err != 0) {
-            Serial.printf("[SCD40] Ошибка co2.begin(): %s\n", co2.getErrorText(err));
+            LOG_ERROR_FMT(SCD4X, "Ошибка co2.begin(): %s", co2.getErrorText(err));
         } else {
-            Serial.println("[SCD40] co2.begin() успешно");
+            LOG_INFO(SCD4X, "co2.begin() успешно");
         }
 
         // Принудительно останавливаем измерения (если были запущены из EEPROM)
-        Serial.println("[SCD40] Остановка возможных измерений...");
-        
+        LOG_INFO(SCD4X, "Остановка возможных измерений...");
+
         xSemaphoreTake(i2c_mutex, portMAX_DELAY);
         err = co2.stopPeriodicMeasurement();
         xSemaphoreGive(i2c_mutex);
-        
-        Serial.printf("[SCD40] stopPeriodicMeasurement: %s\n", co2.getErrorText(err));
+
+        LOG_DEBUG_FMT(SCD4X, "stopPeriodicMeasurement: %s", co2.getErrorText(err));
 
         // Ждём пока датчик остановится (по спецификации 500мс)
         vTaskDelay(pdMS_TO_TICKS(500));
     } else {
-        Serial.println("[SCD40] ОШИБКА: i2c_mutex не создан!");
+        LOG_ERROR(SCD4X, "ОШИБКА: i2c_mutex не создан!");
     }
 
     // Ждём ~2 секунды, чтобы BME280 и MS5611 успели сделать первые замеры
-    Serial.println("[SCD40] Ожидание данных давления от BME280/MS5611...");
+    LOG_INFO(SCD4X, "Ожидание данных давления от BME280/MS5611...");
     vTaskDelay(pdMS_TO_TICKS(2000));
 
     // Установка altitude и pressure для компенсации
@@ -170,7 +171,7 @@ void CO2_measurementTaskFunction(void *parameter)
             xSemaphoreGive(i2c_mutex);
 
             // Вывод отладки ЗА пределами mutex
-            Serial.printf("[SCD40] Расчётное altitude: %.1f м (давление: %.2f гПа)\n", altitude, avgPressure);
+            LOG_INFO_FMT(SCD4X, "Расчётное altitude: %.1f м (давление: %.2f гПа)", altitude, avgPressure);
 
             xSemaphoreTake(i2c_mutex, portMAX_DELAY);
             // Установка altitude в SCD40 (в метрах)
@@ -179,23 +180,23 @@ void CO2_measurementTaskFunction(void *parameter)
             xSemaphoreGive(i2c_mutex);
 
             if (err == 0) {
-                Serial.printf("[SCD40] ✓ Установлено altitude: %d м\n", altitudeInt);
+                LOG_INFO_FMT(SCD4X, "✓ Установлено altitude: %d м", altitudeInt);
             } else {
-                Serial.printf("[SCD40] ✗ Ошибка установки altitude: %s\n", co2.getErrorText(err));
+                LOG_ERROR_FMT(SCD4X, "✗ Ошибка установки altitude: %s", co2.getErrorText(err));
             }
         } else {
-            Serial.println("[SCD40] ⚠ Давление не получено (BME280/MS5611 не готовы)");
+            LOG_WARNING(SCD4X, "⚠ Давление не получено (BME280/MS5611 не готовы)");
         }
 
         // Теперь запускаем периодические измерения
         xSemaphoreTake(i2c_mutex, portMAX_DELAY);
         uint8_t err = co2.startPeriodicMeasurement();
         xSemaphoreGive(i2c_mutex);
-        
+
         if (err != 0) {
-            Serial.printf("[SCD40] Ошибка startPeriodicMeasurement(): %s\n", co2.getErrorText(err));
+            LOG_ERROR_FMT(SCD4X, "Ошибка startPeriodicMeasurement(): %s", co2.getErrorText(err));
         } else {
-            Serial.println("[SCD40] startPeriodicMeasurement() успешно");
+            LOG_INFO(SCD4X, "startPeriodicMeasurement() успешно");
         }
     }
 
@@ -205,8 +206,8 @@ void CO2_measurementTaskFunction(void *parameter)
     unsigned long startTime = millis();
     unsigned long lastReadTime = 0;
 
-    Serial.println("[SCD40] Начало цикла измерений...");
-    Serial.println("[SCD40] Первое измерение займёт ~5 секунд");
+    LOG_INFO(SCD4X, "Начало цикла измерений...");
+    LOG_INFO(SCD4X, "Первое измерение займёт ~5 секунд");
 
     while (true)
     {
@@ -217,7 +218,7 @@ void CO2_measurementTaskFunction(void *parameter)
         if (timeSinceLastRead >= 5000 || lastReadTime == 0)
         {
             readAttemptCount++;
-            Serial.printf("\n[SCD40] === Попытка #%d (elapsed=%lus) ===\n", readAttemptCount, elapsed / 1000);
+            LOG_DEBUG_FMT(SCD4X, "=== Попытка #%d (elapsed=%lus) ===", readAttemptCount, elapsed / 1000);
 
             // Проверяем isDataReady()
             bool ready = false;
@@ -225,9 +226,9 @@ void CO2_measurementTaskFunction(void *parameter)
                 if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
                     ready = co2.isDataReady();
                     xSemaphoreGive(i2c_mutex);
-                    
+
                     // Вывод отладки ЗА пределами mutex
-                    Serial.printf("[SCD40] isDataReady() = %d\n", ready ? 1 : 0);
+                    LOG_DEBUG_FMT(SCD4X, "isDataReady() = %d", ready ? 1 : 0);
                 }
             }
 
@@ -235,14 +236,14 @@ void CO2_measurementTaskFunction(void *parameter)
             if (i2c_mutex != NULL) {
                 if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
 
-                    Serial.println("[SCD40] Чтение данных...");
+                    LOG_DEBUG(SCD4X, "Чтение данных...");
                     uint8_t err = co2.readMeasurement(co2Value, temperature, humidity);
                     xSemaphoreGive(i2c_mutex);
 
                     if (err == 0)
                     {
                         successCount++;
-                        Serial.printf("[SCD40] ✓ УСПЕХ! (успешно: %d)\n", successCount);
+                        LOG_INFO_FMT(SCD4X, "✓ УСПЕХ! (успешно: %d)", successCount);
 
                         errorCount = 0;
                         lastReadTime = millis();
@@ -257,7 +258,7 @@ void CO2_measurementTaskFunction(void *parameter)
                         AIR_data.update_scd4x_data(co2Value, temperature, humidity);
                         meteo_buffer.push();
 
-                        Serial.printf("CO2: %.0f ppm, Temperature: %.1f °C, Humidity: %.0f %%RH\n", co2Value, temperature, humidity);
+                        LOG_INFO_FMT(SCD4X, "CO2: %.0f ppm, Temperature: %.1f C, Humidity: %.0f %%RH", co2Value, temperature, humidity);
 
                         // После успешного чтения ждём 5 секунд
                         vTaskDelay(pdMS_TO_TICKS(5000));
@@ -265,20 +266,20 @@ void CO2_measurementTaskFunction(void *parameter)
                     else
                     {
                         errorCount++;
-                        Serial.printf("[SCD40] ✗ Ошибка #%d: %s\n", errorCount, co2.getErrorText(err));
+                        LOG_ERROR_FMT(SCD4X, "✗ Ошибка #%d: %s", errorCount, co2.getErrorText(err));
 
                         // Перезапуск после 3 ошибок
                         if (errorCount >= 3) {
-                            Serial.println("[SCD40] Перезапуск измерений...");
+                            LOG_INFO(SCD4X, "Перезапуск измерений...");
 
                             if (i2c_mutex != NULL) {
                                 xSemaphoreTake(i2c_mutex, portMAX_DELAY);
 
-                                Serial.println("[SCD40] stopPeriodicMeasurement()...");
+                                LOG_DEBUG(SCD4X, "stopPeriodicMeasurement()...");
                                 co2.stopPeriodicMeasurement();
                                 vTaskDelay(pdMS_TO_TICKS(500));
 
-                                Serial.println("[SCD40] startPeriodicMeasurement()...");
+                                LOG_DEBUG(SCD4X, "startPeriodicMeasurement()...");
                                 co2.startPeriodicMeasurement();
 
                                 xSemaphoreGive(i2c_mutex);
@@ -293,7 +294,7 @@ void CO2_measurementTaskFunction(void *parameter)
                         }
                     }
                 } else {
-                    Serial.println("[SCD40] Таймаут mutex при чтении!");
+                    LOG_ERROR(SCD4X, "Таймаут mutex при чтении!");
                     vTaskDelay(pdMS_TO_TICKS(5000));
                 }
             }
@@ -377,7 +378,7 @@ void BH1750_measurementTaskFunction(void *parameter)
                 if (is_valid_float(lux) && lux >= 0 && lux <= 150000) {
                     AIR_data.update_bh1750_data(lux);
                 } else {
-                    Serial.println("[BH1750] Некорректное значение: " + String(lux));
+                    LOG_WARNING_FMT(BH1750, "Некорректное значение: %.1f", lux);
                 }
             }
             xSemaphoreGive(i2c_mutex);
@@ -472,8 +473,8 @@ void VEML_measurementTaskFunction(void *parameter)
 // Задача обработки WebSocket (для links2004/WebSockets требуется периодический вызов loop())
 void webSocketTaskFunction(void *parameter)
 {
-    Serial.println("[WebSocket] Task started on core " + String(xPortGetCoreID()));
-    
+    LOG_INFO_FMT(WEBSOCKET, "Task started on core %d", xPortGetCoreID());
+
     for (;;) {
         webSocket.loop();  // Обработка подключений и событий WebSocket
         vTaskDelay(pdMS_TO_TICKS(10));  // Небольшая задержка для стабильности
@@ -490,7 +491,7 @@ static float send_data_cpu_load_percent = 0.0;
 // Задача периодической отправки данных датчиков в WebSocket и на ПК
 void sendDataTaskFunction(void *parameter)
 {
-    Serial.println("[SendData] Task started on core " + String(xPortGetCoreID()));
+    LOG_INFO_FMT(SEND_DATA, "Task started on core %d", xPortGetCoreID());
     
     for (;;) {
         unsigned long now = millis();
@@ -579,15 +580,15 @@ void sendDataTaskFunction(void *parameter)
 void INA226_measurementTaskFunction(void *parameter)
 {
     vTaskDelay(pdMS_TO_TICKS(500));  // Ждём инициализации I2C
-    
-    Serial.println("[INA226] Task started");
-    
+
+    LOG_INFO(INA226, "Task started");
+
     if (!ina226.begin()) {
-        Serial.println("[INA226] Initialization failed!");
+        LOG_ERROR(INA226, "Initialization failed!");
         vTaskDelete(NULL);
         return;
     }
-    
+
     for (;;) {
         ina226.read();
 
@@ -597,7 +598,7 @@ void INA226_measurementTaskFunction(void *parameter)
             ina226.power
         );
 
-        Serial.printf("[INA226] V: %.3fV, I: %.3fA, P: %.3fW\n",
+        LOG_DEBUG_FMT(INA226, "V: %.3fV, I: %.3fA, P: %.3fW",
                       ina226.bus_voltage, ina226.current, ina226.power);
 
         vTaskDelay(pdMS_TO_TICKS(1000));  // Обновление раз в секунду

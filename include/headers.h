@@ -1,6 +1,7 @@
 #ifndef headers_h
 #define headers_h
 
+#include "logger.h"
 #include "display.h"
 #include "Meteo.h"
 #include "webheaders.h"

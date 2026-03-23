@@ -1,5 +1,6 @@
 #include "headers.h"
 #include "ina226.h"
+#include "logger.h"
 
 extern SemaphoreHandle_t i2c_mutex;
 
@@ -12,7 +13,7 @@ void sensors_setup()
   // Инициализация I2C
   Wire.begin();
   Wire.setClock(100000); // 100 kHz для стабильности всех датчиков
-  Serial.println("[I2C] Mutex создан, частота 100 kHz");
+  LOG_INFO(SENSORS, "Mutex создан, частота 100 kHz");
 
   // Группа 1: Быстрые I2C датчики (HTU, MS5611, BME)
   htu_setup();
@@ -45,12 +46,11 @@ void sensors_setup()
   // Микрофон и I2S задачи
   microphone_init();
 
-  Serial.println("[SENSORS] Все датчики инициализированы");
+  LOG_INFO(SENSORS, "Все датчики инициализированы");
 }
 
 void bme_setup(){
-    while(!Serial);    // time to get serial running
-    Serial.println(F("BME280 test"));
+    LOG_INFO(BME, "BME280 test");
 
     unsigned status;
 
@@ -66,18 +66,17 @@ void bme_setup(){
     // You can also pass in a Wire library object like &Wire2
     // status = bme.begin(0x76, &Wire2)
     if (!status) {
-        Serial.println("Could not find a valid BME280 sensor, check wiring, address, sensor ID!");
-        Serial.print("SensorID was: 0x"); Serial.println(bme.sensorID(),16);
-        Serial.print("        ID of 0xFF probably means a bad address, a BMP 180 or BMP 085\n");
-        Serial.print("   ID of 0x56-0x58 represents a BMP 280,\n");
-        Serial.print("        ID of 0x60 represents a BME 280.\n");
-        Serial.print("        ID of 0x61 represents a BME 680.\n");
+        LOG_ERROR(BME, "Could not find a valid BME280 sensor, check wiring, address, sensor ID!");
+        LOG_ERROR_FMT(BME, "SensorID was: 0x%X", bme.sensorID());
+        LOG_ERROR(BME, "ID of 0xFF probably means a bad address, a BMP 180 or BMP 085");
+        LOG_ERROR(BME, "ID of 0x56-0x58 represents a BMP 280");
+        LOG_ERROR(BME, "ID of 0x60 represents a BME 280");
+        LOG_ERROR(BME, "ID of 0x61 represents a BME 680");
         while (1) delay(10);
     }
 
-    Serial.println("-- Default Test --");
+    LOG_INFO(BME, "-- Default Test --");
     delayTime = 1000;
-    Serial.println();
 
     xTaskCreatePinnedToCore(BME_measurementTaskFunction, "BMEMeasurementTask", 2048, NULL, 1, &BME_measurementTask, 0);
 }
@@ -85,7 +84,7 @@ void bme_setup(){
 void htu_setup()
 {
     bool htu_found = false;
-    
+
     // Захватываем mutex перед инициализацией
     if (i2c_mutex != NULL) {
         xSemaphoreTake(i2c_mutex, portMAX_DELAY);
@@ -96,18 +95,18 @@ void htu_setup()
     }
 
     if (!htu_found) {
-        Serial.println("Check circuit. HTU21D not found!");
+        LOG_ERROR(HTU, "Check circuit. HTU21D not found!");
         while (1);
     }
 
-    Serial.println("[HTU21D] Connected");
+    LOG_INFO(HTU, "Connected");
     xTaskCreatePinnedToCore(HTU_measurementTaskFunction, "HTUMeasurementTask", 2048, NULL, 1, &HTU_measurementTask, 0);
 }
 
 void BH1750_setup()
 {
     bool bh1750_ok = false;
-    
+
     // Захватываем mutex перед инициализацией
     if (i2c_mutex != NULL) {
         xSemaphoreTake(i2c_mutex, portMAX_DELAY);
@@ -118,9 +117,9 @@ void BH1750_setup()
     }
 
     if (bh1750_ok) {
-        Serial.println(F("BH1750 Advanced begin"));
+        LOG_INFO(BH1750, "BH1750 Advanced begin");
     } else {
-        Serial.println(F("Error initialising BH1750"));
+        LOG_ERROR(BH1750, "Error initialising BH1750");
     }
 
     xTaskCreatePinnedToCore(BH1750_measurementTaskFunction, "BH1750MeasurementTask", 2048, NULL, 1, &BH1750_measurementTask, 0);
@@ -137,7 +136,7 @@ void MS5611_setup()
         ms5611.begin(MS5611_HIGH_RES);
     }
 
-    Serial.println("[MS5611] Connected");
+    LOG_INFO(MS5611, "Connected");
     xTaskCreatePinnedToCore(MS5611_measurementTaskFunction, "MS5611MeasurementTask", 2048, NULL, 1, &MS5611_measurementTask, 0);
 }
 
@@ -166,7 +165,7 @@ void VEML_setup(){
         uv.begin(VEML6070_1_T);  // pass in the integration time constant
     }
 
-    Serial.println("[VEML6070] Connected");
+    LOG_INFO(VEML, "Connected");
     xTaskCreatePinnedToCore(VEML_measurementTaskFunction, "VEMLMeasurementTask", 2048, NULL, 1, &VEML_measurementTask, 0);
 }
 
@@ -177,8 +176,8 @@ void INA226_setup(){
                     2048, NULL, 2, &INA226_measurementTask);
         // Ждём первые данные от INA226 (1 секунда)
         vTaskDelay(pdMS_TO_TICKS(1000));
-        Serial.println("[INA226] Инициализирован");
+        LOG_INFO(INA226, "Инициализирован");
     } else {
-        Serial.println("[INA226] Не найден");
+        LOG_ERROR(INA226, "Не найден");
     }
 }

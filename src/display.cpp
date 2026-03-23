@@ -1,4 +1,5 @@
 #include "display.h"
+#include "logger.h"
 #include <time.h>
 
 // Пороговые значения для цветовой индикации (как в logic.js)
@@ -24,7 +25,7 @@ void display_setup() {
     &DISPLAY_measurementTask,    // Дескриптор задачи
     1                      // Ядро (1 = APP_CPU)
   );
-  Serial.println("[DISPLAY] Task created");
+  LOG_INFO(DISPLAY, "Task created");
 }
 
 // Пороговые значения для цветовой индикации (как в logic.js)

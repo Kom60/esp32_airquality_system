@@ -31,6 +31,7 @@
  */
 
 #include <scd4x.h>
+#include "logger.h"
 
 uint8_t SCD4X::begin(TwoWire& port, uint8_t addr) {
 	_i2cPort = &port;
@@ -79,9 +80,9 @@ bool SCD4X::isConnected(TwoWire& port, Stream* stream, uint8_t addr) {
 }
 
 uint8_t SCD4X::stopPeriodicMeasurement() {
-	Serial.println("[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86");
+	LOG_DEBUG(SCD4X, "stopPeriodicMeasurement: отправка команды 0x3F86");
 	_commandSequence(0x3f86);
-	Serial.printf("[SCD40] stopPeriodicMeasurement result: %s (err=%d)\n", getErrorText(_error), _error);
+	LOG_DEBUG_FMT(SCD4X, "stopPeriodicMeasurement result: %s (err=%d)", getErrorText(_error), _error);
 	return _error;
 }
 
@@ -117,13 +118,13 @@ uint8_t SCD4X::readMeasurement(double& co2, double& temperature, double& humidit
 			humidity = (double)100 * (double)((uint16_t)data[6] << 8 | data[7]) / (double)65536;
 
 			// Check if measurements are within range
-			if (co2 >= 0 && co2 <= 40000 && 
-    			temperature >= -10 && temperature <= 60 && 
+			if (co2 >= 0 && co2 <= 40000 &&
+    			temperature >= -10 && temperature <= 60 &&
     			humidity >= 0 && humidity <= 100) {
 				return 0;
 			} else {
 				ESP_LOGE("measurement", "out of range");
-				Serial.printf("%4.0f,%2.1f,%1.0f\n", co2, temperature, humidity);
+				LOG_ERROR_FMT(SCD4X, "Out of range: CO2=%.0f ppm, T=%.1f C, H=%.0f %%", co2, temperature, humidity);
 				_error = 7;
 			}
 
@@ -194,15 +195,15 @@ uint8_t SCD4X::setSensorAltitude(uint16_t altitude) {
 	// Команда setSensorAltitude: 0x2427
 	// Вызывается ДО startPeriodicMeasurement(), поэтому stop не нужен
 	// CRC для setSensorAltitude рассчитывается по спецификации Sensirion
-	
+
 	// Отладка: показываем байты altitude
 	uint8_t altHi = highByte(altitude);
 	uint8_t altLo = lowByte(altitude);
-	Serial.printf("[SCD40] setSensorAltitude: altitude=%d (0x%02X 0x%02X)\n", altitude, altHi, altLo);
-	
+	LOG_DEBUG_FMT(SCD4X, "setSensorAltitude: altitude=%d (0x%02X 0x%02X)", altitude, altHi, altLo);
+
 	uint8_t crc = _calculateCrc8(altHi, altLo);
-	Serial.printf("[SCD40] CRC=0x%02X\n", crc);
-	
+	LOG_DEBUG_FMT(SCD4X, "CRC=0x%02X", crc);
+
 	// Прямая запись через Wire с отладкой
 	_i2cPort->beginTransmission(_address);
 	_i2cPort->write(0x24);  // high byte команды
@@ -211,8 +212,8 @@ uint8_t SCD4X::setSensorAltitude(uint16_t altitude) {
 	_i2cPort->write(altLo);
 	_i2cPort->write(crc);
 	_error = _i2cPort->endTransmission(true);
-	
-	Serial.printf("[SCD40] setSensorAltitude result: %s (err=%d)\n", getErrorText(_error), _error);
+
+	LOG_DEBUG_FMT(SCD4X, "setSensorAltitude result: %s (err=%d)", getErrorText(_error), _error);
 	return _error;
 }
 
@@ -222,11 +223,11 @@ uint8_t SCD4X::setAmbientPressure(uint16_t ambientPressure) {
 	// CRC для setAmbientPressure рассчитывается по спецификации Sensirion
 	uint8_t pressHi = highByte(ambientPressure);
 	uint8_t pressLo = lowByte(ambientPressure);
-	Serial.printf("[SCD40] setAmbientPressure: pressure=%d Pa (0x%02X 0x%02X)\n", ambientPressure, pressHi, pressLo);
-	
+	LOG_DEBUG_FMT(SCD4X, "setAmbientPressure: pressure=%d Pa (0x%02X 0x%02X)", ambientPressure, pressHi, pressLo);
+
 	uint8_t crc = _calculateCrc8(pressHi, pressLo);
-	Serial.printf("[SCD40] CRC=0x%02X\n", crc);
-	
+	LOG_DEBUG_FMT(SCD4X, "CRC=0x%02X", crc);
+
 	// Прямая запись через Wire с отладкой
 	_i2cPort->beginTransmission(_address);
 	_i2cPort->write(0xE0);  // high byte команды
@@ -235,7 +236,7 @@ uint8_t SCD4X::setAmbientPressure(uint16_t ambientPressure) {
 	_i2cPort->write(pressLo);
 	_i2cPort->write(crc);
 	_error = _i2cPort->endTransmission(true);
-	
-	Serial.printf("[SCD40] setAmbientPressure result: %s (err=%d)\n", getErrorText(_error), _error);
+
+	LOG_DEBUG_FMT(SCD4X, "setAmbientPressure result: %s (err=%d)", getErrorText(_error), _error);
 	return _error;
 }

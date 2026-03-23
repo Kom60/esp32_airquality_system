@@ -1,5 +1,6 @@
 #include "Meteo.h"
 #include "headers.h"
+#include "logger.h"
 
 // Глобальный экземпляр буфера
 MeteoBuffer meteo_buffer;
@@ -32,132 +33,62 @@ Meteo_data::Meteo_data()
 
 void Meteo_data::print_bme_values()
 {
-    Serial.println("BME280 SENSOR:");
-    Serial.print("T:\t");
-    Serial.print(bme_temperature, 2);
-    Serial.println(" Celsium");
-
-    Serial.print("P:\t");
-    Serial.print(bme_pressure, 2);
-    Serial.println(" hPa");
-
-    Serial.print("Hum.:\t");
-    Serial.print(bme_humidity, 2);
-    Serial.println(" %");
-    Serial.println();
+    LOG_DEBUG_FMT(BME, "BME280 SENSOR: T=%.2f C, P=%.2f hPa, H=%.2f %%",
+                  bme_temperature, bme_pressure, bme_humidity);
 }
 
 void Meteo_data::print_htu_values()
 {
-    Serial.println("HTU21DF SENSOR:");
-    Serial.print("T:\t");
-    Serial.print(htu_temperature, 2);
-    Serial.println(" Celsium");
-
-    Serial.print("Hum.:\t");
-    Serial.print(htu_humidity, 2);
-    Serial.println(" %");
-    Serial.println();
+    LOG_DEBUG_FMT(HTU, "HTU21DF SENSOR: T=%.2f C, H=%.2f %%",
+                  htu_temperature, htu_humidity);
 }
 
 void Meteo_data::print_scd4x_values()
 {
-    Serial.println("SCD4X SENSOR:");
-    Serial.print("CO2:\t");
-    Serial.print(scd4x_co2, 2);
-    Serial.println(" ppm");
-
-    Serial.print("T:\t");
-    Serial.print(scd4x_temperature, 2);
-    Serial.println(" Celsium");
-
-    Serial.print("Hum.:\t");
-    Serial.print(scd4x_humidity, 2);
-    Serial.println(" %");
-    Serial.println();
+    LOG_DEBUG_FMT(SCD4X, "SCD4X SENSOR: CO2=%.0f ppm, T=%.2f C, H=%.0f %%",
+                  scd4x_co2, scd4x_temperature, scd4x_humidity);
 }
 
 void Meteo_data::print_pms_values()
 {
-    Serial.println("PMS SENSOR:");
-    Serial.print("PM0.1:\t");
-    Serial.print(pms_pm1);
-    Serial.println(" [ug/m3]");
-
-    Serial.print("PM2.5:\t");
-    Serial.print(pms_pm2_5);
-    Serial.println(" [ug/m3]");
-
-    Serial.print("PM10.0:\t");
-    Serial.print(pms_pm10);
-    Serial.println(" [ug/m3]");
-    Serial.println();
+    LOG_DEBUG_FMT(PMS, "PMS SENSOR: PM1=%d, PM2.5=%d, PM10=%d [ug/m3]",
+                  pms_pm1, pms_pm2_5, pms_pm10);
 }
 
 void Meteo_data::print_ms5611_values()
 {
-    Serial.println("MS5611 SENSOR:");
-    Serial.print("T:\t");
-    Serial.print(ms5611_temperature, 2);
-    Serial.println(" Celsium");
-
-    Serial.print("P:\t");
-    Serial.print(ms5611_pressure, 2);
-    Serial.println(" hPa");
-    Serial.println();
+    LOG_DEBUG_FMT(MS5611, "MS5611 SENSOR: T=%.2f C, P=%.2f hPa",
+                  ms5611_temperature, ms5611_pressure);
 }
 
 void Meteo_data::print_bh1750_values()
 {
-    Serial.println("BH1750 SENSOR:");
-    Serial.print("Lighting:\t");
-    Serial.print(bh1750_lighting, 1);
-    Serial.println(" lux");
-    Serial.println();
+    LOG_DEBUG_FMT(BH1750, "BH1750 SENSOR: Lighting=%.1f lux",
+                  bh1750_lighting);
 }
 
 void Meteo_data::print_veml_values()
 {
-    Serial.println("VEML6070 SENSOR:");
-    Serial.print("UV:\t");
-    Serial.print(veml_uv);
-    Serial.println(" UV index");
-    Serial.println();
+    LOG_DEBUG_FMT(VEML, "VEML6070 SENSOR: UV=%d UV index",
+                  veml_uv);
 }
 
 void Meteo_data::print_ch2o_values()
 {
-    Serial.println("CH2O SENSOR:");
-    Serial.print("CH2O:\t");
-    Serial.print(ch2o_value, 1);
-    Serial.println(" ppm");
-    Serial.println();
+    LOG_DEBUG_FMT(CH2O, "CH2O SENSOR: CH2O=%.1f ppm",
+                  ch2o_value);
 }
 
 void Meteo_data::print_microphone_values()
 {
-    Serial.println("MICROPHONE:");
-    Serial.print("Noise:\t");
-    Serial.print(microphone_noise, 2);
-    Serial.println(" dB");
-    Serial.println();
+    LOG_DEBUG_FMT(MICROPHONE, "MICROPHONE: Noise=%.2f dB",
+                  microphone_noise);
 }
 
 void Meteo_data::print_ina226_values()
 {
-    Serial.println("INA226 SENSOR:");
-    Serial.print("Voltage:\t");
-    Serial.print(ina226_voltage, 3);
-    Serial.println(" V");
-
-    Serial.print("Current:\t");
-    Serial.print(ina226_current, 3);
-    Serial.println(" A");
-
-    Serial.print("Power:\t");
-    Serial.print(ina226_power, 3);
-    Serial.println(" W");
-    Serial.println();
+    LOG_DEBUG_FMT(INA226, "INA226 SENSOR: V=%.3f V, I=%.3f A, P=%.3f W",
+                  ina226_voltage, ina226_current, ina226_power);
 }
 
 void Meteo_data::print_values()

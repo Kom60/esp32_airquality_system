@@ -1,0 +1,1284 @@
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ 0.022W
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1184
+load:0x40078000,len:13232
+load:0x40080400,len:3028
+entry 0x400805e4
+[I2C] Mutex создан, частота 100 kHz
+[HTU21D] Connected
+[MS5611] Connected
+BME280 test
+-- Default Test --
+
+BH1750 Advanced begin
+[  1560][E][Wire.cpp:513] requestFrom(): i2cRead returned Error 263
+[VEML6070] Connected
+[INA226] Calibration: 1677, Current_LSB: 0.000031 A
+[INA226] Initialized
+[INA226] Task started
+[INA226] Calibration: 1677, Current_LSB: 0.000031 A
+[INA226] Initialized
+[INA226] V: 2.273V, I: 0.010A, P: 0.022W (I_raw=317, P_raw=29)
+[INA226] V: 2.273V, I: 0.010A, P: 0.022W
+[INA226] Инициализирован
+[MIC] Tasks created
+[SENSORS] Все датчики инициализированы
+!!!!!!!!!!!!!!!!
+[SCD40] === Инициализация SCD40 ===
+[SCD40] Датчик найден на адресе 0x62
+[SCD40] co2.begin() успешно
+[SCD40] Остановка возможных измерений...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] stopPeriodicMeasurement: Success
+[INA226] V: 2.241V, I: 0.010A, P: 0.022W (I_raw=325, P_raw=29)
+[INA226] V: 2.241V, I: 0.010A, P: 0.022W
+[DISPLAY] Task created
+[SPIFFS] Mounted successfully
+[SD] Initializing SD card...
+[  5599][E][esp32-hal-cpu.c:110] addApbChangeCallback(): duplicate func=0x400f3028 arg=0x3ffbdd60
+[SD] Card Mount OK
+[SD] Card size: 1864 MB
+[SD] Used space: 0 MB
+[SD] Logging task created on core 1
+[SD] Logging task started (interval: 1[  5628][E][Preferences.cpp:460] getString(): nvs_get_str len fail: wifi_ssid NOT_FOUND
+0 sec)
+[SD] Waiting 40 sec for NTP sync before first log...
+[  5652][E][Preferences.cpp:460] getString(): nvs_get_str len fail: wifi_password NOT_FOUND
+[  5660][E][Preferences.cpp:503] getBytesLength(): nvs_get_blob len fail: temp_offset_bme NOT_FOUND
+[  5669][E][Preferences.cpp:503] getBytesLength(): nvs_get_blob len fail: temp_offset_htu NOT_FOUND
+[  5678][E][Preferences.cpp:503] getBytesLength(): nvs_get_blob len fail: temp_offset_scd NOT_FOUND
+Settings loaded from NVS
+[SCD40] Ожидание данных давления от BME280/MS5611...
+Establishing connection to WiFi with SSID: 
+[DISPLAY] Task started
+[INA226] V: 2.243V, I: 0.010A, P: 0.022W (I_raw=323, P_raw=29)
+[INA226] V: 2.243V, I: 0.010A, P: 0.022W
+[DISPLAY] Initial data displayed
+.[INA226] V: 2.244V, I: 0.010A, P: 0.022W (I_raw=326, P_raw=29)
+[INA226] V: 2.244V, I: 0.010A, P: 0.022W
+[SCD40] Расчётное altitude: 204.2 м (давление: 988.96 гПа)
+[SCD40] setSensorAltitude: altitude=204 (0x00 0xCC)
+[SCD40] CRC=0xBB
+.[SCD40] setSensorAltitude result: Success (err=0)
+[SCD40] ✓ Установлено altitude: 204 м
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] startPeriodicMeasurement() успешно
+[SCD40] Начало цикла измерений...
+[SCD40] Первое измерение займёт ~5 секунд
+
+[SCD40] === Попытка #1 (elapsed=0s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+.[  9265][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.119V, I: 0.011A, P: 0.024W (I_raw=370, P_raw=31)
+[INA226] V: 2.119V, I: 0.011A, P: 0.024W
+.[INA226] V: 2.142V, I: 0.011A, P: 0.024W (I_raw=370, P_raw=31)
+[INA226] V: 2.142V, I: 0.011A, P: 0.024W
+.Connected to network with IP address: 192.168.0.195
+[NTP] Waiting for time sync...
+[INA226] V: 2.207V, I: 0.010A, P: 0.022W (I_raw=336, P_raw=29)
+[INA226] V: 2.207V, I: 0.010A, P: 0.022W
+[INA226] V: 2.220V, I: 0.010A, P: 0.022W (I_raw=333, P_raw=29)
+[INA226] V: 2.220V, I: 0.010A, P: 0.022W
+[INA226] V: 2.225V, I: 0.010A, P: 0.022W (I_raw=325, P_raw=29)
+[INA226] V: 2.225V, I: 0.010A, P: 0.022W
+
+[SCD40] === Попытка #2 (elapsed=6s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 15276][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.251V, I: 0.010A, P: 0.022W (I_raw=327, P_raw=29)
+[INA226] V: 2.251V, I: 0.010A, P: 0.022W
+[NTP] Time synchronized successfully
+[NTP] Current time: 2026-03-23 22:47:00
+[WebSocket] Task started on core 1
+[WebSocket] Task created on core 1
+[SendData] Task created on core 1
+[SendData] Task started on core 1
+[PC] Отправка: {"bme_temperature":28.0,"bme_pressure":989.1,"bme_humidity":17.4,"htu_temperature":29.1,"htu_humidity":4.9,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":9,"pms_pm2_5":13,"pms_pm10":14,"ms5611_pressure":988.8,"ms5611_temperature":28.2,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.709,"microphone_noise":53.6,"ina226_voltage":2.236,"ina226_current":0.010,"ina226_power":0.022}
+[INA226] V: 2.249V, I: 0.010A, P: 0.022W (I_raw=326, P_raw=29)
+[INA226] V: 2.249V, I: 0.010A, P: 0.022W
+[INA226] V: 2.253V, I: 0.010A, P: 0.022W (I_raw=324, P_raw=29)
+[INA226] V: 2.253V, I: 0.010A, P: 0.022W
+[INA226] V: 2.251V, I: 0.010A, P: 0.022W (I_raw=326, P_raw=29)
+[INA226] V: 2.251V, I: 0.010A, P: 0.022W
+[INA226] V: 2.244V, I: 0.010A, P: 0.022W (I_raw=327, P_raw=29)
+[INA226] V: 2.244V, I: 0.010A, P: 0.022W
+
+[SCD40] === Попытка #3 (elapsed=12s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] ✗ Ошибка отправки. Код: -1
+[ 21286][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[SCD40] stopPeriodicMeasurement()...
+[INA226] V: 2.243V, I: 0.010A, P: 0.022W (I_raw=324, P_raw=29)
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[INA226] V: 2.243V, I: 0.010A, P: 0.022W
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.131V, I: 0.012A, P: 0.026W (I_raw=394, P_raw=34)
+[INA226] V: 2.131V, I: 0.012A, P: 0.026W
+
+[SCD40] === Попытка #4 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 23829][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.164V, I: 0.013A, P: 0.027W (I_raw=415, P_raw=36)
+[INA226] V: 2.164V, I: 0.013A, P: 0.027W
+[INA226] V: 2.156V, I: 0.012A, P: 0.026W (I_raw=405, P_raw=34)
+[INA226] V: 2.156V, I: 0.012A, P: 0.026W
+[PC] Отправка: {"bme_temperature":28.0,"bme_pressure":989.1,"bme_humidity":17.4,"htu_temperature":29.1,"htu_humidity":4.8,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":16,"pms_pm10":18,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.4,"veml_uv":0,"ch2o_value":0.838,"microphone_noise":53.2,"ina226_voltage":2.161,"ina226_current":0.013,"ina226_power":0.027}
+[INA226] V: 2.304V, I: 0.010A, P: 0.024W (I_raw=341, P_raw=31)
+[INA226] V: 2.304V, I: 0.010A, P: 0.024W
+[INA226] V: 2.315V, I: 0.010A, P: 0.024W (I_raw=340, P_raw=31)
+[INA226] V: 2.315V, I: 0.010A, P: 0.024W
+[DISPLAY] Updated
+[INA226] V: 2.315V, I: 0.010A, P: 0.024W (I_raw=340, P_raw=31)
+[INA226] V: 2.315V, I: 0.010A, P: 0.024W
+
+[SCD40] === Попытка #5 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 29839][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.301V, I: 0.010A, P: 0.024W (I_raw=337, P_raw=31)
+[INA226] V: 2.301V, I: 0.010A, P: 0.024W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.322V, I: 0.010A, P: 0.024W (I_raw=335, P_raw=31)
+[INA226] V: 2.322V, I: 0.010A, P: 0.024W
+[INA226] V: 2.319V, I: 0.010A, P: 0.024W (I_raw=339, P_raw=31)
+[INA226] V: 2.319V, I: 0.010A, P: 0.024W
+[INA226] V: 2.299V, I: 0.010A, P: 0.024W (I_raw=337, P_raw=31)
+[INA226] V: 2.299V, I: 0.010A, P: 0.024W
+[INA226] V: 2.322V, I: 0.010A, P: 0.024W (I_raw=336, P_raw=31)
+[INA226] V: 2.322V, I: 0.010A, P: 0.024W
+
+[SCD40] === Попытка #6 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":17.5,"htu_temperature":29.1,"htu_humidity":7.0,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":16,"pms_pm10":17,"ms5611_pressure":988.8,"ms5611_temperature":28.2,"bh1750_lighting":12.3,"veml_uv":0,"ch2o_value":3.025,"microphone_noise":53.7,"ina226_voltage":2.315,"ina226_current":0.010,"ina226_power":0.024}
+[ 35849][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.319V, I: 0.010A, P: 0.024W (I_raw=341, P_raw=31)
+[INA226] V: 2.319V, I: 0.010A, P: 0.024W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.160V, I: 0.013A, P: 0.027W (I_raw=415, P_raw=36)
+[INA226] V: 2.160V, I: 0.013A, P: 0.027W
+
+[SCD40] === Попытка #7 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 38523][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.159V, I: 0.012A, P: 0.026W (I_raw=388, P_raw=34)
+[INA226] V: 2.159V, I: 0.012A, P: 0.026W
+[INA226] V: 2.139V, I: 0.012A, P: 0.026W (I_raw=396, P_raw=34)
+[INA226] V: 2.139V, I: 0.012A, P: 0.026W
+[INA226] V: 2.293V, I: 0.010A, P: 0.024W (I_raw=341, P_raw=31)
+[INA226] V: 2.293V, I: 0.010A, P: 0.024W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.301V, I: 0.010A, P: 0.024W (I_raw=338, P_raw=31)
+[INA226] V: 2.301V, I: 0.010A, P: 0.024W
+[INA226] V: 2.295V, I: 0.010A, P: 0.024W (I_raw=335, P_raw=31)
+[INA226] V: 2.295V, I: 0.010A, P: 0.024W
+
+[SCD40] === Попытка #8 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 44534][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.305V, I: 0.010A, P: 0.024W (I_raw=338, P_raw=31)
+[INA226] V: 2.305V, I: 0.010A, P: 0.024W
+[PC] Отправка: {"bme_temperature":28.0,"bme_pressure":989.2,"bme_humidity":17.8,"htu_temperature":29.1,"htu_humidity":6.6,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":16,"pms_pm10":16,"ms5611_pressure":988.8,"ms5611_temperature":28.2,"bh1750_lighting":11.7,"veml_uv":0,"ch2o_value":0.774,"microphone_noise":48.8,"ina226_voltage":2.302,"ina226_current":0.010,"ina226_power":0.024}[INA226] V: 2.311V, I: 0.010A, P: 0.024W (I_raw=337, P_raw=31)
+[INA226] V: 2.311V, I: 0.010A, P: 0.024W
+
+[SD] Data written to /data.json
+[INA226] V: 2.309V, I: 0.010A, P: 0.024W (I_raw=337, P_raw=31)
+[INA226] V: 2.309V, I: 0.010A, P: 0.024W
+[DISPLAY] Updated
+[INA226] V: 2.307V, I: 0.010A, P: 0.024W (I_raw=336, P_raw=31)
+[INA226] V: 2.307V, I: 0.010A, P: 0.024W
+[WS] Client 0 connected
+[WS] Sending initial data...
+[WS] Initial data sent!
+[INA226] V: 2.311V, I: 0.010A, P: 0.024W (I_raw=333, P_raw=31)
+[INA226] V: 2.311V, I: 0.010A, P: 0.024W
+
+[SCD40] === Попытка #9 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 50593][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[PC] ✗ Ошибка отправки. Код: -1
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[SCD40] stopPeriodicMeasurement()...
+[INA226] V: 2.309V, I: 0.010A, P: 0.024W (I_raw=335, P_raw=31)
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[INA226] V: 2.309V, I: 0.010A, P: 0.024W
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.158V, I: 0.013A, P: 0.027W (I_raw=416, P_raw=36)
+[INA226] V: 2.158V, I: 0.013A, P: 0.027W
+
+[SCD40] === Попытка #10 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 53141][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.158V, I: 0.012A, P: 0.026W (I_raw=400, P_raw=34)
+[INA226] V: 2.158V, I: 0.012A, P: 0.026W
+[INA226] V: 2.115V, I: 0.011A, P: 0.022W (I_raw=348, P_raw=29)
+[INA226] V: 2.115V, I: 0.011A, P: 0.022W
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W (I_raw=317, P_raw=28)
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.0,"bme_pressure":989.1,"bme_humidity":17.7,"htu_temperature":29.1,"htu_humidity":5.4,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":15,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.2,"veml_uv":0,"ch2o_value":0.814,"microphone_noise":53.0,"ina226_voltage":2.133,"ina226_current":0.011,"ina226_power":0.022}
+[SD] Data written to /data.json
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W
+[INA226] V: 2.189V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.189V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #11 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 59152][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.165V, I: 0.010A, P: 0.021W (I_raw=315, P_raw=28)
+[INA226] V: 2.165V, I: 0.010A, P: 0.021W
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.171V, I: 0.010A, P: 0.021W (I_raw=312, P_raw=28)
+[INA226] V: 2.171V, I: 0.010A, P: 0.021W
+[INA226] V: 2.224V, I: 0.010A, P: 0.022W (I_raw=324, P_raw=29)
+[INA226] V: 2.224V, I: 0.010A, P: 0.022W
+[INA226] V: 2.213V, I: 0.010A, P: 0.021W (I_raw=321, P_raw=28)
+[INA226] V: 2.213V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #12 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 65163][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.200V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+[INA226] V: 2.200V, I: 0.010A, P: 0.021W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[PC] Отправка: {"bme_temperature":28.0,"bme_pressure":989.1,"bme_humidity":17.7,"htu_temperature":29.1,"htu_humidity":5.2,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":14,"pms_pm10":14,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":11.7,"veml_uv":0,"ch2o_value":3.379,"microphone_noise":51.6,"ina226_voltage":2.206,"ina226_current":0.010,"ina226_power":0.021}
+[SD] Data written to /data.json
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.078V, I: 0.010A, P: 0.021W (I_raw=338, P_raw=28)
+[INA226] V: 2.078V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #13 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[DISPLAY] Updated
+[ 67964][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.098V, I: 0.010A, P: 0.022W (I_raw=344, P_raw=29)
+[INA226] V: 2.098V, I: 0.010A, P: 0.022W
+[INA226] V: 2.085V, I: 0.010A, P: 0.022W (I_raw=344, P_raw=29)
+[INA226] V: 2.085V, I: 0.010A, P: 0.022W
+[INA226] V: 2.170V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.170V, I: 0.010A, P: 0.021W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W (I_raw=312, P_raw=28)
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W (I_raw=315, P_raw=28)
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #14 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 73975][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.168V, I: 0.009A, P: 0.020W (I_raw=311, P_raw=26)
+[INA226] V: 2.168V, I: 0.009A, P: 0.020W
+[INA226] V: 2.166V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.166V, I: 0.009A, P: 0.020W
+[PC] Отправка: {"bme_temperature":28.0,"bme_pressure":989.1,"bme_humidity":19.1,"htu_temperature":29.1,"htu_humidity":8.9,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":15,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.4,"veml_uv":0,"ch2o_value":0.721,"microphone_noise":49.9,"ina226_voltage":2.167,"ina226_current":0.009,"ina226_power":0.020}
+[SD] Data written to /data.json
+[INA226] V: 2.204V, I: 0.010A, P: 0.021W (I_raw=322, P_raw=28)
+[INA226] V: 2.204V, I: 0.010A, P: 0.021W
+[INA226] V: 2.195V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+[INA226] V: 2.195V, I: 0.010A, P: 0.021W
+[INA226] V: 2.203V, I: 0.010A, P: 0.021W (I_raw=317, P_raw=28)
+[INA226] V: 2.203V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #15 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 79986][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[SCD40] stopPeriodicMeasurement()...
+[INA226] V: 2.207V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[INA226] V: 2.207V, I: 0.010A, P: 0.021W
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.125V, I: 0.011A, P: 0.022W (I_raw=355, P_raw=29)
+[INA226] V: 2.125V, I: 0.011A, P: 0.022W
+
+[SCD40] === Попытка #16 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 82529][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.105V, I: 0.010A, P: 0.021W (I_raw=344, P_raw=28)
+[INA226] V: 2.105V, I: 0.010A, P: 0.021W
+[INA226] V: 2.124V, I: 0.011A, P: 0.022W (I_raw=352, P_raw=29)
+[INA226] V: 2.124V, I: 0.011A, P: 0.022W
+[INA226] V: 2.215V, I: 0.010A, P: 0.021W (I_raw=319, P_raw=28)
+[INA226] V: 2.215V, I: 0.010A, P: 0.021W
+[INA226] V: 2.213V, I: 0.010A, P: 0.021W (I_raw=320, P_raw=28)
+[INA226] V: 2.213V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":20.7,"htu_temperature":29.1,"htu_humidity":10.0,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":14,"pms_pm10":16,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.3,"veml_uv":0,"ch2o_value":1.432,"microphone_noise":59.3,"ina226_voltage":2.187,"ina226_current":0.010,"ina226_power":0.022}
+[SD] Data written to /data.json
+[INA226] V: 2.219V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+[INA226] V: 2.219V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #17 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[DISPLAY] Updated
+[ 88540][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.219V, I: 0.010A, P: 0.021W (I_raw=321, P_raw=28)
+[INA226] V: 2.219V, I: 0.010A, P: 0.021W
+[INA226] V: 2.199V, I: 0.010A, P: 0.021W (I_raw=319, P_raw=28)
+[INA226] V: 2.199V, I: 0.010A, P: 0.021W
+[INA226] V: 2.240V, I: 0.010A, P: 0.022W (I_raw=322, P_raw=29)
+[INA226] V: 2.240V, I: 0.010A, P: 0.022W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.234V, I: 0.010A, P: 0.022W (I_raw=326, P_raw=29)
+[INA226] V: 2.234V, I: 0.010A, P: 0.022W
+[INA226] V: 2.245V, I: 0.010A, P: 0.022W (I_raw=328, P_raw=29)
+[INA226] V: 2.245V, I: 0.010A, P: 0.022W
+
+[SCD40] === Попытка #18 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[ 94551][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.253V, I: 0.010A, P: 0.022W (I_raw=325, P_raw=29)
+[INA226] V: 2.253V, I: 0.010A, P: 0.022W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.135V, I: 0.011A, P: 0.024W (I_raw=363, P_raw=31)
+[INA226] V: 2.135V, I: 0.011A, P: 0.024W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.6,"htu_temperature":29.1,"htu_humidity":7.5,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":13,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.2,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":3.289,"microphone_noise":55.1,"ina226_voltage":2.250,"ina226_current":0.010,"ina226_power":0.022}
+
+[SCD40] === Попытка #19 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[SD] Data written to /data.json
+[ 97354][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.134V, I: 0.011A, P: 0.024W (I_raw=364, P_raw=31)
+[INA226] V: 2.134V, I: 0.011A, P: 0.024W
+[INA226] V: 2.115V, I: 0.010A, P: 0.022W (I_raw=343, P_raw=29)
+[INA226] V: 2.115V, I: 0.010A, P: 0.022W
+[INA226] V: 2.180V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.180V, I: 0.010A, P: 0.021W
+[INA226] V: 2.181V, I: 0.010A, P: 0.020W (I_raw=313, P_raw=26)
+[INA226] V: 2.181V, I: 0.010A, P: 0.020W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.175V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.175V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #20 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[103366][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.188V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.188V, I: 0.010A, P: 0.021W
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W
+[INA226] V: 2.194V, I: 0.010A, P: 0.021W (I_raw=312, P_raw=28)
+[INA226] V: 2.194V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.5,"htu_temperature":29.1,"htu_humidity":6.4,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":8,"pms_pm2_5":12,"pms_pm10":16,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.764,"microphone_noise":50.6,"ina226_voltage":2.187,"ina226_current":0.010,"ina226_power":0.021}
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W
+[SD] Data written to /data.json
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #21 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[DISPLAY] Updated
+[109378][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.174V, I: 0.010A, P: 0.021W (I_raw=313, P_raw=28)
+[INA226] V: 2.174V, I: 0.010A, P: 0.021W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.082V, I: 0.011A, P: 0.022W (I_raw=345, P_raw=29)
+[INA226] V: 2.082V, I: 0.011A, P: 0.022W
+[PC] ✗ Ошибка отправки. Код: -1
+
+[SCD40] === Попытка #22 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[112076][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.114V, I: 0.011A, P: 0.022W (I_raw=348, P_raw=29)
+[INA226] V: 2.114V, I: 0.011A, P: 0.022W
+[INA226] V: 2.101V, I: 0.010A, P: 0.021W (I_raw=338, P_raw=28)
+[INA226] V: 2.101V, I: 0.010A, P: 0.021W
+[INA226] V: 2.168V, I: 0.010A, P: 0.021W (I_raw=313, P_raw=28)
+[INA226] V: 2.168V, I: 0.010A, P: 0.021W
+[INA226] V: 2.172V, I: 0.010A, P: 0.020W (I_raw=312, P_raw=26)
+[INA226] V: 2.172V, I: 0.010A, P: 0.020W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.1,"htu_temperature":29.1,"htu_humidity":5.9,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":7,"pms_pm2_5":11,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.780,"microphone_noise":51.6,"ina226_voltage":2.168,"ina226_current":0.010,"ina226_power":0.021}
+[INA226] V: 2.179V, I: 0.010A, P: 0.020W (I_raw=313, P_raw=26)
+[INA226] V: 2.179V, I: 0.010A, P: 0.020W
+[SD] Data written to /data.json
+
+[SCD40] === Попытка #23 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[118087][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.175V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.175V, I: 0.009A, P: 0.020W
+[INA226] V: 2.160V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.160V, I: 0.009A, P: 0.020W
+[INA226] V: 2.175V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.175V, I: 0.009A, P: 0.020W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.174V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.174V, I: 0.010A, P: 0.021W
+[INA226] V: 2.160V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.160V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #24 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[124113][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.170V, I: 0.010A, P: 0.021W (I_raw=312, P_raw=28)
+[INA226] V: 2.170V, I: 0.010A, P: 0.021W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.095V, I: 0.010A, P: 0.021W (I_raw=342, P_raw=28)
+[INA226] V: 2.095V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.2,"htu_temperature":29.1,"htu_humidity":5.9,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":7,"pms_pm2_5":11,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.743,"microphone_noise":47.9,"ina226_voltage":2.133,"ina226_current":0.010,"ina226_power":0.021}
+
+[SCD40] === Попытка #25 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[SD] Data written to /data.json
+[126800][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.088V, I: 0.010A, P: 0.021W (I_raw=342, P_raw=28)
+[INA226] V: 2.088V, I: 0.010A, P: 0.021W
+[INA226] V: 2.112V, I: 0.011A, P: 0.022W (I_raw=345, P_raw=29)
+[INA226] V: 2.112V, I: 0.011A, P: 0.022W
+[INA226] V: 2.197V, I: 0.010A, P: 0.021W (I_raw=319, P_raw=28)
+[INA226] V: 2.197V, I: 0.010A, P: 0.021W
+[DISPLAY] Updated
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W (I_raw=315, P_raw=28)
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #26 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[132811][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W (I_raw=322, P_raw=28)
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W
+[INA226] V: 2.205V, I: 0.010A, P: 0.021W (I_raw=319, P_raw=28)
+[INA226] V: 2.205V, I: 0.010A, P: 0.021W
+[INA226] V: 2.211V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.211V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.1,"htu_temperature":29.1,"htu_humidity":5.8,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":8,"pms_pm2_5":11,"pms_pm10":12,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":3.324,"microphone_noise":47.9,"ina226_voltage":2.209,"ina226_current":0.010,"ina226_power":0.021}
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W (I_raw=323, P_raw=28)
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W
+[SD] Data written to /data.json
+[INA226] V: 2.204V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.204V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #27 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[138822][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.182V, I: 0.010A, P: 0.021W (I_raw=313, P_raw=28)
+[INA226] V: 2.182V, I: 0.010A, P: 0.021W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.091V, I: 0.011A, P: 0.022W (I_raw=348, P_raw=29)
+[INA226] V: 2.091V, I: 0.011A, P: 0.022W
+
+[SCD40] === Попытка #28 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] ✗ Ошибка отправки. Код: -1
+[141627][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.159V, I: 0.012A, P: 0.026W (I_raw=402, P_raw=34)
+[INA226] V: 2.159V, I: 0.012A, P: 0.026W
+[INA226] V: 2.158V, I: 0.013A, P: 0.029W (I_raw=432, P_raw=38)
+[INA226] V: 2.158V, I: 0.013A, P: 0.029W
+[INA226] V: 2.181V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.181V, I: 0.010A, P: 0.021W
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W (I_raw=312, P_raw=28)
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W
+[INA226] V: 2.184V, I: 0.010A, P: 0.021W (I_raw=313, P_raw=28)
+[INA226] V: 2.184V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.0,"htu_temperature":29.2,"htu_humidity":5.6,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":13,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.743,"microphone_noise":53.9,"ina226_voltage":2.184,"ina226_current":0.010,"ina226_power":0.021}
+
+[SCD40] === Попытка #29 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[SD] Data written to /data.json
+[147637][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.181V, I: 0.010A, P: 0.021W (I_raw=313, P_raw=28)
+[INA226] V: 2.181V, I: 0.010A, P: 0.021W
+[INA226] V: 2.199V, I: 0.009A, P: 0.020W (I_raw=305, P_raw=26)
+[INA226] V: 2.199V, I: 0.009A, P: 0.020W
+[DISPLAY] Updated
+[INA226] V: 2.200V, I: 0.009A, P: 0.020W (I_raw=307, P_raw=26)
+[INA226] V: 2.200V, I: 0.009A, P: 0.020W
+[INA226] V: 2.195V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.195V, I: 0.009A, P: 0.020W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.203V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.203V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #30 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[153651][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[SCD40] stopPeriodicMeasurement()...
+[INA226] V: 2.184V, I: 0.009A, P: 0.021W (I_raw=310, P_raw=28)
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86[INA226] V: 2.184V, I: 0.009A, P: 0.021W
+
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.101V, I: 0.010A, P: 0.021W (I_raw=342, P_raw=28)
+[INA226] V: 2.101V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #31 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.0,"htu_temperature":29.2,"htu_humidity":5.7,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":14,"pms_pm10":15,"ms5611_pressure":988.7,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":3.082,"microphone_noise":56.6,"ina226_voltage":2.177,"ina226_current":0.010,"ina226_power":0.021}
+[156195][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.106V, I: 0.011A, P: 0.024W (I_raw=372, P_raw=31)
+[INA226] V: 2.106V, I: 0.011A, P: 0.024W
+[INA226] V: 2.116V, I: 0.011A, P: 0.022W (I_raw=347, P_raw=29)
+[INA226] V: 2.116V, I: 0.011A, P: 0.022W
+[SD] Data written to /data.json
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W (I_raw=317, P_raw=28)
+[INA226] V: 2.176V, I: 0.010A, P: 0.021W
+[INA226] V: 2.168V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+[INA226] V: 2.168V, I: 0.010A, P: 0.021W
+[INA226] V: 2.194V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.194V, I: 0.010A, P: 0.021W
+[PC] ✗ Ошибка отправки. Код: -1
+
+[SCD40] === Попытка #32 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[162206][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.201V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+[INA226] V: 2.201V, I: 0.010A, P: 0.021W
+[INA226] V: 2.168V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.168V, I: 0.010A, P: 0.021W
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W (I_raw=315, P_raw=28)
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W
+[INA226] V: 2.161V, I: 0.010A, P: 0.021W (I_raw=319, P_raw=28)
+[INA226] V: 2.161V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.2,"bme_humidity":18.0,"htu_temperature":29.2,"htu_humidity":5.6,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":14,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":11.7,"veml_uv":0,"ch2o_value":3.401,"microphone_noise":49.2,"ina226_voltage":2.180,"ina226_current":0.010,"ina226_power":0.021}
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W (I_raw=315, P_raw=28)
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #33 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[SD] Data written to /data.json
+[168217][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.189V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.189V, I: 0.010A, P: 0.021W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.090V, I: 0.010A, P: 0.022W (I_raw=343, P_raw=29)
+[INA226] V: 2.090V, I: 0.010A, P: 0.022W
+[DISPLAY] Updated
+
+[SCD40] === Попытка #34 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] ✗ Ошибка отправки. Код: -1
+[171012][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.105V, I: 0.011A, P: 0.022W (I_raw=352, P_raw=29)
+[INA226] V: 2.105V, I: 0.011A, P: 0.022W
+[INA226] V: 2.109V, I: 0.011A, P: 0.022W (I_raw=348, P_raw=29)
+[INA226] V: 2.109V, I: 0.011A, P: 0.022W
+[INA226] V: 2.185V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.185V, I: 0.010A, P: 0.021W
+[INA226] V: 2.188V, I: 0.010A, P: 0.021W (I_raw=317, P_raw=28)
+[INA226] V: 2.188V, I: 0.010A, P: 0.021W
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W (I_raw=315, P_raw=28)
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.0,"htu_temperature":29.1,"htu_humidity":5.5,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":13,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":1.018,"microphone_noise":49.3,"ina226_voltage":2.188,"ina226_current":0.010,"ina226_power":0.021}
+
+[SCD40] === Попытка #35 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[177023][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.197V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.197V, I: 0.010A, P: 0.021W
+[SD] Data written to /data.json
+[INA226] V: 2.178V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+[INA226] V: 2.178V, I: 0.010A, P: 0.021W
+[INA226] V: 2.199V, I: 0.010A, P: 0.021W (I_raw=317, P_raw=28)
+[INA226] V: 2.199V, I: 0.010A, P: 0.021W
+[INA226] V: 2.196V, I: 0.010A, P: 0.021W (I_raw=312, P_raw=28)
+[INA226] V: 2.196V, I: 0.010A, P: 0.021W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.169V, I: 0.010A, P: 0.021W (I_raw=317, P_raw=28)
+[INA226] V: 2.169V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #36 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[183035][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[BH1750] Некорректное значение: 3579139328.00[INA226] V: 2.193V, I: 0.010A, P: 0.021W (I_raw=317, P_raw=28)
+
+[INA226] V: 2.193V, I: 0.010A, P: 0.021W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.082V, I: 0.011A, P: 0.022W (I_raw=347, P_raw=29)
+[INA226] V: 2.082V, I: 0.011A, P: 0.022W
+
+[SCD40] === Попытка #37 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.0,"htu_temperature":29.1,"htu_humidity":5.7,[185749][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":9,"pms_pm2_5":13,"pms_pm10":15,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.752,"microphone_noise":49.2,"ina226_voltage":2.127,"ina226_current":0.010,"ina226_power":0.022}
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00[INA226] V: 2.102V, I: 0.010A, P: 0.022W (I_raw=343, P_raw=29)
+
+[INA226] V: 2.102V, I: 0.010A, P: 0.022W
+[INA226] V: 2.105V, I: 0.011A, P: 0.022W (I_raw=349, P_raw=29)
+[INA226] V: 2.105V, I: 0.011A, P: 0.022W
+[SD] Data written to /data.json
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+[INA226] V: 2.191V, I: 0.010A, P: 0.021W
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W
+[INA226] V: 2.185V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.185V, I: 0.010A, P: 0.021W
+[DISPLAY] Updated
+[PC] ✗ Ошибка отправки. Код: -1
+
+[SCD40] === Попытка #38 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[191800][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.184V, I: 0.010A, P: 0.021W (I_raw=315, P_raw=28)
+[INA226] V: 2.184V, I: 0.010A, P: 0.021W
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W (I_raw=315, P_raw=28)
+[INA226] V: 2.190V, I: 0.010A, P: 0.021W
+[INA226] V: 2.180V, I: 0.010A, P: 0.021W (I_raw=316, P_raw=28)
+[INA226] V: 2.180V, I: 0.010A, P: 0.021W
+[INA226] V: 2.172V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.172V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.0,"htu_temperature":29.1,"htu_humidity":5.7,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":8,"pms_pm2_5":13,"pms_pm10":14,"ms5611_pressure":988.7,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":3.749,"microphone_noise":48.3,"ina226_voltage":2.176,"ina226_current":0.010,"ina226_power":0.021}
+[INA226] V: 2.189V, I: 0.010A, P: 0.021W (I_raw=314, P_raw=28)
+[INA226] V: 2.189V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #39 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[SD] Data written to /data.json
+[197811][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[BH1750] Некорректное значение: 3579139328.00[INA226] V: 2.166V, I: 0.010A, P: 0.021W (I_raw=318, P_raw=28)
+
+[INA226] V: 2.166V, I: 0.010A, P: 0.021W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.101V, I: 0.011A, P: 0.022W (I_raw=353, P_raw=29)
+[INA226] V: 2.101V, I: 0.011A, P: 0.022W
+
+[SCD40] === Попытка #40 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[200521][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.085V, I: 0.011A, P: 0.022W (I_raw=345, P_raw=29)
+[INA226] V: 2.085V, I: 0.011A, P: 0.022W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.098V, I: 0.010A, P: 0.022W (I_raw=342, P_raw=29)
+[INA226] V: 2.098V, I: 0.010A, P: 0.022W
+[INA226] V: 2.174V, I: 0.010A, P: 0.021W (I_raw=313, P_raw=28)
+[INA226] V: 2.174V, I: 0.010A, P: 0.021W
+[INA226] V: 2.174V, I: 0.009A, P: 0.021W (I_raw=311, P_raw=28)
+[INA226] V: 2.174V, I: 0.009A, P: 0.021W
+[INA226] V: 2.169V, I: 0.010A, P: 0.020W (I_raw=313, P_raw=26)
+[INA226] V: 2.169V, I: 0.010A, P: 0.020W
+
+[SCD40] === Попытка #41 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":18.0,"htu_temperature":29.2,"htu_humidity":5.7,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":8,"pms_pm2_5":12,"pms_pm10":12,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.737,"microphone_noise":49.2,"ina226_voltage":2.171,"ina226_current":0.010,"ina226_power":0.020}
+[206532][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.161V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.161V, I: 0.009A, P: 0.020W
+[SD] Data written to /data.json
+[INA226] V: 2.165V, I: 0.010A, P: 0.021W (I_raw=313, P_raw=28)
+[INA226] V: 2.165V, I: 0.010A, P: 0.021W
+[INA226] V: 2.166V, I: 0.010A, P: 0.020W (I_raw=314, P_raw=26)
+[INA226] V: 2.166V, I: 0.010A, P: 0.020W
+[INA226] V: 2.161V, I: 0.010A, P: 0.020W (I_raw=317, P_raw=26)
+[INA226] V: 2.161V, I: 0.010A, P: 0.020W
+[DISPLAY] Updated
+[INA226] V: 2.171V, I: 0.009A, P: 0.020W (I_raw=311, P_raw=26)
+[INA226] V: 2.171V, I: 0.009A, P: 0.020W
+[PC] ✗ Ошибка отправки. Код: -1
+
+[SCD40] === Попытка #42 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[212545][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.166V, I: 0.010A, P: 0.020W (I_raw=312, P_raw=26)
+[INA226] V: 2.166V, I: 0.010A, P: 0.020W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.096V, I: 0.010A, P: 0.021W (I_raw=341, P_raw=28)
+[INA226] V: 2.096V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #43 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[215344][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.071V, I: 0.010A, P: 0.021W (I_raw=341, P_raw=28)
+[INA226] V: 2.071V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":17.5,"htu_temperature":29.2,"htu_humidity":5.1,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":7,"pms_pm2_5":11,"pms_pm10":13,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.816,"microphone_noise":51.6,"ina226_voltage":2.086,"ina226_current":0.010,"ina226_power":0.021}
+[INA226] V: 2.089V, I: 0.010A, P: 0.021W (I_raw=341, P_raw=28)
+[INA226] V: 2.089V, I: 0.010A, P: 0.021W
+[INA226] V: 2.166V, I: 0.009A, P: 0.020W (I_raw=311, P_raw=26)
+[INA226] V: 2.166V, I: 0.009A, P: 0.020W
+[SD] Data written to /data.json
+[INA226] V: 2.162V, I: 0.010A, P: 0.020W (I_raw=312, P_raw=26)
+[INA226] V: 2.162V, I: 0.010A, P: 0.020W
+[INA226] V: 2.164V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.164V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #44 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] ✗ Ошибка отправки. Код: -1
+[221356][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.155V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.155V, I: 0.009A, P: 0.020W
+[INA226] V: 2.161V, I: 0.009A, P: 0.020W (I_raw=311, P_raw=26)
+[INA226] V: 2.161V, I: 0.009A, P: 0.020W
+[INA226] V: 2.164V, I: 0.010A, P: 0.020W (I_raw=313, P_raw=26)
+[INA226] V: 2.164V, I: 0.010A, P: 0.020W
+[INA226] V: 2.165V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.165V, I: 0.009A, P: 0.020W
+[INA226] V: 2.164V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.164V, I: 0.009A, P: 0.020W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":17.4,"htu_temperature":29.2,"htu_humidity":5.0,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":7,"pms_pm2_5":12,"pms_pm10":13,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.665,"microphone_noise":47.3,"ina226_voltage":2.164,"ina226_current":0.009,"ina226_power":0.020}
+
+[SCD40] === Попытка #45 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[227367][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[SCD40] stopPeriodicMeasurement()...
+[INA226] V: 2.168V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[INA226] V: 2.168V, I: 0.009A, P: 0.020W
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SD] Data written to /data.json
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.078V, I: 0.010A, P: 0.021W (I_raw=337, P_raw=28)
+[INA226] V: 2.078V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #46 (elapsed=0s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[229912][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.079V, I: 0.010A, P: 0.021W (I_raw=337, P_raw=28)
+[INA226] V: 2.079V, I: 0.010A, P: 0.021W
+[DISPLAY] Updated
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.094V, I: 0.010A, P: 0.021W (I_raw=342, P_raw=28)
+[INA226] V: 2.094V, I: 0.010A, P: 0.021W
+[INA226] V: 2.171V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.171V, I: 0.009A, P: 0.020W
+[INA226] V: 2.178V, I: 0.009A, P: 0.020W (I_raw=305, P_raw=26)
+[INA226] V: 2.178V, I: 0.009A, P: 0.020W
+[INA226] V: 2.181V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.181V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #47 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] Отправка: {"bme_temperature":28.2,"bme_pressure":989.1,"bme_humidity":17.4,"htu_temperature":29.2,"htu_humidity":4.8,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":7,"pms_pm2_5":12,"pms_pm10":12,"ms5611_pressure":988.8,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":0.270,"microphone_noise":58.7,"ina226_voltage":2.180,"ina226_current":0.009,"ina226_power":0.020}
+[235922][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.172V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.172V, I: 0.009A, P: 0.020W
+[INA226] V: 2.174V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.174V, I: 0.009A, P: 0.020W
+[SD] Data written to /data.json
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W (I_raw=303, P_raw=26)
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W
+[INA226] V: 2.156V, I: 0.010A, P: 0.020W (I_raw=313, P_raw=26)
+[INA226] V: 2.156V, I: 0.010A, P: 0.020W
+[INA226] V: 2.174V, I: 0.009A, P: 0.020W (I_raw=305, P_raw=26)
+[INA226] V: 2.174V, I: 0.009A, P: 0.020W
+[PC] ✗ Ошибка отправки. Код: -1
+
+[SCD40] === Попытка #48 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[241933][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.178V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.178V, I: 0.009A, P: 0.020W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.098V, I: 0.010A, P: 0.021W (I_raw=335, P_raw=28)
+[INA226] V: 2.098V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #49 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[244727][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.105V, I: 0.010A, P: 0.021W (I_raw=339, P_raw=28)
+[INA226] V: 2.105V, I: 0.010A, P: 0.021W
+[INA226] V: 2.104V, I: 0.010A, P: 0.021W (I_raw=338, P_raw=28)
+[INA226] V: 2.104V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.2,"bme_pressure":989.1,"bme_humidity":17.6,"htu_temperature":29.3,"htu_humidity":5.1,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":8,"pms_pm2_5":14,"pms_pm10":17,"ms5611_pressure":988.8,"ms5611_temperature":28.4,"bh1750_lighting":12.3,"veml_uv":0,"ch2o_value":1.275,"microphone_noise":51.7,"ina226_voltage":2.102,"ina226_current":0.010,"ina226_power":0.021}
+[INA226] V: 2.164V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.164V, I: 0.009A, P: 0.020W
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W (I_raw=303, P_raw=26)
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W
+[SD] Data written to /data.json
+[INA226] V: 2.176V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.176V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #50 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[250738][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W (I_raw=312, P_raw=28)
+[INA226] V: 2.186V, I: 0.010A, P: 0.021W
+[PC] ✗ Ошибка отправки. Код: -1
+[DISPLAY] Updated
+[INA226] V: 2.189V, I: 0.009A, P: 0.020W (I_raw=307, P_raw=26)
+[INA226] V: 2.189V, I: 0.009A, P: 0.020W
+[INA226] V: 2.186V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.186V, I: 0.009A, P: 0.020W
+[INA226] V: 2.182V, I: 0.009A, P: 0.020W (I_raw=311, P_raw=26)
+[INA226] V: 2.182V, I: 0.009A, P: 0.020W
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #51 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[INA226] V: 2.185V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[SCD40] Чтение данных...
+[INA226] V: 2.185V, I: 0.009A, P: 0.020W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":17.5,"htu_temperature":29.3,"htu_humidity":5.0,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":9,"pms_pm2_5":13,"pms_pm10":16,"ms5611_pressure":988.7,"ms5611_temperature":28.3,"bh1750_lighting":12.5,"veml_uv":0,"ch2o_value":3.437,"microphone_noise":60.2,"ina226_voltage":2.183,"ina226_current":0.009,"ina226_power":0.020}
+[256787][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.189V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.189V, I: 0.009A, P: 0.020W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.108V, I: 0.010A, P: 0.021W (I_raw=340, P_raw=28)
+[INA226] V: 2.108V, I: 0.010A, P: 0.021W
+[SD] Data written to /data.json
+
+[SCD40] === Попытка #52 (elapsed=0s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[259488][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.102V, I: 0.010A, P: 0.021W (I_raw=337, P_raw=28)
+[INA226] V: 2.102V, I: 0.010A, P: 0.021W
+[INA226] V: 2.090V, I: 0.010A, P: 0.021W (I_raw=339, P_raw=28)
+[INA226] V: 2.090V, I: 0.010A, P: 0.021W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.182V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.182V, I: 0.009A, P: 0.020W
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W (I_raw=307, P_raw=26)
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #53 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[265499][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W
+[PC] Отправка: {"bme_temperature":28.2,"bme_pressure":989.1,"bme_humidity":18.2,"htu_temperature":29.3,"htu_humidity":5.3,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":9,"pms_pm2_5":12,"pms_pm10":14,"ms5611_pressure":988.7,"ms5611_temperature":28.4,"bh1750_lighting":11.7,"veml_uv":0,"ch2o_value":0.774,"microphone_noise":51.6,"ina226_voltage":2.180,"ina226_current":0.009,"ina226_power":0.020}
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W
+[INA226] V: 2.181V, I: 0.009A, P: 0.020W (I_raw=307, P_raw=26)
+[INA226] V: 2.181V, I: 0.009A, P: 0.020W
+[SD] Data written to /data.json
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.184V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #54 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] ✗ Ошибка отправки. Код: -1
+[DISPLAY] Updated
+[271511][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[BH1750] Некорректное значение: -1.00[INA226] V: 2.176V, I: 0.009A, P: 0.020W (I_raw=307, P_raw=26)
+
+[INA226] V: 2.176V, I: 0.009A, P: 0.020W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.092V, I: 0.010A, P: 0.021W (I_raw=340, P_raw=28)
+[INA226] V: 2.092V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #55 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[274212][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.131V, I: 0.012A, P: 0.025W (I_raw=388, P_raw=33)
+[INA226] V: 2.131V, I: 0.012A, P: 0.025W
+[INA226] V: 2.155V, I: 0.012A, P: 0.026W (I_raw=401, P_raw=34)
+[INA226] V: 2.155V, I: 0.012A, P: 0.026W
+[PC] Отправка: {"bme_temperature":28.1,"bme_pressure":989.1,"bme_humidity":17.8,"htu_temperature":29.4,"htu_humidity":5.3,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":9,"pms_pm2_5":13,"pms_pm10":14,"ms5611_pressure":988.8,"ms5611_temperature":28.4,"bh1750_lighting":11.7,"veml_uv":0,"ch2o_value":1.368,"microphone_noise":53.0,"ina226_voltage":2.145,"ina226_current":0.012,"ina226_power":0.026}
+[INA226] V: 2.224V, I: 0.010A, P: 0.022W (I_raw=323, P_raw=29)
+[INA226] V: 2.224V, I: 0.010A, P: 0.022W
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W
+[INA226] V: 2.174V, I: 0.009A, P: 0.020W (I_raw=307, P_raw=26)
+[INA226] V: 2.174V, I: 0.009A, P: 0.020W
+[SD] Data written to /data.json
+
+[SCD40] === Попытка #56 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[280225][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[BH1750] Некорректное значение: 3579139328.00
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.179V, I: 0.009A, P: 0.020W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.164V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.164V, I: 0.009A, P: 0.020W
+[INA226] V: 2.181V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.181V, I: 0.009A, P: 0.020W
+[INA226] V: 2.172V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.172V, I: 0.009A, P: 0.020W
+[INA226] V: 2.186V, I: 0.009A, P: 0.020W (I_raw=307, P_raw=26)
+[INA226] V: 2.186V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #57 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] Отправка: {"bme_temperature":28.2,"bme_pressure":989.1,"bme_humidity":18.2,"htu_temperature":29.3,"htu_humidity":6.7,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":11,"pms_pm2_5":15,"pms_pm10":17,"ms5611_pressure":988.8,"ms5611_temperature":28.4,"bh1750_lighting":11.7,"veml_uv":0,"ch2o_value":2.904,"microphone_noise":51.2,"ina226_voltage":2.182,"ina226_current":0.009,"ina226_power":0.020}
+[286236][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[INA226] V: 2.180V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.180V, I: 0.009A, P: 0.020W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.105V, I: 0.010A, P: 0.021W (I_raw=338, P_raw=28)
+[INA226] V: 2.105V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #58 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[SD] Data written to /data.json
+[289044][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.106V, I: 0.011A, P: 0.022W (I_raw=347, P_raw=29)
+[INA226] V: 2.106V, I: 0.011A, P: 0.022W
+[INA226] V: 2.106V, I: 0.010A, P: 0.021W (I_raw=338, P_raw=28)
+[INA226] V: 2.106V, I: 0.010A, P: 0.021W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.186V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.186V, I: 0.009A, P: 0.020W
+[DISPLAY] Updated
+[INA226] V: 2.186V, I: 0.009A, P: 0.021W (I_raw=310, P_raw=28)
+[INA226] V: 2.186V, I: 0.009A, P: 0.021W
+[INA226] V: 2.175V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.175V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #59 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[295055][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.190V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.190V, I: 0.009A, P: 0.020W
+[PC] Отправка: {"bme_temperature":28.2,"bme_pressure":989.1,"bme_humidity":18.1,"htu_temperature":29.3,"htu_humidity":7.0,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":11,"pms_pm2_5":16,"pms_pm10":19,"ms5611_pressure":988.8,"ms5611_temperature":28.4,"bh1750_lighting":11.7,"veml_uv":0,"ch2o_value":0.691,"microphone_noise":57.7,"ina226_voltage":2.182,"ina226_current":0.009,"ina226_power":0.020}
+[INA226] V: 2.171V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.171V, I: 0.009A, P: 0.020W
+[INA226] V: 2.185V, I: 0.009A, P: 0.020W (I_raw=307, P_raw=26)
+[INA226] V: 2.185V, I: 0.009A, P: 0.020W
+[INA226] V: 2.186V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.186V, I: 0.009A, P: 0.020W
+[SD] Data written to /data.json
+[INA226] V: 2.174V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.174V, I: 0.009A, P: 0.020W
+
+[SCD40] === Попытка #60 (elapsed=13s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[PC] ✗ Ошибка отправки. Код: -1
+[301066][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #3: bytesReceived(%i) != bytesRequested(%i)
+[SCD40] Перезапуск измерений...
+[BH1750] Некорректное значение: 3579139328.00[INA226] V: 2.176V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+
+[INA226] V: 2.176V, I: 0.009A, P: 0.020W
+[SCD40] stopPeriodicMeasurement()...
+[SCD40] stopPeriodicMeasurement: отправка команды 0x3F86
+[SCD40] _commandSequence: addr=0x62, cmd=0x3F86
+[SCD40] _commandSequence result: Success (err=0)
+[SCD40] stopPeriodicMeasurement result: Success (err=0)
+[SCD40] startPeriodicMeasurement()...
+[SCD40] _commandSequence: addr=0x62, cmd=0x21B1
+[SCD40] _commandSequence result: Success (err=0)
+[INA226] V: 2.098V, I: 0.010A, P: 0.021W (I_raw=340, P_raw=28)
+[INA226] V: 2.098V, I: 0.010A, P: 0.021W
+
+[SCD40] === Попытка #61 (elapsed=1s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[303780][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #1: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.095V, I: 0.010A, P: 0.021W (I_raw=336, P_raw=28)
+[INA226] V: 2.095V, I: 0.010A, P: 0.021W
+[INA226] V: 2.102V, I: 0.010A, P: 0.021W (I_raw=335, P_raw=28)
+[INA226] V: 2.102V, I: 0.010A, P: 0.021W
+[PC] Отправка: {"bme_temperature":28.2,"bme_pressure":989.1,"bme_humidity":18.5,"htu_temperature":29.3,"htu_humidity":6.6,"scd4x_co2":0,"scd4x_temperature":0.0,"scd4x_humidity":0.0,"pms_pm1":10,"pms_pm2_5":15,"pms_pm10":17,"ms5611_pressure":988.8,"ms5611_temperature":28.4,"bh1750_lighting":11.7,"veml_uv":0,"ch2o_value":1.799,"microphone_noise":56.6,"ina226_voltage":2.099,"ina226_current":0.010,"ina226_power":0.021}[INA226] V: 2.142V, I: 0.009A, P: 0.020W (I_raw=308, P_raw=26)
+[INA226] V: 2.142V, I: 0.009A, P: 0.020W
+
+[INA226] V: 2.176V, I: 0.009A, P: 0.020W (I_raw=305, P_raw=26)
+[INA226] V: 2.176V, I: 0.009A, P: 0.020W
+[INA226] V: 2.155V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.155V, I: 0.009A, P: 0.020W
+[SD] Data written to /data.json
+
+[SCD40] === Попытка #62 (elapsed=7s) ===
+[SCD40] isDataReady() = 0
+[SCD40] Чтение данных...
+[309791][E][Wire.cpp:499] requestFrom(): i2cWriteReadNonStop returned Error 263
+[SCD40] ✗ Ошибка #2: bytesReceived(%i) != bytesRequested(%i)
+[INA226] V: 2.166V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.166V, I: 0.009A, P: 0.020W
+[INA226] V: 2.168V, I: 0.009A, P: 0.020W (I_raw=309, P_raw=26)
+[INA226] V: 2.168V, I: 0.009A, P: 0.020W
+[PC] ✗ Ошибка отправки. Код: -1
+[INA226] V: 2.172V, I: 0.009A, P: 0.020W (I_raw=306, P_raw=26)
+[INA226] V: 2.172V, I: 0.009A, P: 0.020W
+[DISPLAY] Updated
+[INA226] V: 2.161V, I: 0.009A, P: 0.020W (I_raw=310, P_raw=26)
+[INA226] V: 2.161V, I: 0.009A, P: 0.020W

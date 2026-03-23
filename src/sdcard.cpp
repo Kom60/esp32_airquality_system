@@ -1,5 +1,6 @@
 #include "headers.h"
 #include "sdcard.h"
+#include "logger.h"
 #include <SD.h>
 #include <ArduinoJson.h>
 #include <time.h>
@@ -25,17 +26,17 @@ static void get_timestamp_string(char* buffer, size_t size)
 
 bool sdcard_setup()
 {
-    Serial.println("[SD] Initializing SD card...");
+    LOG_INFO(SD, "Initializing SD card...");
 
     // Инициализация SPI для SD карты (та же шина, что и дисплей)
     if (!SD.begin(SD_CS)) {
-        Serial.println("[SD] Card Mount Failed");
+        LOG_ERROR(SD, "Card Mount Failed");
         return false;
     }
 
-    Serial.println("[SD] Card Mount OK");
-    Serial.printf("[SD] Card size: %llu MB\n", SD.cardSize() / (1024 * 1024));
-    Serial.printf("[SD] Used space: %llu MB\n", SD.usedBytes() / (1024 * 1024));
+    LOG_INFO(SD, "Card Mount OK");
+    LOG_INFO_FMT(SD, "Card size: %llu MB", SD.cardSize() / (1024 * 1024));
+    LOG_INFO_FMT(SD, "Used space: %llu MB", SD.usedBytes() / (1024 * 1024));
 
     return true;
 }
@@ -45,7 +46,7 @@ void sdcard_write_test_data()
     File file = SD.open("/data.json", FILE_APPEND);
 
     if (!file) {
-        Serial.println("[SD] Failed to open file for writing");
+        LOG_ERROR(SD, "Failed to open file for writing");
         return;
     }
 
@@ -82,16 +83,16 @@ void sdcard_write_test_data()
     file.println(); // Новая строка для удобства чтения
 
     file.close();
-    Serial.println("[SD] Data written to /data.json");
+    LOG_INFO(SD, "Data written to /data.json");
 }
 
 // Задача периодической записи данных на SD карту
 void sdLogTaskFunction(void *parameter)
 {
-    Serial.println("[SD] Logging task started (interval: 10 sec)");
+    LOG_INFO(SD, "Logging task started (interval: 10 sec)");
 
     // Задержка 40 сек перед первой записью (ожидание синхронизации NTP)
-    Serial.println("[SD] Waiting 40 sec for NTP sync before first log...");
+    LOG_INFO(SD, "Waiting 40 sec for NTP sync before first log...");
     vTaskDelay(pdMS_TO_TICKS(40000));
 
     while (1) {
@@ -112,5 +113,5 @@ void sdcard_logging_task_init()
         &sdLogTaskHandle,       // Дескриптор задачи
         1                       // Ядро 1
     );
-    Serial.println("[SD] Logging task created on core 1");
+    LOG_INFO(SD, "Logging task created on core 1");
 }
