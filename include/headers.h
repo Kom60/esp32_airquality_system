@@ -7,6 +7,7 @@
 #include "tasks.h"
 #include "network.h"
 #include "system_init.h"
+#include "sdcard.h"
 #include <SPIFFS.h>
 #include "esp32/clk.h"
 #include "sensors.h"
