@@ -2,6 +2,7 @@
 #include "sdcard.h"
 #include <SD.h>
 #include <ArduinoJson.h>
+#include <time.h>
 
 extern Meteo_data AIR_data;
 
@@ -9,6 +10,18 @@ static TaskHandle_t sdLogTaskHandle = NULL;
 
 // Прототип функции задачи
 void sdLogTaskFunction(void *parameter);
+
+// Получение текущей даты и времени в формате строки
+static void get_timestamp_string(char* buffer, size_t size)
+{
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo, 100)) {
+        strftime(buffer, size, "%Y-%m-%d %H:%M:%S", &timeinfo);
+    } else {
+        // Если время не синхронизировано, используем millis()
+        snprintf(buffer, size, "uptime:%lu", millis());
+    }
+}
 
 bool sdcard_setup()
 {
@@ -29,17 +42,21 @@ bool sdcard_setup()
 
 void sdcard_write_test_data()
 {
-    File file = SD.open("/data.json", FILE_WRITE);
+    File file = SD.open("/data.json", FILE_APPEND);
 
     if (!file) {
         Serial.println("[SD] Failed to open file for writing");
         return;
     }
 
+    // Получение текущей даты и времени
+    char timestamp[32];
+    get_timestamp_string(timestamp, sizeof(timestamp));
+
     // Формирование JSON документа
     JsonDocument doc;
 
-    doc["timestamp"] = millis();
+    doc["timestamp"] = timestamp;
     doc["sensors"]["co2"] = AIR_data.scd4x_co2;
     doc["sensors"]["temperature_bme"] = AIR_data.bme_temperature;
     doc["sensors"]["temperature_htu"] = AIR_data.htu_temperature;
@@ -72,6 +89,10 @@ void sdcard_write_test_data()
 void sdLogTaskFunction(void *parameter)
 {
     Serial.println("[SD] Logging task started (interval: 10 sec)");
+
+    // Задержка 40 сек перед первой записью (ожидание синхронизации NTP)
+    Serial.println("[SD] Waiting 40 sec for NTP sync before first log...");
+    vTaskDelay(pdMS_TO_TICKS(40000));
 
     while (1) {
         sdcard_write_test_data();
