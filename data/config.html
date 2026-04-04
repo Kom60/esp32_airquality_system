@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конфигурация - Мониторинг качества воздуха</title>
+  <link rel="stylesheet" href="settings_style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    .config-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .config-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 10px;
+    }
+    
+    .config-tab {
+      padding: 10px 20px;
+      background: #1f2937;
+      border: 2px solid #3b82f6;
+      border-radius: 8px;
+      color: #e5e7eb;
+      cursor: pointer;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      transition: all 0.3s;
+    }
+    
+    .config-tab:hover {
+      background: #3b82f6;
+      color: #fff;
+    }
+    
+    .config-tab.active {
+      background: #3b82f6;
+      color: #fff;
+    }
+    
+    .config-tab-content {
+      display: none;
+      background: #1f2937;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .config-tab-content.active {
+      display: block;
+    }
+    
+    .config-section {
+      margin-bottom: 25px;
+      padding: 15px;
+      background: #111827;
+      border-radius: 8px;
+      border: 1px solid #374151;
+    }
+    
+    .config-section-title {
+      color: #3b82f6;
+      font-size: 14px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #374151;
+    }
+    
+    .config-row {
+      display: grid;
+      grid-template-columns: 200px 1fr 150px;
+      gap: 15px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    
+    .config-row label {
+      color: #e5e7eb;
+      font-size: 11px;
+    }
+    
+    .config-row input[type="text"],
+    .config-row input[type="number"],
+    .config-row input[type="password"] {
+      background: #374151;
+      border: 1px solid #4b5563;
+      border-radius: 4px;
+      padding: 8px;
+      color: #e5e7eb;
+      font-size: 12px;
+    }
+    
+    .config-row input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    
+    .config-row .desc {
+      color: #9ca3af;
+      font-size: 10px;
+    }
+    
+    .config-actions {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      transition: all 0.3s;
+    }
+    
+    .btn-save {
+      background: #10b981;
+      color: #fff;
+    }
+    .btn-save:hover { background: #059669; }
+    
+    .btn-reset {
+      background: #ef4444;
+      color: #fff;
+    }
+    .btn-reset:hover { background: #dc2626; }
+    
+    .btn-backup {
+      background: #8b5cf6;
+      color: #fff;
+    }
+    .btn-backup:hover { background: #7c3aed; }
+    
+    .btn-restore {
+      background: #f59e0b;
+      color: #fff;
+    }
+    .btn-restore:hover { background: #d97706; }
+    
+    .btn-delete {
+      background: #dc2626;
+      color: #fff;
+    }
+    .btn-delete:hover { background: #b91c1c; }
+    
+    .status-message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 12px;
+      display: none;
+    }
+    
+    .status-success {
+      background: #064e3b;
+      color: #6ee7b7;
+      border: 1px solid #10b981;
+    }
+    
+    .status-error {
+      background: #7f1d1d;
+      color: #fca5a5;
+      border: 1px solid #ef4444;
+    }
+    
+    .json-editor {
+      width: 100%;
+      height: 400px;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      padding: 15px;
+      color: #10b981;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      resize: vertical;
+    }
+    
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-text">JSON Конфигурация</div>
+  <div class="header-buttons">
+    <button class="charts-icon-button" onclick="location.href='index.html'" title="Главная">🏠</button>
+    <button class="charts-icon-button" onclick="location.href='settings.html'" title="Настройки">⚙️</button>
+    <img class="dark-mode-button" onclick="toggleDarkMode()" src="off_bubl.png" alt=""/>
+  </div>
+</div>
+
+<div class="config-container">
+  
+  <!-- Вкладки -->
+  <div class="config-tabs">
+    <button class="config-tab active" data-tab="wifi">📡 WiFi</button>
+    <button class="config-tab" data-tab="ntp">🕐 NTP</button>
+    <button class="config-tab" data-tab="sensors">📊 Датчики</button>
+    <button class="config-tab" data-tab="alerts">🚨 Предупреждения</button>
+    <button class="config-tab" data-tab="display">🖥️ Дисплей</button>
+    <button class="config-tab" data-tab="sd">💾 SD карта</button>
+    <button class="config-tab" data-tab="network">🌐 Сеть</button>
+    <button class="config-tab" data-tab="system">⚙️ Система</button>
+    <button class="config-tab" data-tab="json">📝 JSON редактор</button>
+  </div>
+
+  <!-- WiFi -->
+  <div class="config-tab-content active" id="tab-wifi">
+    <div class="config-section">
+      <div class="config-section-title">WiFi настройки</div>
+      <div class="config-row">
+        <label for="wifi_ssid">SSID сети:</label>
+        <input type="text" id="wifi_ssid" maxlength="32" placeholder="MyWiFi">
+        <span class="desc">Имя WiFi сети</span>
+      </div>
+      <div class="config-row">
+        <label for="wifi_password">Пароль:</label>
+        <input type="password" id="wifi_password" maxlength="64" placeholder="password">
+        <span class="desc">Пароль WiFi</span>
+      </div>
+      <div class="config-row">
+        <label for="wifi_reconnect_interval">Интервал переподключения:</label>
+        <input type="number" id="wifi_reconnect_interval" min="5" max="300" value="30">
+        <span class="desc">секунды</span>
+      </div>
+      <div class="config-row">
+        <label for="wifi_auto_connect">Автоподключение:</label>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="wifi_auto_connect" checked>
+          <span class="desc">Автоматически подключаться</span>
+        </div>
+      </div>
+      <div class="config-row">
+        <label for="wifi_static_ip">Статический IP:</label>
+        <input type="text" id="wifi_static_ip" placeholder="192.168.1.100">
+        <span class="desc">Оставьте пустым для DHCP</span>
+      </div>
+      <div class="config-row">
+        <label for="wifi_gateway">Шлюз:</label>
+        <input type="text" id="wifi_gateway" placeholder="192.168.1.1">
+        <span class="desc">IP шлюза</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NTP -->
+  <div class="config-tab-content" id="tab-ntp">
+    <div class="config-section">
+      <div class="config-section-title">NTP настройки времени</div>
+      <div class="config-row">
+        <label for="ntp_server">NTP сервер:</label>
+        <input type="text" id="ntp_server" placeholder="pool.ntp.org">
+        <span class="desc">Сервер времени</span>
+      </div>
+      <div class="config-row">
+        <label for="ntp_gmt_offset">GMT смещение (сек):</label>
+        <input type="number" id="ntp_gmt_offset" value="10800">
+        <span class="desc">10800 = GMT+3 (Москва)</span>
+      </div>
+      <div class="config-row">
+        <label for="ntp_sync_interval">Интервал синхронизации:</label>
+        <input type="number" id="ntp_sync_interval" value="3600">
+        <span class="desc">секунды</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Датчики -->
+  <div class="config-tab-content" id="tab-sensors">
+    <div class="config-section">
+      <div class="config-section-title">Интервалы опроса датчиков</div>
+      <div class="config-row">
+        <label for="sensors_bme_interval">BME280:</label>
+        <input type="number" id="sensors_bme_interval" min="1" max="3600" value="5">
+        <span class="desc">секунды</span>
+      </div>
+      <div class="config-row">
+        <label for="sensors_scd_interval">SCD40:</label>
+        <input type="number" id="sensors_scd_interval" min="1" max="3600" value="10">
+        <span class="desc">секунды</span>
+      </div>
+      <div class="config-row">
+        <label for="sensors_pms_interval">PMS5003:</label>
+        <input type="number" id="sensors_pms_interval" min="1" max="3600" value="5">
+        <span class="desc">секунды</span>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">Калибровка температуры (°C)</div>
+      <div class="config-row">
+        <label for="calib_temp_bme">BME280 offset:</label>
+        <input type="number" id="calib_temp_bme" step="0.1" min="-10" max="10" value="0">
+        <span class="desc">Поправка</span>
+      </div>
+      <div class="config-row">
+        <label for="calib_temp_htu">HTU21DF offset:</label>
+        <input type="number" id="calib_temp_htu" step="0.1" min="-10" max="10" value="0">
+        <span class="desc">Поправка</span>
+      </div>
+      <div class="config-row">
+        <label for="calib_temp_scd">SCD40 offset:</label>
+        <input type="number" id="calib_temp_scd" step="0.1" min="-10" max="10" value="0">
+        <span class="desc">Поправка</span>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">Калибровка влажности (%)</div>
+      <div class="config-row">
+        <label for="calib_hum_bme">BME280 offset:</label>
+        <input type="number" id="calib_hum_bme" step="1" min="-20" max="20" value="0">
+        <span class="desc">Поправка</span>
+      </div>
+      <div class="config-row">
+        <label for="calib_hum_htu">HTU21DF offset:</label>
+        <input type="number" id="calib_hum_htu" step="1" min="-20" max="20" value="0">
+        <span class="desc">Поправка</span>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">Калибровка давления (гПа)</div>
+      <div class="config-row">
+        <label for="calib_press_bme">BME280 offset:</label>
+        <input type="number" id="calib_press_bme" step="1" min="-50" max="50" value="0">
+        <span class="desc">Поправка</span>
+      </div>
+      <div class="config-row">
+        <label for="calib_press_ms">MS5611 offset:</label>
+        <input type="number" id="calib_press_ms" step="1" min="-50" max="50" value="0">
+        <span class="desc">Поправка</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Предупреждения -->
+  <div class="config-tab-content" id="tab-alerts">
+    <div class="config-section">
+      <div class="config-section-title">Пороги CO₂ (ppm)</div>
+      <div class="config-row">
+        <label for="alert_co2_warning">Предупреждение:</label>
+        <input type="number" id="alert_co2_warning" min="800" max="2000" value="1000">
+        <span class="desc">жёлтый уровень</span>
+      </div>
+      <div class="config-row">
+        <label for="alert_co2_critical">Критический:</label>
+        <input type="number" id="alert_co2_critical" min="1200" max="5000" value="1400">
+        <span class="desc">красный уровень</span>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">Пороги PM2.5 (мкг/м³)</div>
+      <div class="config-row">
+        <label for="alert_pm25_warning">Предупреждение:</label>
+        <input type="number" id="alert_pm25_warning" min="25" max="100" value="35">
+        <span class="desc">жёлтый уровень</span>
+      </div>
+      <div class="config-row">
+        <label for="alert_pm25_critical">Критический:</label>
+        <input type="number" id="alert_pm25_critical" min="50" max="500" value="50">
+        <span class="desc">красный уровень</span>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">Пороги температуры (°C)</div>
+      <div class="config-row">
+        <label for="alert_temp_low">Нижний порог:</label>
+        <input type="number" id="alert_temp_low" step="0.1" min="-10" max="20" value="15">
+        <span class="desc">предупреждение</span>
+      </div>
+      <div class="config-row">
+        <label for="alert_temp_high">Верхний порог:</label>
+        <input type="number" id="alert_temp_high" step="0.1" min="25" max="45" value="30">
+        <span class="desc">предупреждение</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Дисплей -->
+  <div class="config-tab-content" id="tab-display">
+    <div class="config-section">
+      <div class="config-section-title">Настройки дисплея</div>
+      <div class="config-row">
+        <label for="display_brightness">Яркость днём:</label>
+        <input type="number" id="display_brightness" min="0" max="100" value="80">
+        <span class="desc">проценты</span>
+      </div>
+      <div class="config-row">
+        <label for="display_brightness_night">Яркость ночью:</label>
+        <input type="number" id="display_brightness_night" min="0" max="100" value="20">
+        <span class="desc">проценты</span>
+      </div>
+      <div class="config-row">
+        <label for="display_night_start">Ночной режим (начало):</label>
+        <input type="number" id="display_night_start" min="0" max="23" value="23">
+        <span class="desc">час (0-23)</span>
+      </div>
+      <div class="config-row">
+        <label for="display_night_end">Ночной режим (конец):</label>
+        <input type="number" id="display_night_end" min="0" max="23" value="7">
+        <span class="desc">час (0-23)</span>
+      </div>
+      <div class="config-row">
+        <label for="display_rotation">Поворот:</label>
+        <input type="number" id="display_rotation" min="0" max="3" value="3">
+        <span class="desc">0-3</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SD карта -->
+  <div class="config-tab-content" id="tab-sd">
+    <div class="config-section">
+      <div class="config-section-title">Настройки SD карты</div>
+      <div class="config-row">
+        <label for="sd_enabled">SD карта:</label>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="sd_enabled" checked>
+          <span class="desc">Включена</span>
+        </div>
+      </div>
+      <div class="config-row">
+        <label for="sd_log_interval">Интервал записи:</label>
+        <input type="number" id="sd_log_interval" min="1" max="3600" value="10">
+        <span class="desc">секунды</span>
+      </div>
+      <div class="config-row">
+        <label for="sd_log_format">Формат:</label>
+        <select id="sd_log_format" style="background:#374151;color:#e5e7eb;border:1px solid #4b5563;padding:8px;border-radius:4px;">
+          <option value="csv">CSV</option>
+          <option value="json">JSON</option>
+        </select>
+        <span class="desc">Формат файлов</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Сеть -->
+  <div class="config-tab-content" id="tab-network">
+    <div class="config-section">
+      <div class="config-section-title">Веб-сервер</div>
+      <div class="config-row">
+        <label for="web_port">Порт:</label>
+        <input type="number" id="web_port" min="1" max="65535" value="80">
+        <span class="desc">HTTP порт</span>
+      </div>
+      <div class="config-row">
+        <label for="web_auth_enabled">Аутентификация:</label>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="web_auth_enabled">
+          <span class="desc">Включить</span>
+        </div>
+      </div>
+      <div class="config-row">
+        <label for="web_username">Имя пользователя:</label>
+        <input type="text" id="web_username" value="admin">
+        <span class="desc">Логин</span>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">WebSocket</div>
+      <div class="config-row">
+        <label for="ws_port">Порт:</label>
+        <input type="number" id="ws_port" min="1" max="65535" value="81">
+        <span class="desc">WebSocket порт</span>
+      </div>
+      <div class="config-row">
+        <label for="ws_broadcast_interval">Интервал рассылки:</label>
+        <input type="number" id="ws_broadcast_interval" min="1" max="60" value="2">
+        <span class="desc">секунды</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Система -->
+  <div class="config-tab-content" id="tab-system">
+    <div class="config-section">
+      <div class="config-section-title">Системные настройки</div>
+      <div class="config-row">
+        <label for="sys_device_name">Имя устройства:</label>
+        <input type="text" id="sys_device_name" value="ESP32-AirQuality">
+        <span class="desc">Имя в сети</span>
+      </div>
+      <div class="config-row">
+        <label for="sys_log_level">Уровень логов:</label>
+        <select id="sys_log_level" style="background:#374151;color:#e5e7eb;border:1px solid #4b5563;padding:8px;border-radius:4px;">
+          <option value="0">NONE</option>
+          <option value="1">ERROR</option>
+          <option value="2">WARNING</option>
+          <option value="3" selected>INFO</option>
+          <option value="4">DEBUG</option>
+        </select>
+        <span class="desc">Детализация</span>
+      </div>
+      <div class="config-row">
+        <label for="sys_watchdog">Watchdog таймаут:</label>
+        <input type="number" id="sys_watchdog" min="0" max="60" value="10">
+        <span class="desc">секунды (0 = откл)</span>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">OTA обновления</div>
+      <div class="config-row">
+        <label for="ota_enabled">OTA:</label>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="ota_enabled" checked>
+          <span class="desc">Включено</span>
+        </div>
+      </div>
+      <div class="config-row">
+        <label for="ota_port">Порт OTA:</label>
+        <input type="number" id="ota_port" min="1" max="65535" value="3232">
+        <span class="desc">Порт для прошивки</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- JSON редактор -->
+  <div class="config-tab-content" id="tab-json">
+    <div class="config-section">
+      <div class="config-section-title">Прямое редактирование JSON</div>
+      <textarea id="json_editor" class="json-editor" placeholder="Загрузка конфигурации..."></textarea>
+      <div class="config-actions">
+        <button class="btn btn-save" onclick="loadJSONFromEditor()">📥 Загрузить в форму</button>
+        <button class="btn btn-save" onclick="saveJSONToEditor()">📤 Выгрузить из формы</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Кнопки действий -->
+  <div class="config-actions">
+    <button class="btn btn-save" onclick="saveConfig()">💾 Сохранить конфигурацию</button>
+    <button class="btn btn-backup" onclick="backupConfig()">📦 Резервная копия</button>
+    <button class="btn btn-restore" onclick="restoreConfig()">↩️ Восстановить</button>
+    <button class="btn btn-reset" onclick="resetConfig()">🔄 Сброс к дефолту</button>
+    <button class="btn btn-delete" onclick="deleteConfig()">❗ Удалить конфиг</button>
+    <button class="btn" style="background:#6b7280;color:#fff;" onclick="rebootESP()">🔌 Перезагрузка</button>
+  </div>
+
+  <div id="status_message" class="status-message"></div>
+</div>
+
+<script>
+// Глобальный объект конфигурации
+let currentConfig = {};
+
+// Переключение вкладок
+document.querySelectorAll('.config-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.config-tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Загрузка конфигурации при старте
+async function loadConfig() {
+  try {
+    const response = await fetch('/api/config');
+    if (!response.ok) throw new Error('Failed to load config');
+    currentConfig = await response.json();
+    fillFormFromConfig();
+    showStatus('Конфигурация загружена', 'success');
+  } catch (error) {
+    showStatus('Ошибка загрузки: ' + error.message, 'error');
+  }
+}
+
+// Заполнение формы из конфигурации
+function fillFormFromConfig() {
+  // WiFi
+  document.getElementById('wifi_ssid').value = currentConfig.wifi?.ssid || '';
+  document.getElementById('wifi_password').value = currentConfig.wifi?.password || '';
+  document.getElementById('wifi_reconnect_interval').value = currentConfig.wifi?.reconnect_interval || 30;
+  document.getElementById('wifi_auto_connect').checked = currentConfig.wifi?.auto_connect !== false;
+  document.getElementById('wifi_static_ip').value = currentConfig.wifi?.static_ip || '';
+  document.getElementById('wifi_gateway').value = currentConfig.wifi?.gateway || '';
+  
+  // NTP
+  document.getElementById('ntp_server').value = currentConfig.ntp?.server || 'pool.ntp.org';
+  document.getElementById('ntp_gmt_offset').value = currentConfig.ntp?.gmt_offset_sec || 10800;
+  document.getElementById('ntp_sync_interval').value = currentConfig.ntp?.sync_interval || 3600;
+  
+  // Датчики
+  document.getElementById('sensors_bme_interval').value = currentConfig.sensors?.intervals?.bme || 5;
+  document.getElementById('sensors_scd_interval').value = currentConfig.sensors?.intervals?.scd || 10;
+  document.getElementById('sensors_pms_interval').value = currentConfig.sensors?.intervals?.pms || 5;
+  
+  // Калибровка
+  document.getElementById('calib_temp_bme').value = currentConfig.sensors?.calibration?.temp_bme || 0;
+  document.getElementById('calib_temp_htu').value = currentConfig.sensors?.calibration?.temp_htu || 0;
+  document.getElementById('calib_temp_scd').value = currentConfig.sensors?.calibration?.temp_scd || 0;
+  document.getElementById('calib_hum_bme').value = currentConfig.sensors?.calibration?.hum_bme || 0;
+  document.getElementById('calib_hum_htu').value = currentConfig.sensors?.calibration?.hum_htu || 0;
+  document.getElementById('calib_press_bme').value = currentConfig.sensors?.calibration?.press_bme || 0;
+  document.getElementById('calib_press_ms').value = currentConfig.sensors?.calibration?.press_ms || 0;
+  
+  // Предупреждения
+  document.getElementById('alert_co2_warning').value = currentConfig.alerts?.thresholds?.co2?.warning || 1000;
+  document.getElementById('alert_co2_critical').value = currentConfig.alerts?.thresholds?.co2?.critical || 1400;
+  document.getElementById('alert_pm25_warning').value = currentConfig.alerts?.thresholds?.pm25?.warning || 35;
+  document.getElementById('alert_pm25_critical').value = currentConfig.alerts?.thresholds?.pm25?.critical || 50;
+  document.getElementById('alert_temp_low').value = currentConfig.alerts?.thresholds?.temp?.warning_low || 15;
+  document.getElementById('alert_temp_high').value = currentConfig.alerts?.thresholds?.temp?.warning_high || 30;
+  
+  // Дисплей
+  document.getElementById('display_brightness').value = currentConfig.display?.brightness || 80;
+  document.getElementById('display_brightness_night').value = currentConfig.display?.brightness_night || 20;
+  document.getElementById('display_night_start').value = currentConfig.display?.night_mode_start || 23;
+  document.getElementById('display_night_end').value = currentConfig.display?.night_mode_end || 7;
+  document.getElementById('display_rotation').value = currentConfig.display?.rotation || 3;
+  
+  // SD
+  document.getElementById('sd_enabled').checked = currentConfig.sd?.enabled !== false;
+  document.getElementById('sd_log_interval').value = currentConfig.sd?.log_interval || 10;
+  document.getElementById('sd_log_format').value = currentConfig.sd?.log_format || 'csv';
+  
+  // Сеть
+  document.getElementById('web_port').value = currentConfig.webserver?.port || 80;
+  document.getElementById('web_auth_enabled').checked = currentConfig.webserver?.auth_enabled || false;
+  document.getElementById('web_username').value = currentConfig.webserver?.auth_username || 'admin';
+  document.getElementById('ws_port').value = currentConfig.websocket?.port || 81;
+  document.getElementById('ws_broadcast_interval').value = currentConfig.websocket?.broadcast_interval || 2;
+  
+  // Система
+  document.getElementById('sys_device_name').value = currentConfig.system?.device_name || 'ESP32-AirQuality';
+  document.getElementById('sys_log_level').value = currentConfig.system?.log_level || 3;
+  document.getElementById('sys_watchdog').value = currentConfig.system?.watchdog_timeout || 10;
+  document.getElementById('ota_enabled').checked = currentConfig.ota?.enabled !== false;
+  document.getElementById('ota_port').value = currentConfig.ota?.port || 3232;
+}
+
+// Сбор конфигурации из формы
+function collectConfigFromForm() {
+  return {
+    wifi: {
+      ssid: document.getElementById('wifi_ssid').value,
+      password: document.getElementById('wifi_password').value,
+      reconnect_interval: parseInt(document.getElementById('wifi_reconnect_interval').value),
+      auto_connect: document.getElementById('wifi_auto_connect').checked,
+      static_ip: document.getElementById('wifi_static_ip').value,
+      gateway: document.getElementById('wifi_gateway').value
+    },
+    ntp: {
+      server: document.getElementById('ntp_server').value,
+      gmt_offset_sec: parseInt(document.getElementById('ntp_gmt_offset').value),
+      sync_interval: parseInt(document.getElementById('ntp_sync_interval').value)
+    },
+    sensors: {
+      intervals: {
+        bme: parseInt(document.getElementById('sensors_bme_interval').value),
+        scd: parseInt(document.getElementById('sensors_scd_interval').value),
+        pms: parseInt(document.getElementById('sensors_pms_interval').value)
+      },
+      calibration: {
+        temp_bme: parseFloat(document.getElementById('calib_temp_bme').value),
+        temp_htu: parseFloat(document.getElementById('calib_temp_htu').value),
+        temp_scd: parseFloat(document.getElementById('calib_temp_scd').value),
+        hum_bme: parseInt(document.getElementById('calib_hum_bme').value),
+        hum_htu: parseInt(document.getElementById('calib_hum_htu').value),
+        press_bme: parseInt(document.getElementById('calib_press_bme').value),
+        press_ms: parseInt(document.getElementById('calib_press_ms').value)
+      }
+    },
+    alerts: {
+      thresholds: {
+        co2: {
+          warning: parseInt(document.getElementById('alert_co2_warning').value),
+          critical: parseInt(document.getElementById('alert_co2_critical').value)
+        },
+        pm25: {
+          warning: parseInt(document.getElementById('alert_pm25_warning').value),
+          critical: parseInt(document.getElementById('alert_pm25_critical').value)
+        },
+        temp: {
+          warning_low: parseFloat(document.getElementById('alert_temp_low').value),
+          warning_high: parseFloat(document.getElementById('alert_temp_high').value)
+        }
+      }
+    },
+    display: {
+      brightness: parseInt(document.getElementById('display_brightness').value),
+      brightness_night: parseInt(document.getElementById('display_brightness_night').value),
+      night_mode_start: parseInt(document.getElementById('display_night_start').value),
+      night_mode_end: parseInt(document.getElementById('display_night_end').value),
+      rotation: parseInt(document.getElementById('display_rotation').value)
+    },
+    sd: {
+      enabled: document.getElementById('sd_enabled').checked,
+      log_interval: parseInt(document.getElementById('sd_log_interval').value),
+      log_format: document.getElementById('sd_log_format').value
+    },
+    webserver: {
+      port: parseInt(document.getElementById('web_port').value),
+      auth_enabled: document.getElementById('web_auth_enabled').checked,
+      auth_username: document.getElementById('web_username').value
+    },
+    websocket: {
+      port: parseInt(document.getElementById('ws_port').value),
+      broadcast_interval: parseInt(document.getElementById('ws_broadcast_interval').value)
+    },
+    system: {
+      device_name: document.getElementById('sys_device_name').value,
+      log_level: parseInt(document.getElementById('sys_log_level').value),
+      watchdog_timeout: parseInt(document.getElementById('sys_watchdog').value)
+    },
+    ota: {
+      enabled: document.getElementById('ota_enabled').checked,
+      port: parseInt(document.getElementById('ota_port').value)
+    }
+  };
+}
+
+// Сохранение конфигурации
+async function saveConfig() {
+  const config = collectConfigFromForm();
+  try {
+    const response = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+    const result = await response.json();
+    if (response.ok) {
+      showStatus('Конфигурация сохранена!', 'success');
+      currentConfig = config;
+    } else {
+      showStatus('Ошибка: ' + result.error, 'error');
+    }
+  } catch (error) {
+    showStatus('Ошибка сохранения: ' + error.message, 'error');
+  }
+}
+
+// Резервная копия
+async function backupConfig() {
+  try {
+    const response = await fetch('/api/config/backup', { method: 'POST' });
+    const result = await response.json();
+    if (response.ok) {
+      showStatus('Резервная копия создана!', 'success');
+    } else {
+      showStatus('Ошибка: ' + result.error, 'error');
+    }
+  } catch (error) {
+    showStatus('Ошибка: ' + error.message, 'error');
+  }
+}
+
+// Восстановление
+async function restoreConfig() {
+  if (!confirm('Восстановить конфигурацию из резервной копии?')) return;
+  try {
+    const response = await fetch('/api/config/restore', { method: 'POST' });
+    const result = await response.json();
+    if (response.ok) {
+      showStatus('Конфигурация восстановлена! Перезагрузка страницы...', 'success');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showStatus('Ошибка: ' + result.error, 'error');
+    }
+  } catch (error) {
+    showStatus('Ошибка: ' + error.message, 'error');
+  }
+}
+
+// Сброс
+async function resetConfig() {
+  if (!confirm('Сбросить конфигурацию к заводским настройкам?')) return;
+  try {
+    const response = await fetch('/api/config', { method: 'DELETE' });
+    const result = await response.json();
+    if (response.ok) {
+      showStatus('Конфигурация сброшена! Перезагрузка страницы...', 'success');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showStatus('Ошибка: ' + result.error, 'error');
+    }
+  } catch (error) {
+    showStatus('Ошибка: ' + error.message, 'error');
+  }
+}
+
+// Удаление
+async function deleteConfig() {
+  if (!confirm('Удалить файл конфигурации? Это действие необратимо!')) return;
+  try {
+    const response = await fetch('/api/config', { method: 'DELETE' });
+    const result = await response.json();
+    if (response.ok) {
+      showStatus('Конфигурация удалена!', 'success');
+    } else {
+      showStatus('Ошибка: ' + result.error, 'error');
+    }
+  } catch (error) {
+    showStatus('Ошибка: ' + error.message, 'error');
+  }
+}
+
+// Перезагрузка
+async function rebootESP() {
+  if (!confirm('Перезагрузить ESP32?')) return;
+  try {
+    await fetch('/api/reboot', { method: 'POST' });
+    showStatus('ESP32 перезагружается...', 'success');
+  } catch (error) {
+    showStatus('Ошибка: ' + error.message, 'error');
+  }
+}
+
+// JSON редактор - загрузить в форму
+async function loadJSONFromEditor() {
+  try {
+    const jsonStr = document.getElementById('json_editor').value;
+    const config = JSON.parse(jsonStr);
+    currentConfig = config;
+    fillFormFromConfig();
+    showStatus('JSON загружен в форму', 'success');
+  } catch (error) {
+    showStatus('Ошибка JSON: ' + error.message, 'error');
+  }
+}
+
+// JSON редактор - выгрузить из формы
+function saveJSONToEditor() {
+  const config = collectConfigFromForm();
+  document.getElementById('json_editor').value = JSON.stringify(config, null, 2);
+  showStatus('JSON обновлён из формы', 'success');
+}
+
+// Показать статус
+function showStatus(message, type) {
+  const el = document.getElementById('status_message');
+  el.textContent = message;
+  el.className = 'status-message status-' + type;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// Тёмная тема
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const img = document.querySelector('.dark-mode-button');
+  img.src = img.src.includes('off_bubl') ? 'on_bubl.png' : 'off_bubl.png';
+}
+
+// Загрузка при старте
+window.addEventListener('DOMContentLoaded', loadConfig);
+</script>
+
+</body>
+</html>

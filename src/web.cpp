@@ -22,8 +22,12 @@ void web_setup() {
   server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/settings.html", "text/html");
   });
+  
+  server.on("/config", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/config.html", "text/html");
+  });
 
-  // API для настроек
+  // API для настроек (обратная совместимость)
   server.on("/api/settings", HTTP_GET, handleGetSettings);
 
   AsyncCallbackWebHandler* settingsPostHandler = new AsyncCallbackWebHandler();
@@ -39,6 +43,24 @@ void web_setup() {
 
   server.on("/api/settings/reset", HTTP_POST, handleResetSettings);
   server.on("/api/reboot", HTTP_POST, handleReboot);
+
+  // API для JSON конфигурации (новые эндпоинты)
+  server.on("/api/config", HTTP_GET, handleGetConfig);
+  
+  AsyncCallbackWebHandler* configPostHandler = new AsyncCallbackWebHandler();
+  configPostHandler->setUri("/api/config");
+  configPostHandler->setMethod(HTTP_POST);
+  configPostHandler->onBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+    handleSaveConfig(request, data, len);
+  });
+  configPostHandler->onRequest([](AsyncWebServerRequest *request) {
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+  });
+  server.addHandler(configPostHandler);
+  
+  server.on("/api/config", HTTP_DELETE, handleDeleteConfig);
+  server.on("/api/config/backup", HTTP_POST, handleBackupConfig);
+  server.on("/api/config/restore", HTTP_POST, handleRestoreConfig);
 
   server.onNotFound([](AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "File not found");
@@ -95,7 +117,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     break;
   case WStype_TEXT:
     // try to decipher the JSON string received
-    StaticJsonDocument<200> doc;
+    JsonDocument doc;
     DeserializationError error = deserializeJson(doc, payload);
     if (error)
     {
@@ -124,7 +146,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
 void sendJson(String l_type, String l_value)
 {
   String jsonString = "";
-  StaticJsonDocument<200> doc;
+  JsonDocument doc;
   JsonObject object = doc.to<JsonObject>();
   object["type"] = l_type;
   object["value"] = l_value;
@@ -171,7 +193,7 @@ void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t le
     return;
   }
 
-  StaticJsonDocument<1024> doc;
+  JsonDocument doc;
   DeserializationError error = deserializeJson(doc, data, len);
 
   if (error) {
@@ -222,6 +244,105 @@ void handleReboot(AsyncWebServerRequest *request) {
   request->send(200, "application/json", "{\"status\":\"ok\"}");
   delay(1000);
   ESP.restart();
+}
+
+// ============================================================================
+// API для работы с JSON конфигурацией
+// ============================================================================
+
+/**
+ * @brief Получить полную конфигурацию в формате JSON
+ */
+void handleGetConfig(AsyncWebServerRequest *request) {
+  LOG_INFO(WEBSERVER, "Config API: Getting full configuration");
+  
+  char json[CONFIG_MAX_SIZE];
+  size_t len = config_get_json(json, sizeof(json));
+  
+  request->send(200, "application/json", String(json));
+}
+
+/**
+ * @brief Сохранить конфигурацию из JSON
+ */
+void handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len) {
+  LOG_INFO_FMT(WEBSERVER, "Config API: Saving configuration (%d bytes)", len);
+  
+  if (len == 0) {
+    request->send(400, "application/json", "{\"error\":\"No data\"}");
+    return;
+  }
+  
+  if (len > CONFIG_MAX_SIZE) {
+    request->send(400, "application/json", "{\"error\":\"Data too large\"}");
+    return;
+  }
+  
+  // Копируем данные в нуль-терминированную строку
+  char* json_str = new char[len + 1];
+  memcpy(json_str, data, len);
+  json_str[len] = '\0';
+  
+  bool result = config_set_json(json_str);
+  delete[] json_str;
+  
+  if (result) {
+    config_save();
+    settings_load();  // Обновляем settings из config
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+    LOG_INFO(WEBSERVER, "Config API: Configuration saved successfully");
+  } else {
+    request->send(400, "application/json", "{\"error\":\"Invalid JSON\"}");
+    LOG_ERROR(WEBSERVER, "Config API: Failed to save configuration");
+  }
+}
+
+/**
+ * @brief Удалить файл конфигурации (сброс к дефолтному)
+ */
+void handleDeleteConfig(AsyncWebServerRequest *request) {
+  LOG_INFO(WEBSERVER, "Config API: Deleting configuration");
+  
+  bool result = config_delete();
+  
+  if (result) {
+    config_reset();
+    settings_load();
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+  } else {
+    request->send(500, "application/json", "{\"error\":\"Failed to delete\"}");
+  }
+}
+
+/**
+ * @brief Создать резервную копию конфигурации
+ */
+void handleBackupConfig(AsyncWebServerRequest *request) {
+  LOG_INFO(WEBSERVER, "Config API: Creating backup");
+  
+  bool result = config_backup();
+  
+  if (result) {
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+  } else {
+    request->send(500, "application/json", "{\"error\":\"Failed to backup\"}");
+  }
+}
+
+/**
+ * @brief Восстановить конфигурацию из резервной копии
+ */
+void handleRestoreConfig(AsyncWebServerRequest *request) {
+  LOG_INFO(WEBSERVER, "Config API: Restoring from backup");
+  
+  bool result = config_restore();
+  
+  if (result) {
+    settings_load();
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+  } else {
+    request->send(500, "application/json", "{\"error\":\"Failed to restore\"}");
+  }
 }
 
 // =====================================================

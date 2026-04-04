@@ -2,6 +2,8 @@
 #define headers_h
 
 #include "logger.h"
+#include "config.h"
+#include "settings.h"
 #include "display.h"
 #include "Meteo.h"
 #include "webheaders.h"

@@ -25,5 +25,12 @@ void handleSaveSettings(AsyncWebServerRequest *request, uint8_t *data, size_t le
 void handleResetSettings(AsyncWebServerRequest *request);
 void handleReboot(AsyncWebServerRequest *request);
 
+// Обработчики API конфигурации (JSON config)
+void handleGetConfig(AsyncWebServerRequest *request);
+void handleSaveConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len);
+void handleDeleteConfig(AsyncWebServerRequest *request);
+void handleBackupConfig(AsyncWebServerRequest *request);
+void handleRestoreConfig(AsyncWebServerRequest *request);
+
 // Отправка данных на ПК
 void send_data_to_pc();

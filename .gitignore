@@ -3,6 +3,14 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+logs/
 
 # Secrets - never commit sensitive data
 include/secrets.h
+include/secrets.h.example
+data/config.json
+data/config.json.backup
+
+# Build artifacts
+.pioenvs/
+.piolibdeps/
