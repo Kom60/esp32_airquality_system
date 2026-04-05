@@ -81,29 +81,36 @@ struct StationSettings {
    */
   void save_to_config() {
     Config& cfg = config_get();
-    
+
     strlcpy(cfg.wifi.ssid, wifi_ssid, sizeof(cfg.wifi.ssid));
     strlcpy(cfg.wifi.password, wifi_password, sizeof(cfg.wifi.password));
-    
+
     cfg.sensors.temp_offset_bme = temp_offset_bme;
     cfg.sensors.temp_offset_htu = temp_offset_htu;
     cfg.sensors.temp_offset_scd = temp_offset_scd;
-    
+
     cfg.sensors.hum_offset_bme = hum_offset_bme;
     cfg.sensors.hum_offset_htu = hum_offset_htu;
-    
+
     cfg.sensors.press_offset_bme = press_offset_bme;
     cfg.sensors.press_offset_ms = press_offset_ms;
-    
+
     cfg.alerts.co2_warning = co2_warning;
     cfg.alerts.co2_critical = co2_critical;
-    
+
     cfg.alerts.pm25_warning = pm25_warning;
     cfg.alerts.pm25_critical = pm25_critical;
-    
+
     cfg.display.night_mode_start = night_mode_start;
     cfg.display.night_mode_end = night_mode_end;
-    
+
+    // ЗАЩИТА: Не сохранять конфигурацию, если WiFi SSID пустой
+    // Это предотвращает перезапись правильного конфига пустыми значениями
+    if (strlen(wifi_ssid) == 0) {
+      LOG_WARNING(SETTINGS, "WiFi SSID is empty - skipping config save to prevent overwriting valid config");
+      return;
+    }
+
     config_save();
   }
 };

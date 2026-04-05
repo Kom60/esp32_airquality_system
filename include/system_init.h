@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 
-bool spiffs_setup();
 void app_tasks_init();
 
 #endif

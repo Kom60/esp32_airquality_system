@@ -34,3 +34,9 @@ void handleRestoreConfig(AsyncWebServerRequest *request);
 
 // Отправка данных на ПК
 void send_data_to_pc();
+
+// Обработчики API обновления прошивки
+void handleGetFirmwareStatus(AsyncWebServerRequest *request);
+void handleUploadFirmware(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final);
+void handleFlashFirmware(AsyncWebServerRequest *request);
+void handleDeleteFirmware(AsyncWebServerRequest *request);

@@ -38,8 +38,8 @@
 #ifndef LOG_WEBSERVER
     #define LOG_WEBSERVER 1
 #endif
-#ifndef LOG_SPIFFS
-    #define LOG_SPIFFS 1
+#ifndef LOG_SD
+    #define LOG_SD 1
 #endif
 #ifndef LOG_NETWORK
     #define LOG_NETWORK 1
@@ -108,8 +108,8 @@
 #ifndef WEBSERVER_LOG_LEVEL
     #define WEBSERVER_LOG_LEVEL GLOBAL_LOG_LEVEL
 #endif
-#ifndef SPIFFS_LOG_LEVEL
-    #define SPIFFS_LOG_LEVEL GLOBAL_LOG_LEVEL
+#ifndef SD_LOG_LEVEL
+    #define SD_LOG_LEVEL GLOBAL_LOG_LEVEL
 #endif
 #ifndef NETWORK_LOG_LEVEL
     #define NETWORK_LOG_LEVEL GLOBAL_LOG_LEVEL

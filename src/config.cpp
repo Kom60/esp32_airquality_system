@@ -1,6 +1,7 @@
 #include "headers.h"
 #include "config.h"
-#include <SPIFFS.h>
+#include "sdcard.h"
+#include <SD.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
 
@@ -481,121 +482,133 @@ static void system_from_json(JsonObjectConst root, SystemConfig& cfg) {
 void config_init() {
   LOG_INFO(SETTINGS, "Initializing configuration system...");
   _config.config_id = generate_config_id();
-  
+
   if (!config_load()) {
-    LOG_WARNING(SETTINGS, "Failed to load config, using defaults");
-    config_reset();
+    LOG_WARNING(SETTINGS, "Failed to load config from SD card");
+    LOG_WARNING(SETTINGS, "Please copy config.json to SD card at /config/config.json");
+    LOG_WARNING(SETTINGS, "Using default configuration (will NOT save to SD)");
+    // НЕ вызываем config_reset() - это предотвращает перезапись файла!
+  } else {
+    LOG_INFO(SETTINGS, "Configuration system initialized");
   }
-  
+
   _config_loaded = true;
-  LOG_INFO(SETTINGS, "Configuration system initialized");
 }
 
 bool config_load() {
-  if (!SPIFFS.begin(true)) {
-    LOG_ERROR(SETTINGS, "Failed to mount SPIFFS");
+  if (!sdcard_is_ready()) {
+    LOG_ERROR(SETTINGS, "SD card not ready");
     return false;
   }
+
+  LOG_INFO_FMT(SETTINGS, "Opening config file from SD card: %s", SD_CONFIG_FILE);
   
-  File file = SPIFFS.open(CONFIG_FILE_PATH, FILE_READ);
+  File file = SD.open(SD_CONFIG_FILE, FILE_READ);
   if (!file || file.size() == 0) {
-    LOG_WARNING(SETTINGS, "Config file not found or empty");
-    file.close();
+    LOG_WARNING(SETTINGS, "Config file not found or empty on SD card");
+    if (file) file.close();
     return false;
   }
-  
+
   size_t size = file.size();
+  LOG_INFO_FMT(SETTINGS, "Config file size: %d bytes (from SD card)", size);
+  
   if (size > CONFIG_MAX_SIZE) {
     LOG_ERROR_FMT(SETTINGS, "Config file too large: %d bytes", size);
     file.close();
     return false;
   }
-  
+
   std::unique_ptr<char[]> buf(new char[size + 1]);
   file.readBytes(buf.get(), size);
   buf[size] = '\0';
   file.close();
-  
+
   bool result = config_set_json(buf.get());
   if (result) {
-    LOG_INFO(SETTINGS, "Configuration loaded from " CONFIG_FILE_PATH);
+    LOG_INFO(SETTINGS, "✓ Configuration successfully loaded from SD card");
+    LOG_INFO_FMT(SETTINGS, "  → WiFi SSID: %s", _config.wifi.ssid);
+    LOG_INFO_FMT(SETTINGS,  "  → NTP Server: %s", _config.ntp.server);
+    LOG_INFO_FMT(SETTINGS, "  → Device Name: %s", _config.system.device_name);
   } else {
-    LOG_ERROR(SETTINGS, "Failed to parse config JSON");
+    LOG_ERROR(SETTINGS, "Failed to parse config JSON from SD card");
   }
-  
+
   return result;
 }
 
 bool config_save() {
-  return config_save_as(CONFIG_FILE_PATH);
+  return config_save_as(SD_CONFIG_FILE);
 }
 
 bool config_save_as(const char* filename) {
-  if (!SPIFFS.begin(true)) {
-    LOG_ERROR(SETTINGS, "Failed to mount SPIFFS");
+  if (!sdcard_is_ready()) {
+    LOG_ERROR(SETTINGS, "SD card not ready");
     return false;
   }
-  
+
   JsonDocument doc;
-  
+
   doc["version"] = _config.version;
   doc["config_id"] = _config.config_id;
-  
+
   // ArduinoJson v7: создаём временные переменные для JsonObject
   JsonObject wifi_obj = doc["wifi"].to<JsonObject>();
   wifi_to_json(_config.wifi, wifi_obj);
-  
+
   JsonObject ntp_obj = doc["ntp"].to<JsonObject>();
   ntp_to_json(_config.ntp, ntp_obj);
-  
+
   JsonObject sensors_obj = doc["sensors"].to<JsonObject>();
   sensors_to_json(_config.sensors, sensors_obj);
-  
+
   JsonObject alerts_obj = doc["alerts"].to<JsonObject>();
   alerts_to_json(_config.alerts, alerts_obj);
-  
+
   JsonObject display_obj = doc["display"].to<JsonObject>();
   display_to_json(_config.display, display_obj);
-  
+
   JsonObject sd_obj = doc["sd"].to<JsonObject>();
   sd_to_json(_config.sd, sd_obj);
-  
+
   JsonObject spiffs_obj = doc["spiffs"].to<JsonObject>();
   spiffs_to_json(_config.spiffs, spiffs_obj);
-  
+
   JsonObject webserver_obj = doc["webserver"].to<JsonObject>();
   webserver_to_json(_config.webserver, webserver_obj);
-  
+
   JsonObject websocket_obj = doc["websocket"].to<JsonObject>();
   websocket_to_json(_config.websocket, websocket_obj);
-  
+
   JsonObject mqtt_obj = doc["mqtt"].to<JsonObject>();
   mqtt_to_json(_config.mqtt, mqtt_obj);
-  
+
   JsonObject ota_obj = doc["ota"].to<JsonObject>();
   ota_to_json(_config.ota, ota_obj);
-  
+
   JsonObject system_obj = doc["system"].to<JsonObject>();
   system_to_json(_config.system, system_obj);
-  
-  File file = SPIFFS.open(filename, FILE_WRITE);
+
+  File file = SD.open(filename, FILE_WRITE);
   if (!file) {
     LOG_ERROR_FMT(SETTINGS, "Failed to open %s for writing", filename);
     return false;
   }
-  
+
   serializeJson(doc, file);
+  file.flush();
   file.close();
-  
+
   LOG_INFO_FMT(SETTINGS, "Configuration saved to %s", filename);
   return true;
 }
 
 void config_reset() {
-  LOG_INFO(SETTINGS, "Resetting configuration to defaults");
+  LOG_INFO(SETTINGS, "Resetting configuration to defaults (in memory only)");
   _config = Config();
   _config.config_id = generate_config_id();
-  config_save();
+  // НЕ сохраняем автоматически - пользователь должен явно вызвать config_save()
+  LOG_WARNING(SETTINGS, "Config reset in memory only - file on SD card NOT changed");
 }
 
 bool config_validate() {
@@ -739,61 +752,65 @@ Config& config_get() {
 }
 
 bool config_exists() {
-  if (!SPIFFS.begin(false)) {
+  if (!sdcard_is_ready()) {
     return false;
   }
-  return SPIFFS.exists(CONFIG_FILE_PATH);
+  return sdcard_file_exists(SD_CONFIG_FILE);
 }
 
 bool config_delete() {
-  if (!SPIFFS.begin(true)) {
-    LOG_ERROR(SETTINGS, "Failed to mount SPIFFS");
+  if (!sdcard_is_ready()) {
+    LOG_ERROR(SETTINGS, "SD card not ready");
     return false;
   }
-  
-  if (SPIFFS.remove(CONFIG_FILE_PATH)) {
+
+  if (SD.remove(SD_CONFIG_FILE)) {
     LOG_INFO(SETTINGS, "Config file deleted");
     return true;
   }
-  
+
   LOG_ERROR(SETTINGS, "Failed to delete config file");
   return false;
 }
 
 bool config_backup() {
-  char backup_path[64];
-  snprintf(backup_path, sizeof(backup_path), "%s.backup", CONFIG_FILE_PATH);
-  
-  if (config_save_as(backup_path)) {
+  if (!sdcard_is_ready()) {
+    LOG_ERROR(SETTINGS, "SD card not ready");
+    return false;
+  }
+
+  if (config_save_as(SD_CONFIG_BACKUP)) {
     LOG_INFO(SETTINGS, "Configuration backup created");
     return true;
   }
-  
+
   return false;
 }
 
 bool config_restore() {
-  char backup_path[64];
-  snprintf(backup_path, sizeof(backup_path), "%s.backup", CONFIG_FILE_PATH);
-  
-  if (!SPIFFS.exists(backup_path)) {
+  if (!sdcard_is_ready()) {
+    LOG_ERROR(SETTINGS, "SD card not ready");
+    return false;
+  }
+
+  if (!sdcard_file_exists(SD_CONFIG_BACKUP)) {
     LOG_WARNING(SETTINGS, "Backup file not found");
     return false;
   }
-  
-  File file = SPIFFS.open(backup_path, FILE_READ);
+
+  File file = SD.open(SD_CONFIG_BACKUP, FILE_READ);
   if (!file) {
     LOG_ERROR(SETTINGS, "Failed to open backup file");
     return false;
   }
-  
+
   size_t size = file.size();
   if (size > CONFIG_MAX_SIZE) {
     LOG_ERROR_FMT(SETTINGS, "Backup file too large: %d bytes", size);
     file.close();
     return false;
   }
-  
+
   std::unique_ptr<char[]> buf(new char[size + 1]);
   file.readBytes(buf.get(), size);
   buf[size] = '\0';

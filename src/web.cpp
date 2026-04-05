@@ -2,6 +2,8 @@
 #include "headers.h"
 #include "settings.h"
 #include "secrets.h"
+#include "sdcard.h"
+#include <Update.h>
 
 // global variables of the LED selected and the intensity of that LED
 int random_intensity = 5;
@@ -14,17 +16,37 @@ WebSocketsServer webSocket = WebSocketsServer(81); // the websocket uses port 81
 
 // Инициализация веб-сервера и WebSocket
 void web_setup() {
-  // Маршруты веб-сервера
+  // Маршруты веб-сервера - файлы теперь на SD карте
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/index.html", "text/html");
+    if (SD.exists("/www/index.html")) {
+      request->send(SD, "/www/index.html", "text/html");
+    } else {
+      request->send(404, "text/plain", "index.html not found on SD card");
+    }
   });
 
   server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/settings.html", "text/html");
+    if (SD.exists("/www/settings.html")) {
+      request->send(SD, "/www/settings.html", "text/html");
+    } else {
+      request->send(404, "text/plain", "settings.html not found on SD card");
+    }
+  });
+
+  server.on("/config", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (SD.exists("/www/config.html")) {
+      request->send(SD, "/www/config.html", "text/html");
+    } else {
+      request->send(404, "text/plain", "config.html not found on SD card");
+    }
   });
   
-  server.on("/config", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/config.html", "text/html");
+  server.on("/charts.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (SD.exists("/www/charts.html")) {
+      request->send(SD, "/www/charts.html", "text/html");
+    } else {
+      request->send(404, "text/plain", "charts.html not found on SD card");
+    }
   });
 
   // API для настроек (обратная совместимость)
@@ -62,11 +84,73 @@ void web_setup() {
   server.on("/api/config/backup", HTTP_POST, handleBackupConfig);
   server.on("/api/config/restore", HTTP_POST, handleRestoreConfig);
 
+  // API для обновления прошивки
+  server.on("/api/firmware/status", HTTP_GET, handleGetFirmwareStatus);
+  server.on("/api/firmware/flash", HTTP_POST, handleFlashFirmware);
+  server.on("/api/firmware/delete", HTTP_DELETE, handleDeleteFirmware);
+  
+  // Загрузка файла прошивки
+  AsyncCallbackWebHandler* firmwareUploadHandler = new AsyncCallbackWebHandler();
+  firmwareUploadHandler->setUri("/api/firmware/upload");
+  firmwareUploadHandler->setMethod(HTTP_POST);
+  firmwareUploadHandler->onUpload(handleUploadFirmware);
+  firmwareUploadHandler->onRequest([](AsyncWebServerRequest *request) {
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+  });
+  server.addHandler(firmwareUploadHandler);
+
   server.onNotFound([](AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "File not found");
   });
 
-  server.serveStatic("/", SPIFFS, "/");
+  // Раздаем статические файлы (CSS, JS, изображения) из /www на SD карте
+  // Обработчик для CSS файлов
+  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/style.css", "text/css");
+  });
+  server.on("/main_style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/main_style.css", "text/css");
+  });
+  server.on("/header_style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/header_style.css", "text/css");
+  });
+  server.on("/dungeon.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/dungeon.css", "text/css");
+  });
+  server.on("/charts_style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/charts_style.css", "text/css");
+  });
+  
+  // Обработчик для JS файлов
+  server.on("/logic.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/logic.js", "application/javascript");
+  });
+  server.on("/js_logic.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/js_logic.js", "application/javascript");
+  });
+  server.on("/settings_logic.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/settings_logic.js", "application/javascript");
+  });
+  server.on("/charts_logic.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/charts_logic.js", "application/javascript");
+  });
+  
+  // Обработчик для изображений и других файлов
+  server.on("/favicon.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/favicon.png", "image/png");
+  });
+  server.on("/esp32_logo.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/esp32_logo.png", "image/png");
+  });
+  server.on("/on_bubl.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/on_bubl.png", "image/png");
+  });
+  server.on("/off_bubl.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/off_bubl.png", "image/png");
+  });
+  server.on("/manifest.json", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SD, "/www/manifest.json", "application/json");
+  });
 
   // Инициализация WebSocket
   webSocket.begin();
@@ -435,4 +519,151 @@ void send_data_to_pc()
   }
 
   http.end();
+}
+
+// ============================================================================
+// API для обновления прошивки с SD карты
+// ============================================================================
+
+/**
+ * @brief Получить статус прошивки на SD карте
+ */
+void handleGetFirmwareStatus(AsyncWebServerRequest *request) {
+  String json = "{";
+  
+  if (SD.exists(SD_FIRMWARE_PATH "/firmware.bin")) {
+    File fw = SD.open(SD_FIRMWARE_PATH "/firmware.bin", FILE_READ);
+    if (fw) {
+      json += "\"exists\":true,";
+      json += "\"size\":" + String(fw.size()) + ",";
+      json += "\"message\":\"Firmware file found on SD card\"";
+      fw.close();
+    } else {
+      json += "\"exists\":false,\"message\":\"Error reading firmware file\"";
+    }
+  } else {
+    json += "\"exists\":false,\"message\":\"No firmware file on SD card\"";
+  }
+  
+  json += "}";
+  request->send(200, "application/json", json);
+}
+
+/**
+ * @brief Загрузить файл прошивки на SD карту
+ */
+void handleUploadFirmware(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final) {
+  static File uploadFile;
+  
+  if (!index) {
+    // Начало загрузки - проверяем место на SD
+    if (!sdcard_is_ready()) {
+      request->send(500, "application/json", "{\"error\":\"SD card not ready\"}");
+      return;
+    }
+    
+    // Создаем директорию если нет
+    if (!SD.exists(SD_FIRMWARE_PATH)) {
+      SD.mkdir(SD_FIRMWARE_PATH);
+    }
+    
+    // Удаляем старый файл если есть
+    if (SD.exists(SD_FIRMWARE_PATH "/firmware.bin")) {
+      SD.remove(SD_FIRMWARE_PATH "/firmware.bin");
+    }
+    
+    uploadFile = SD.open(SD_FIRMWARE_PATH "/firmware.bin", FILE_WRITE);
+    if (!uploadFile) {
+      request->send(500, "application/json", "{\"error\":\"Cannot create firmware file\"}");
+      return;
+    }
+    
+    LOG_INFO(WEBSERVER, "Firmware upload started");
+  }
+  
+  if (uploadFile && len) {
+    uploadFile.write(data, len);
+  }
+  
+  if (final) {
+    if (uploadFile) {
+      size_t fileSize = uploadFile.size();
+      uploadFile.close();
+      LOG_INFO_FMT(WEBSERVER, "Firmware upload completed: %d bytes", fileSize);
+      request->send(200, "application/json", "{\"status\":\"ok\",\"size\":" + String(fileSize) + "}");
+    } else {
+      request->send(500, "application/json", "{\"error\":\"Upload failed\"}");
+    }
+  }
+}
+
+/**
+ * @brief Запустить обновление прошивки с SD карты
+ */
+void handleFlashFirmware(AsyncWebServerRequest *request) {
+  if (!sdcard_is_ready()) {
+    request->send(500, "application/json", "{\"error\":\"SD card not ready\"}");
+    return;
+  }
+  
+  if (!SD.exists(SD_FIRMWARE_PATH "/firmware.bin")) {
+    request->send(404, "application/json", "{\"error\":\"Firmware file not found\"}");
+    return;
+  }
+  
+  File firmwareFile = SD.open(SD_FIRMWARE_PATH "/firmware.bin", FILE_READ);
+  if (!firmwareFile) {
+    request->send(500, "application/json", "{\"error\":\"Cannot open firmware file\"}");
+    return;
+  }
+  
+  size_t firmwareSize = firmwareFile.size();
+  LOG_INFO_FMT(WEBSERVER, "Flashing firmware: %d bytes", firmwareSize);
+  
+  // Начинаем обновление
+  if (!Update.begin(firmwareSize)) {
+    firmwareFile.close();
+    LOG_ERROR(WEBSERVER, "Update.begin failed");
+    request->send(500, "application/json", "{\"error\":\"Update.begin failed\"}");
+    return;
+  }
+  
+  // Записываем прошивку
+  size_t written = Update.writeStream(firmwareFile);
+  firmwareFile.close();
+  
+  LOG_INFO_FMT(WEBSERVER, "Firmware written: %d/%d bytes", written, firmwareSize);
+  
+  if (written != firmwareSize) {
+    request->send(500, "application/json", "{\"error\":\"Size mismatch\"}");
+    return;
+  }
+  
+  // Завершаем обновление
+  if (Update.end(true)) {
+    LOG_INFO(WEBSERVER, "Firmware flash successful. Rebooting...");
+    request->send(200, "application/json", "{\"status\":\"ok\",\"message\":\"Firmware flashed. Rebooting...\"}");
+    
+    // Перезагрузка через 2 секунды
+    delay(2000);
+    ESP.restart();
+  } else {
+    LOG_ERROR(WEBSERVER, "Update.end failed");
+    request->send(500, "application/json", "{\"error\":\"Update.end failed\"}");
+  }
+}
+
+/**
+ * @brief Удалить файл прошивки с SD карты
+ */
+void handleDeleteFirmware(AsyncWebServerRequest *request) {
+  if (SD.exists(SD_FIRMWARE_PATH "/firmware.bin")) {
+    if (SD.remove(SD_FIRMWARE_PATH "/firmware.bin")) {
+      request->send(200, "application/json", "{\"status\":\"ok\"}");
+    } else {
+      request->send(500, "application/json", "{\"error\":\"Cannot delete firmware\"}");
+    }
+  } else {
+    request->send(404, "application/json", "{\"error\":\"Firmware not found\"}");
+  }
 }

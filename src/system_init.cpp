@@ -1,17 +1,6 @@
 #include "headers.h"
 #include "system_init.h"
 
-// Инициализация SPIFFS
-bool spiffs_setup()
-{
-  if (!SPIFFS.begin()) {
-    LOG_ERROR(SPIFFS, "could not initialize");
-    return false;
-  }
-  LOG_INFO(SPIFFS, "Mounted successfully");
-  return true;
-}
-
 // Инициализация задач приложения (WebSocket, SendData)
 void app_tasks_init()
 {
