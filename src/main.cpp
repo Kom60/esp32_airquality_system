@@ -29,9 +29,19 @@ void setup(void)
   wifi_setup();         // WiFi подключение
   LOG_INFO(WIFI, "WiFi initialized");
 
-  LOG_INFO(WEBSERVER, "Initializing web server...");
-  web_setup();          // Веб-сервер и WebSocket
-  LOG_INFO(WEBSERVER, "Web server initialized");
+  // ПРИОРИТЕТ: HTTPS (HTTP и WebSocket отключены для экономии RAM)
+  Config& cfg = config_get();
+  
+  if (cfg.ssl.https_enabled) {
+    LOG_INFO(WEBSERVER, "HTTPS-ONLY mode - HTTP server and WebSocket disabled");
+    LOG_INFO(WEBSERVER, "Initializing HTTPS server...");
+    https_server_init();
+    LOG_INFO(WEBSERVER, "HTTPS setup completed");
+  } else {
+    LOG_INFO(WEBSERVER, "Initializing web server (HTTP + WebSocket)...");
+    web_setup();
+    LOG_INFO(WEBSERVER, "Web server initialized");
+  }
 
   LOG_INFO(TASKS, "Initializing application tasks...");
   app_tasks_init();     // Задачи приложения (WebSocket, SendData)
@@ -42,6 +52,9 @@ void setup(void)
 
 void loop()
 {
+  // Обработка HTTPS запросов (библиотека bmedici)
+  https_handle_requests();
+  
   // Пустой цикл - вся логика в задачах FreeRTOS
   vTaskDelay(pdMS_TO_TICKS(100));
 }

@@ -174,6 +174,19 @@ struct SPIFFSConfig {
   int max_open_files = 5;
 };
 
+// Настройки SSL/TLS
+struct SSLConfig {
+  bool https_enabled = false;
+  bool wss_enabled = false;
+  int https_port = 443;
+  int wss_port = 8443;
+  char cert_path[64] = "/ssl/server.crt";
+  char key_path[64] = "/ssl/server.key";
+  bool use_self_signed = true;
+  char common_name[64] = "esp32.local";
+  int cert_validity_days = 3650;
+};
+
 // Веб-сервер
 struct WebServerConfig {
   bool enabled = true;
@@ -240,7 +253,7 @@ struct SystemConfig {
 struct Config {
   char version[16] = CONFIG_VERSION;
   uint32_t config_id = 0;           // Уникальный ID для отслеживания изменений
-  
+
   WiFiConfig wifi;
   NTPConfig ntp;
   SensorsConfig sensors;
@@ -248,6 +261,7 @@ struct Config {
   DisplayConfig display;
   SDConfig sd;
   SPIFFSConfig spiffs;
+  SSLConfig ssl;
   WebServerConfig webserver;
   WebSocketConfig websocket;
   MQTTConfig mqtt;

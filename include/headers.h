@@ -11,6 +11,7 @@
 #include "network.h"
 #include "system_init.h"
 #include "sdcard.h"
+#include "https_server.h"
 #include <SD.h>
 #include "esp32/clk.h"
 #include "sensors.h"

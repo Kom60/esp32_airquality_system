@@ -1,0 +1,13 @@
+{
+  "ssl": {
+    "https_enabled": true,
+    "wss_enabled": false,
+    "https_port": 443,
+    "wss_port": 8443,
+    "cert_path": "/ssl/server.crt",
+    "key_path": "/ssl/server.key",
+    "use_self_signed": true,
+    "common_name": "esp32.local",
+    "cert_validity_days": 3650
+  }
+}

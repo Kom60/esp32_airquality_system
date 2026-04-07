@@ -361,6 +361,30 @@ static void spiffs_from_json(JsonObjectConst root, SPIFFSConfig& cfg) {
   if (root["max_open_files"].is<int>()) cfg.max_open_files = root["max_open_files"];
 }
 
+static void ssl_to_json(const SSLConfig& cfg, JsonObject& root) {
+  root["https_enabled"] = cfg.https_enabled;
+  root["wss_enabled"] = cfg.wss_enabled;
+  root["https_port"] = cfg.https_port;
+  root["wss_port"] = cfg.wss_port;
+  root["cert_path"] = cfg.cert_path;
+  root["key_path"] = cfg.key_path;
+  root["use_self_signed"] = cfg.use_self_signed;
+  root["common_name"] = cfg.common_name;
+  root["cert_validity_days"] = cfg.cert_validity_days;
+}
+
+static void ssl_from_json(JsonObjectConst root, SSLConfig& cfg) {
+  if (root["https_enabled"].is<bool>()) cfg.https_enabled = root["https_enabled"];
+  if (root["wss_enabled"].is<bool>()) cfg.wss_enabled = root["wss_enabled"];
+  if (root["https_port"].is<int>()) cfg.https_port = root["https_port"];
+  if (root["wss_port"].is<int>()) cfg.wss_port = root["wss_port"];
+  if (root["cert_path"].is<const char*>()) strlcpy(cfg.cert_path, root["cert_path"], sizeof(cfg.cert_path));
+  if (root["key_path"].is<const char*>()) strlcpy(cfg.key_path, root["key_path"], sizeof(cfg.key_path));
+  if (root["use_self_signed"].is<bool>()) cfg.use_self_signed = root["use_self_signed"];
+  if (root["common_name"].is<const char*>()) strlcpy(cfg.common_name, root["common_name"], sizeof(cfg.common_name));
+  if (root["cert_validity_days"].is<int>()) cfg.cert_validity_days = root["cert_validity_days"];
+}
+
 static void webserver_to_json(const WebServerConfig& cfg, JsonObject& root) {
   root["enabled"] = cfg.enabled;
   root["port"] = cfg.port;
@@ -574,6 +598,9 @@ bool config_save_as(const char* filename) {
   JsonObject spiffs_obj = doc["spiffs"].to<JsonObject>();
   spiffs_to_json(_config.spiffs, spiffs_obj);
 
+  JsonObject ssl_obj = doc["ssl"].to<JsonObject>();
+  ssl_to_json(_config.ssl, ssl_obj);
+
   JsonObject webserver_obj = doc["webserver"].to<JsonObject>();
   webserver_to_json(_config.webserver, webserver_obj);
 
@@ -736,6 +763,7 @@ bool config_set_json(const char* json) {
   if (doc["display"].is<JsonObjectConst>()) display_from_json(doc["display"], _config.display);
   if (doc["sd"].is<JsonObjectConst>()) sd_from_json(doc["sd"], _config.sd);
   if (doc["spiffs"].is<JsonObjectConst>()) spiffs_from_json(doc["spiffs"], _config.spiffs);
+  if (doc["ssl"].is<JsonObjectConst>()) ssl_from_json(doc["ssl"], _config.ssl);
   if (doc["webserver"].is<JsonObjectConst>()) webserver_from_json(doc["webserver"], _config.webserver);
   if (doc["websocket"].is<JsonObjectConst>()) websocket_from_json(doc["websocket"], _config.websocket);
   if (doc["mqtt"].is<JsonObjectConst>()) mqtt_from_json(doc["mqtt"], _config.mqtt);

@@ -1,3 +1,1396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Мониторинг качества воздуха в реальном времени">
+  <meta name="theme-color" content="#4CAF50">
+  <title>Air quality monitor</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍃</text></svg>">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <style>
+:root {
+  --item-width: calc(100vw);
+  --item-height: 160px;
+  --header-text-width: calc(80vw);
+  --dark-mode-button-height:calc(4vw);
+  --dark-mode-button-width:calc(4vw);
+  --dark-mode-icon-size:calc(4vw);
+  --dark-mode-icon-top-padding:calc(10vw*-1);
+  --icon-top-padding:calc(-0.2*0.5vw);
+  --header-size:calc(3vw);
+  --border-dashed-size:calc(0.7vw);
+  --ghost-size:calc(0.2vw);
+}
+
+.header-text {
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+    flex: 1;
+    vertical-align: top;
+    /*height: var(--dark-mode-button-height);*/
+    width: var(--header-text-width);
+    /*border-style: solid;
+    border-color: red;*/
+    text-align: center;
+    font-family: "Press Start 2P", system-ui;
+    font-size: var(--header-size);
+    font-weight: 400;
+    font-style:inherit;
+    margin-top: 0;
+    margin-bottom: auto;
+    margin-left: auto;
+    margin-right: 0;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
+
+  .header {
+    border: var(--border-dashed-size) dashed;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    display: flex;
+    text-align: center;
+    position:relative;
+    /*border-style: solid;
+    border-color: rgb(16, 212, 52);*/
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1%;
+  }
+
+  .dark-mode-button {
+    transform: rotate(180deg);
+    vertical-align:top;
+    position:relative;
+    left: 0px;
+    top:  var(--icon-top-padding);
+    height: var( --dark-mode-icon-size);
+    width: var( --dark-mode-icon-size);
+    margin-left: 0;
+    margin-right: auto;
+    margin-top: 0;
+    margin-bottom: auto;
+    text-align: center;
+    /*border-style: solid;
+    border-color: rgb(43, 87, 177);*/
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+.esp32-button {
+
+  border: solid;
+  vertical-align:left;
+  top:  var(--icon-top-padding);
+  height: var( --dark-mode-icon-size);
+  width: var( --dark-mode-icon-size);
+  margin-left: 0;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: auto;
+  text-align: center;
+  /*border-style: solid;
+  border-color: rgb(43, 87, 177);*/
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto;
+}
+
+.charts-icon-button {
+  font-family: "Press Start 2P", system-ui;
+  font-size: calc(2.72vw);
+  padding: 0;
+  background: transparent;
+  color: #000000;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  height: calc(2.72vw);
+  width: calc(2.72vw);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.charts-icon-button:hover {
+  transform: scale(1.1);
+}
+
+.charts-icon-button:active {
+  transform: scale(0.95);
+}
+
+body.dark-mode .charts-icon-button {
+  color: #ffffff;
+}
+</style>
+  <style>
+/* ДНЕВНАЯ ТЕМА (по умолчанию) */
+body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-size: 25px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Анимация плавного изменения значений датчиков */
+@keyframes valueChange {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.measured_value.value-updated {
+  animation: valueChange 0.3s ease-in-out !important;
+}
+
+.board {
+  border-color: #333 !important;
+  background-color: transparent !important;
+}
+
+.column {
+  border-color: #666 !important;
+  background-color: transparent !important;
+}
+
+.data-box {
+  background-color: transparent !important;
+}
+
+.dungeon {
+  border-color: #333 !important;
+  background-color: transparent !important;
+}
+
+.header {
+  border-color: #333 !important;
+  background-color: transparent !important;
+}
+
+.header-text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.column-header-text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.dungeon-header-text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.dungeon-text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.dungen_value {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.text {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.units {
+  color: #333333 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+}
+
+.measured_value {
+  color: #000000 !important;
+  text-shadow: 2px 2px 4px rgba(117, 117, 114, 0.5) !important;
+  font-family: "Press Start 2P", system-ui !important;
+  font-size: var(--font-size-val) !important;
+  line-height: 1 !important;
+  vertical-align: baseline !important;
+  display: inline !important;
+  padding-top: 3% !important;
+}
+
+.measured_value.indoor_temp {
+  color: #d32f2f !important;
+}
+
+.measured_value.outdoor_temp {
+  color: #7b1fa2 !important;
+}
+
+/* НОЧНАЯ ТЕМА */
+body.dark-mode {
+  background-color: #121212 !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .board {
+  border-color: #444 !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .column {
+  border-color: #333 !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .data-box {
+  background-color: transparent !important;
+}
+
+body.dark-mode .dungeon {
+  border-color: #444 !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .header {
+  border-color: #444 !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode .header-text {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .column-header-text {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .dungeon-header-text {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .dungeon-text {
+  color: #cccccc !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .dungen_value {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .text {
+  color: #cccccc !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .units {
+  color: #999999 !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .measured_value {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .measured_value.indoor_temp {
+  color: #ef5350 !important;
+}
+
+body.dark-mode .measured_value.outdoor_temp {
+  color: #ab47bc !important;
+}
+
+body.dark-mode .analytics-section {
+  border-color: #444;
+}
+
+body.dark-mode .analytics-card {
+  border-color: #444;
+}
+
+body.dark-mode .analytics-card .text {
+  color: #cccccc !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .analytics-card .calculated_value {
+  color: #66b3ff !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .analytics-card .units {
+  color: #999999 !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* WiFi RSSI стили */
+.dungen_value.wifi_rssi.excellent {
+  color: #2e7d32 !important;
+}
+
+.dungen_value.wifi_rssi.good {
+  color: #8bc34a !important;
+}
+
+.dungen_value.wifi_rssi.fair {
+  color: #ff9800 !important;
+}
+
+.dungen_value.wifi_rssi.weak {
+  color: #f44336 !important;
+}
+
+body.dark-mode .dungen_value.wifi_rssi.excellent {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .dungen_value.wifi_rssi.good {
+  color: #9ccc65 !important;
+}
+
+body.dark-mode .dungen_value.wifi_rssi.fair {
+  color: #ffb74d !important;
+}
+
+body.dark-mode .dungen_value.wifi_rssi.weak {
+  color: #ef5350 !important;
+}
+
+/* ESP32 память и загрузка */
+.dungen_value.esp32_free_heap.good {
+  color: #2e7d32 !important;
+}
+
+.dungen_value.esp32_free_heap.warning {
+  color: #f57c00 !important;
+}
+
+.dungen_value.esp32_free_heap.critical {
+  color: #c62828 !important;
+}
+
+.dungen_value.esp32_cpu_load.low {
+  color: #2e7d32 !important;
+}
+
+.dungen_value.esp32_cpu_load.medium {
+  color: #f57c00 !important;
+}
+
+.dungen_value.esp32_cpu_load.high {
+  color: #c62828 !important;
+}
+
+body.dark-mode .dungen_value.esp32_free_heap.good {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .dungen_value.esp32_free_heap.warning {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .dungen_value.esp32_free_heap.critical {
+  color: #ef5350 !important;
+}
+
+body.dark-mode .dungen_value.esp32_cpu_load.low {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .dungen_value.esp32_cpu_load.medium {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .dungen_value.esp32_cpu_load.high {
+  color: #ef5350 !important;
+}
+
+/* INA226 стили */
+.dungen_value.ina226_voltage.good {
+  color: #2e7d32 !important;
+}
+
+.dungen_value.ina226_voltage.warning {
+  color: #f57c00 !important;
+}
+
+.dungen_value.ina226_voltage.critical {
+  color: #c62828 !important;
+}
+
+body.dark-mode .dungen_value.ina226_voltage.good {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .dungen_value.ina226_voltage.warning {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .dungen_value.ina226_voltage.critical {
+  color: #ef5350 !important;
+}
+
+/* Статусы датчиков */
+.measured_value.status-ok {
+  color: #2e7d32 !important;
+}
+
+.measured_value.status-warning {
+  color: #f57c00 !important;
+}
+
+.measured_value.status-critical {
+  color: #c62828 !important;
+}
+
+body.dark-mode .measured_value.status-ok {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .measured_value.status-warning {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .measured_value.status-critical {
+  color: #ef5350 !important;
+}
+
+/* === СЕКЦИЯ АНАЛИТИКИ === */
+.analytics-section {
+  margin: 0.5% 0;
+  padding: 1%;
+  width: 100%;
+  border: var(--border-dashed-size) dashed #666;
+  background: transparent !important;
+  box-sizing: border-box;
+}
+
+.analytics-section .column-header-text {
+  margin-bottom: 1%;
+  font-size: var(--header-text-size);
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  padding: 1%;
+  vertical-align: top;
+  text-align: center;
+  font-family: "Press Start 2P", system-ui;
+  font-weight: 400;
+  font-style: normal;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.analytics-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.analytics-card {
+  background: transparent !important;
+  padding: 0;
+  margin: 0;
+}
+
+.analytics-card .line {
+  display: flex;
+  justify-content: flex-start;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.analytics-card .text {
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  display: flex;
+  vertical-align: center;
+  text-align: left;
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  padding-top: 1%;
+  padding-left: 3%;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.analytics-card .calculated_value {
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+  user-select: text;
+  text-align: left;
+  padding-left: 10px;
+  padding-top: 1%;
+}
+
+.analytics-card .units {
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+  padding-left: 5px;
+  padding-top: 1%;
+  text-align: left;
+  width: auto;
+}
+
+/* Цветовая дифференциация для аналитики */
+.analytics-card .calculated_value.value-good {
+  color: #2e7d32 !important;
+}
+
+.analytics-card .calculated_value.value-warning {
+  color: #f57c00 !important;
+}
+
+.analytics-card .calculated_value.value-critical {
+  color: #c62828 !important;
+}
+
+.analytics-card .calculated_value.value-info {
+  color: #1976d2 !important;
+}
+
+body.dark-mode .analytics-card .calculated_value.value-good {
+  color: #66bb6a !important;
+}
+
+body.dark-mode .analytics-card .calculated_value.value-warning {
+  color: #ffa726 !important;
+}
+
+body.dark-mode .analytics-card .calculated_value.value-critical {
+  color: #ef5350 !important;
+}
+
+body.dark-mode .analytics-card .calculated_value.value-info {
+  color: #42a5f5 !important;
+}
+
+/* IAQ стили */
+.iaq-good { color: #2e7d32 !important; }
+.iaq-moderate { color: #f9a825 !important; }
+.iaq-unhealthy-sensitive { color: #ff9800 !important; }
+.iaq-unhealthy { color: #f44336 !important; }
+.iaq-very-unhealthy { color: #9c27b0 !important; }
+.iaq-hazardous { color: #673ab7 !important; }
+
+/* Комфорт стили */
+.comfort-good { color: #2e7d32 !important; }
+.comfort-moderate { color: #f9a825 !important; }
+.comfort-poor { color: #f44336 !important; }
+
+/* УФ стили */
+.uv-low { color: #2e7d32 !important; }
+.uv-moderate { color: #f9a825 !important; }
+.uv-high { color: #ff9800 !important; }
+.uv-very-high { color: #f44336 !important; }
+.uv-extreme { color: #673ab7 !important; }
+
+/* Проветривание стили */
+.vent-recommend { color: #1976d2 !important; }
+.vent-warning { color: #f44336 !important; }
+.vent-uv { color: #ff9800 !important; }
+.vent-save { color: #388e3c !important; }
+.vent-ok { color: #2e7d32 !important; }
+.vent-wait { color: #757575 !important; }
+
+/* Освещение стили */
+.light-low { color: #f9a825 !important; }
+.light-good { color: #2e7d32 !important; }
+.light-moderate { color: #1976d2 !important; }
+.light-evening { color: #5e35b1 !important; }
+.light-bright { color: #ff9800 !important; }
+.light-wait { color: #757575 !important; }
+
+/* Ночная тема для аналитики */
+body.dark-mode .iaq-good { color: #66bb6a !important; }
+body.dark-mode .iaq-moderate { color: #ffa726 !important; }
+body.dark-mode .iaq-unhealthy-sensitive { color: #ff9800 !important; }
+body.dark-mode .iaq-unhealthy { color: #ef5350 !important; }
+body.dark-mode .iaq-very-unhealthy { color: #ab47bc !important; }
+body.dark-mode .iaq-hazardous { color: #7e57c2 !important; }
+
+body.dark-mode .comfort-good { color: #66bb6a !important; }
+body.dark-mode .comfort-moderate { color: #ffa726 !important; }
+body.dark-mode .comfort-poor { color: #ef5350 !important; }
+
+body.dark-mode .uv-low { color: #66bb6a !important; }
+body.dark-mode .uv-moderate { color: #ffa726 !important; }
+body.dark-mode .uv-high { color: #ff9800 !important; }
+body.dark-mode .uv-very-high { color: #ef5350 !important; }
+body.dark-mode .uv-extreme { color: #7e57c2 !important; }
+
+body.dark-mode .vent-recommend { color: #42a5f5 !important; }
+body.dark-mode .vent-warning { color: #ef5350 !important; }
+body.dark-mode .vent-uv { color: #ff9800 !important; }
+body.dark-mode .vent-save { color: #66bb6a !important; }
+body.dark-mode .vent-ok { color: #66bb6a !important; }
+body.dark-mode .vent-wait { color: #9e9e9e !important; }
+
+body.dark-mode .light-low { color: #ffa726 !important; }
+body.dark-mode .light-good { color: #66bb6a !important; }
+body.dark-mode .light-moderate { color: #42a5f5 !important; }
+body.dark-mode .light-evening { color: #7e57c2 !important; }
+body.dark-mode .light-bright { color: #ff9800 !important; }
+body.dark-mode .light-wait { color: #9e9e9e !important; }
+
+/* === ВСПЛЫВАЮЩИЕ ПОДСКАЗКИ === */
+.analytics-card {
+  position: relative;
+  cursor: help;
+}
+
+.analytics-card[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 105%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #1a237e, #283593);
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.75em;
+  line-height: 1.6;
+  white-space: pre-line;
+  z-index: 1000;
+  width: max-content;
+  max-width: 350px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  animation: tooltipFadeIn 0.3s ease forwards;
+  pointer-events: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  font-weight: normal;
+}
+
+/* Стрелочка вниз у подсказки */
+.analytics-card[title]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 95%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: #1a237e;
+  z-index: 1001;
+  opacity: 0;
+  animation: tooltipArrowFadeIn 0.3s ease 0.1s forwards;
+  pointer-events: none;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes tooltipArrowFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Ночная тема для подсказок */
+body.dark-mode .analytics-card[title]:hover::after {
+  background: linear-gradient(135deg, #0d47a1, #1565c0);
+  border-color: rgba(100, 181, 246, 0.3);
+}
+
+body.dark-mode .analytics-card[title]:hover::before {
+  border-top-color: #0d47a1;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .analytics-card[title]:hover::after {
+    width: 280px;
+    font-size: 0.7em;
+    padding: 10px 12px;
+  }
+}
+
+/* ============================================================
+   === НОВЫЕ ПОКАЗАТЕЛИ: ЦВЕТОВАЯ ИНДИКАЦИЯ ===================
+   ============================================================ */
+
+/* Дефицит точки росы */
+.deficit-very-dry { color: #ff6f00 !important; }
+.deficit-dry { color: #ffa000 !important; }
+.deficit-normal { color: #43a047 !important; }
+.deficit-humid { color: #1e88e5 !important; }
+
+body.dark-mode .deficit-very-dry { color: #ff8f00 !important; }
+body.dark-mode .deficit-dry { color: #ffb74d !important; }
+body.dark-mode .deficit-normal { color: #81c784 !important; }
+body.dark-mode .deficit-humid { color: #64b5f6 !important; }
+
+/* Энтальпия */
+.enthalpy-cold { color: #0288d1 !important; }
+.enthalpy-cool { color: #039be5 !important; }
+.enthalpy-comfort { color: #43a047 !important; }
+.enthalpy-warm { color: #f57c00 !important; }
+.enthalpy-hot { color: #d32f2f !important; }
+
+body.dark-mode .enthalpy-cold { color: #4fc3f7 !important; }
+body.dark-mode .enthalpy-cool { color: #81d4fa !important; }
+body.dark-mode .enthalpy-comfort { color: #81c784 !important; }
+body.dark-mode .enthalpy-warm { color: #ffb74d !important; }
+body.dark-mode .enthalpy-hot { color: #e57373 !important; }
+
+/* Риск плесени */
+.mold-low { color: #43a047 !important; }
+.mold-moderate { color: #fdd835 !important; }
+.mold-high { color: #fb8c00 !important; }
+.mold-danger { color: #d32f2f !important; }
+
+body.dark-mode .mold-low { color: #81c784 !important; }
+body.dark-mode .mold-moderate { color: #fff176 !important; }
+body.dark-mode .mold-high { color: #ffb74d !important; }
+body.dark-mode .mold-danger { color: #e57373 !important; }
+
+/* Статическое электричество */
+.static-none { color: #43a047 !important; }
+.static-low { color: #7cb342 !important; }
+.static-medium { color: #fdd835 !important; }
+.static-high { color: #d32f2f !important; }
+
+body.dark-mode .static-none { color: #81c784 !important; }
+body.dark-mode .static-low { color: #9ccc65 !important; }
+body.dark-mode .static-medium { color: #fff176 !important; }
+body.dark-mode .static-high { color: #e57373 !important; }
+
+/* Качество сна */
+.sleep-excellent { color: #2e7d32 !important; }
+.sleep-good { color: #66bb6a !important; }
+.sleep-fair { color: #ffa726 !important; }
+.sleep-poor { color: #ef5350 !important; }
+
+body.dark-mode .sleep-excellent { color: #66bb6a !important; }
+body.dark-mode .sleep-good { color: #81c784 !important; }
+body.dark-mode .sleep-fair { color: #ffb74d !important; }
+body.dark-mode .sleep-poor { color: #e57373 !important; }
+
+/* AQI PM2.5 - шкала ВОЗ с цветовой индикацией */
+.aqi-good { color: #2e7d32 !important; }
+.aqi-moderate { color: #f9a825 !important; }
+.aqi-unhealthy-sensitive { color: #ef6c00 !important; }
+.aqi-unhealthy { color: #c62828 !important; }
+.aqi-very-unhealthy { color: #7b1fa2 !important; }
+.aqi-hazardous { color: #4a148c !important; font-weight: bold !important; }
+
+body.dark-mode .aqi-good { color: #81c784 !important; }
+body.dark-mode .aqi-moderate { color: #fff176 !important; }
+body.dark-mode .aqi-unhealthy-sensitive { color: #ffb74d !important; }
+body.dark-mode .aqi-unhealthy { color: #e57373 !important; }
+body.dark-mode .aqi-very-unhealthy { color: #ce93d8 !important; }
+body.dark-mode .aqi-hazardous { color: #e1bee7 !important; font-weight: bold !important; }
+
+/* Время до проветривания */
+.vent-now { color: #d32f2f !important; font-weight: bold !important; }
+.vent-soon { color: #f57c00 !important; }
+.vent-moderate { color: #fdd835 !important; }
+.vent-later { color: #43a047 !important; }
+
+body.dark-mode .vent-now { color: #e57373 !important; }
+body.dark-mode .vent-soon { color: #ffb74d !important; }
+body.dark-mode .vent-moderate { color: #fff176 !important; }
+body.dark-mode .vent-later { color: #81c784 !important; }
+
+/* ============================================================
+   === НОВЫЕ ПОКАЗАТЕЛИ (10) - ЦВЕТОВАЯ ИНДИКАЦИЯ ==============
+   ============================================================ */
+
+/* 19. Точка замерзания */
+.freeze-safe { color: #43a047 !important; }
+.freeze-warning { color: #ff9800 !important; }
+.freeze-danger { color: #f44336 !important; }
+
+body.dark-mode .freeze-safe { color: #81c784 !important; }
+body.dark-mode .freeze-warning { color: #ffb74d !important; }
+body.dark-mode .freeze-danger { color: #e57373 !important; }
+
+/* 20. Индекс загрязнения */
+.pollution-excellent { color: #2e7d32 !important; }
+.pollution-good { color: #558b2f !important; }
+.pollution-moderate { color: #f9a825 !important; }
+.pollution-unhealthy { color: #ef6c00 !important; }
+.pollution-hazardous { color: #c62828 !important; font-weight: bold !important; }
+
+body.dark-mode .pollution-excellent { color: #81c784 !important; }
+body.dark-mode .pollution-good { color: #a5d6a7 !important; }
+body.dark-mode .pollution-moderate { color: #fff176 !important; }
+body.dark-mode .pollution-unhealthy { color: #ffb74d !important; }
+body.dark-mode .pollution-hazardous { color: #e57373 !important; }
+
+/* 21. Время безопасного пребывания */
+.safe-excellent { color: #2e7d32 !important; }
+.safe-good { color: #66bb6a !important; }
+.safe-moderate { color: #fdd835 !important; }
+.safe-soon { color: #ff9800 !important; }
+.safe-now { color: #f44336 !important; font-weight: bold !important; }
+
+body.dark-mode .safe-excellent { color: #81c784 !important; }
+body.dark-mode .safe-good { color: #a5d6a7 !important; }
+body.dark-mode .safe-moderate { color: #fff176 !important; }
+body.dark-mode .safe-soon { color: #ffb74d !important; }
+body.dark-mode .safe-now { color: #ef5350 !important; font-weight: bold !important; }
+
+/* 22. Эффективность проветривания */
+.vent-eff-excellent { color: #2e7d32 !important; }
+.vent-eff-good { color: #66bb6a !important; }
+.vent-eff-fair { color: #fdd835 !important; }
+.vent-eff-poor { color: #ff9800 !important; }
+.vent-eff-bad { color: #f44336 !important; }
+
+body.dark-mode .vent-eff-excellent { color: #81c784 !important; }
+body.dark-mode .vent-eff-good { color: #a5d6a7 !important; }
+body.dark-mode .vent-eff-fair { color: #fff176 !important; }
+body.dark-mode .vent-eff-poor { color: #ffb74d !important; }
+body.dark-mode .vent-eff-bad { color: #ef5350 !important; }
+
+/* 23. Индекс духоты */
+.discomfort-cold { color: #0288d1 !important; }
+.discomfort-comfort { color: #43a047 !important; }
+.discomfort-warm { color: #f9a825 !important; }
+.discomfort-stuffy { color: #ef6c00 !important; }
+.discomfort-hot { color: #d32f2f !important; }
+
+body.dark-mode .discomfort-cold { color: #4fc3f7 !important; }
+body.dark-mode .discomfort-comfort { color: #81c784 !important; }
+body.dark-mode .discomfort-warm { color: #fff176 !important; }
+body.dark-mode .discomfort-stuffy { color: #ffb74d !important; }
+body.dark-mode .discomfort-hot { color: #e57373 !important; }
+
+/* 24. Риск аллергии */
+.allergy-low { color: #43a047 !important; }
+.allergy-moderate { color: #fdd835 !important; }
+.allergy-high { color: #fb8c00 !important; }
+.allergy-danger { color: #d32f2f !important; }
+
+body.dark-mode .allergy-low { color: #81c784 !important; }
+body.dark-mode .allergy-moderate { color: #fff176 !important; }
+body.dark-mode .allergy-high { color: #ffb74d !important; }
+body.dark-mode .allergy-danger { color: #e57373 !important; }
+
+/* 25. Оптимальное время для сна */
+.sleep-time-now { color: #2e7d32 !important; font-weight: bold !important; }
+.sleep-time-soon { color: #66bb6a !important; }
+.sleep-time-later { color: #f9a825 !important; }
+.sleep-time-wait { color: #757575 !important; }
+
+body.dark-mode .sleep-time-now { color: #81c784 !important; font-weight: bold !important; }
+body.dark-mode .sleep-time-soon { color: #a5d6a7 !important; }
+body.dark-mode .sleep-time-later { color: #fff176 !important; }
+body.dark-mode .sleep-time-wait { color: #9e9e9e !important; }
+
+/* 26. Индекс продуктивности */
+.prod-excellent { color: #2e7d32 !important; }
+.prod-good { color: #558b2f !important; }
+.prod-fair { color: #f9a825 !important; }
+.prod-poor { color: #ef6c00 !important; }
+.prod-critical { color: #c62828 !important; font-weight: bold !important; }
+
+body.dark-mode .prod-excellent { color: #81c784 !important; }
+body.dark-mode .prod-good { color: #a5d6a7 !important; }
+body.dark-mode .prod-fair { color: #fff176 !important; }
+body.dark-mode .prod-poor { color: #ffb74d !important; }
+body.dark-mode .prod-critical { color: #e57373 !important; font-weight: bold !important; }
+
+/* 27. Баланс кислорода */
+.o2-normal { color: #43a047 !important; }
+.o2-low { color: #f9a825 !important; }
+.o2-very-low { color: #ef6c00 !important; }
+.o2-danger { color: #d32f2f !important; }
+
+body.dark-mode .o2-normal { color: #81c784 !important; }
+body.dark-mode .o2-low { color: #fff176 !important; }
+body.dark-mode .o2-very-low { color: #ffb74d !important; }
+body.dark-mode .o2-danger { color: #e57373 !important; }
+
+/* 28. Тепловая нагрузка (WBGT) */
+.wbgt-cold { color: #0288d1 !important; }
+.wbgt-comfort { color: #43a047 !important; }
+.wbgt-warm { color: #f9a825 !important; }
+.wbgt-hot { color: #ef6c00 !important; }
+.wbgt-danger { color: #d32f2f !important; font-weight: bold !important; }
+
+body.dark-mode .wbgt-cold { color: #4fc3f7 !important; }
+body.dark-mode .wbgt-comfort { color: #81c784 !important; }
+body.dark-mode .wbgt-warm { color: #fff176 !important; }
+body.dark-mode .wbgt-hot { color: #ffb74d !important; }
+body.dark-mode .wbgt-danger { color: #e57373 !important; font-weight: bold !important; }
+
+/* ============================================================
+   === ТАБЫ ДЛЯ АНАЛИТИКИ ======================================
+   ============================================================ */
+
+/* Контейнер табов */
+.analytics-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+  padding: 0 1%;
+}
+
+/* Кнопки табов */
+.tab-btn {
+  flex: 1 1 auto;
+  min-width: 120px;
+  padding: 10px 14px;
+  font-family: "Press Start 2P", system-ui;
+  font-size: clamp(0.5em, 2.5vw, 0.7em);
+  font-weight: 400;
+  border: 2px solid #666;
+  border-radius: 8px;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 1px 1px 2px rgba(117, 117, 114, 0.5);
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  line-height: 1.2;
+}
+
+.tab-btn:hover {
+  background: rgba(100, 100, 100, 0.1);
+  border-color: #999;
+  color: #999;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #4CAF50, #8BC34A);
+  border-color: #2E7D32;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Контент табов */
+.tab-content {
+  display: none;
+  animation: tabFadeIn 0.3s ease;
+}
+
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ночная тема для табов */
+body.dark-mode .tab-btn {
+  border-color: #555;
+  color: #888;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .tab-btn:hover {
+  background: rgba(150, 150, 150, 0.1);
+  border-color: #777;
+  color: #aaa;
+}
+
+body.dark-mode .tab-btn.active {
+  background: linear-gradient(135deg, #2E7D32, #4CAF50);
+  border-color: #4CAF50;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .analytics-tabs {
+    gap: 6px;
+  }
+
+  .tab-btn {
+    min-width: 80px;
+    padding: 8px 10px;
+    font-size: clamp(0.45em, 2vw, 0.6em);
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    min-width: calc(50% - 4px);
+    width: calc(50% - 4px);
+    padding: 8px 6px;
+    font-size: clamp(0.4em, 1.8vw, 0.55em);
+  }
+}
+
+</style>
+  <style>
+:root {
+  --column-width: calc(vw /2);
+  --board-width: calc(vw);
+  --font-size-val: calc(1.9vw);
+  --colum-margin-val: 1%;
+  --header-text-size:calc(2.6vw);
+}
+
+.text sub {
+  font-size: 0.6em;
+  vertical-align: baseline;
+  position: relative;
+  top: 0.8em;
+}
+
+.text .material-symbols-outlined {
+  font-size: 0.8em;
+  vertical-align: middle;
+  position: relative;
+  top: 100em;
+}
+
+
+.board {
+  margin-top: 0.5%;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  display: flex;
+  padding-bottom: 0.5%;
+}
+
+.column {
+  flex:1;
+  width: var(--column-width);
+  border: var(--border-dashed-size) dashed;
+  padding: var(--colum-margin-val);
+  background: transparent !important;
+
+}
+
+.column.column1 {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  margin-right: 0.15%;
+  margin-left: 0.15%;
+  padding-bottom: 1%;
+  /*border-style: solid;
+    border-color: red;*/
+}
+
+.column.column2 {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  margin-left: 0.15%;
+  margin-right: 0.15%;
+  padding-bottom: 1%;
+  /*border-style: solid;
+    border-color: red;*/
+}
+
+.line{
+  /*border-style: solid;*/
+  display:flex;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  justify-content: flex-start;
+}
+
+.units{
+  width: var(--font-size-val);
+  padding-top: 3%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  flex:1;
+  text-align: left;
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--font-size-val);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+  padding-left: 5px;
+}
+
+.text {
+  /*border-style: solid;*/
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  display:flex;
+    vertical-align: center;
+    /*height: var(--dark-mode-button-height);*/
+    /*border-style: solid;
+    border-color: red;*/
+    text-align: left;
+    font-family: "Press Start 2P", system-ui;
+    font-size: var(--font-size-val);
+    font-weight: 100;
+    font-style: normal;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 0;
+    margin-right: auto;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    padding-top: 3%;
+    padding-left: 3%;
+}
+/*
+.text.indoor_temp {
+  color:hsl(13, 86%, 54%);
+}
+
+.text.outdoor_temp {
+  color:hsl(119, 86%, 54%);
+}
+*/
+.column-header-text
+{
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  padding: 1%;
+  vertical-align: top;
+  text-align: center;
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--header-text-size);
+  font-weight: 400;
+  font-style: normal;
+  margin-top: 0;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: 0;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+
+</style>
+  <style>
+:root {
+  --dungeon-width: 100%;
+  --dungeon-line-width: 100%;
+  --dungeon-font-size-value: calc(1.8vw);
+  --dungen-text-size:calc(2.6vw);
+  --dungeon-padding:calc(1vw);
+}
+
+.dungeon {
+  margin-top: 0.5%;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  padding: var(--dungeon-padding);
+  border: var(--border-dashed-size) dashed;
+  width: var(--dungeon-width);
+  box-sizing: border-box;
+  margin-top: 0;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
+  }
+
+
+.dungeon-header-text
+{
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  vertical-align: top;
+  text-align: center;
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--dungen-text-size);
+  font-weight: 400;
+  font-style: normal;
+  margin-top: 0;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: 0;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  padding-bottom: 1%;
+}
+
+.dungeon-text {
+  /*border: solid;*/
+  padding-top: 1%;
+  padding-left: 3%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--dungeon-font-size-value);
+  font-weight: 100;
+  font-style: normal;
+}
+
+.dungen_value{
+  padding-top: 1%;
+  padding-right: 1%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  /*border-style: solid;
+  border-color: red;*/
+  font-family: "Press Start 2P", system-ui;
+  font-size: var(--dungeon-font-size-value);
+  font-weight: 100;
+  font-style: normal;
+  margin-top: auto;
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: auto;
+  user-select: text;
+  width: fit-content;
+  text-align: left;
+}
+
+.dungen_value.site-version{
+  color:chartreuse;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  user-select: none;
+}
+
+.dungeon-line{
+ /* border: solid;*/
+  display: flex;
+}
+
+
+.dungen_value.esp32_ip_adress {
+  color:rgb(111, 245, 133);
+}
+
+.dungen_value.esp32_cpu_freq {
+  color:rgb(77, 151, 235);
+  user-select: none;
+}
+
+.dungen_value.esp32_cpu_temp {
+  color:red;
+  user-select: none;
+}
+
+.dungen_value.esp32_voltage {
+  color:red;
+  user-select: none;
+}
+
+.dungen_value.time{
+  color:red;
+  user-select: none;
+}
+
+dungen_value.date{
+  color:red;
+  user-select: none;
+}
+
+.dungeon-units{
+  width: var( --dungeon-font-size-value);
+  padding-top: 1%;
+  text-shadow: var(--ghost-size) 1px 1px rgb(117, 117, 114);
+  flex:1;
+  /*border-style: solid;
+  border-color: rgb(142, 212, 227);*/
+  font-family: "Press Start 2P", system-ui;
+  font-size: var( --dungeon-font-size-value);
+  font-weight: 100;
+  font-style: normal;
+  text-align: left;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 0;
+  margin-right: auto;
+}
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <script>
 let counter=1;
 let Socket;
 
@@ -1601,15 +2994,15 @@ function initWebSocket() {
   // Если страница загружена через HTTPS - НЕ используем WebSocket (браузер блокирует ws://)
   if (window.location.protocol === 'https:') {
     console.log('[HTTPS] Page loaded via HTTPS, skipping WebSocket, using polling only');
-    setTimeout(() => startHTTPSPolling(), 500); // Уменьшено с 1000 до 500 мс
+    setTimeout(() => startHTTPSPolling(), 1000);
     return;
   }
-
+  
   // HTTP режим - используем WebSocket
   Socket = new WebSocket('ws://' + window.location.hostname + ':81/');
 
   Socket.onopen = function() {
-    console.log('[WS] WebSocket connected');
+    console.log('WebSocket connected');
     // Обновляем IP адрес после подключения
     const ipEl = document.querySelector('.dungen_value.esp32-ip-adress');
     if (ipEl) ipEl.innerHTML = window.location.hostname;
@@ -1620,21 +3013,13 @@ function initWebSocket() {
   };
 
   Socket.onerror = function(error) {
-    console.error('[WS] WebSocket error:', error);
+    console.error('WebSocket error:', error);
   };
 
   Socket.onclose = function() {
-    console.log('[WS] WebSocket disconnected, reconnecting...');
-    // Экспоненциальная задержка: 1с → 2с → 4с → 8с (максимум 8с)
-    if (!Socket.reconnectDelay) Socket.reconnectDelay = 1000;
-    setTimeout(initWebSocket, Socket.reconnectDelay);
-    Socket.reconnectDelay = Math.min(Socket.reconnectDelay * 2, 8000);
+    console.log('WebSocket disconnected, reconnecting...');
+    setTimeout(initWebSocket, 3000);
   };
-  
-  // Сброс задержки при успешном подключении
-  Socket.addEventListener('open', function() {
-    Socket.reconnectDelay = 1000;
-  });
 }
 
 function CurrentTime(){
@@ -1758,18 +3143,18 @@ const MAX_POLLING_FAILURES = 5;
 
 function startHTTPSPolling() {
   console.log('[HTTPS] Starting data polling (every 3s)...');
-
+  
   pollingInterval = setInterval(async () => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-      const response = await fetch('/api/sensors', {
+      
+      const response = await fetch('/api/sensors', { 
         signal: controller.signal,
         cache: 'no-store'
       });
       clearTimeout(timeoutId);
-
+      
       if (!response.ok) {
         console.warn('[HTTPS] Polling failed:', response.status);
         pollingFailures++;
@@ -1779,14 +3164,64 @@ function startHTTPSPolling() {
         }
         return;
       }
-
+      
       pollingFailures = 0; // Reset on success
-
+      
       const sensors = await response.json();
 
-      // Обновляем все датчики через универсальную функцию
-      updateSensorDisplay(sensors);
-      
+      // Обновляем все датчики
+      Object.keys(sensors).forEach(key => {
+        const value = sensors[key];
+        
+        // Находим элемент на странице и обновляем (ПРАВИЛЬНЫЕ селекторы из index.html)
+        const sensorMap = {
+          // Основные датчики
+          'bme_temperature': '.measured_value.bme_temperature',
+          'bme_pressure': '.measured_value.bme_pressure',
+          'bme_humidity': '.measured_value.bme_humidity',
+          'htu_temperature': '.measured_value.htu_temperature',
+          'htu_humidity': '.measured_value.htu_humidity',
+          'scd4x_co2': '.measured_value.scd4x_co2',
+          'scd4x_temperature': '.measured_value.scd4x_temperature',
+          'scd4x_humidity': '.measured_value.scd4x_humidity',
+          'pms_pm1': '.measured_value.pms_pm1',
+          'pms_pm2_5': '.measured_value.pms_pm2_5',
+          'pms_pm10': '.measured_value.pms_pm10',
+          'ms5611_pressure': '.measured_value.ms5611_pressure',
+          'ms5611_temperature': '.measured_value.ms5611_temperature',
+          'bh1750_lighting': '.measured_value.bh1750_lighting',
+          'veml_uv': '.measured_value.veml_uv',
+          'ch2o_value': '.measured_value.ch2o_value',
+          'microphone_noise': '.measured_value.microphone_noise',
+          'ina226_voltage': '.measured_value.ina226_voltage',
+          'ina226_current': '.measured_value.ina226_current',
+          'ina226_power': '.measured_value.ina226_power',
+          // Система
+          'esp32_cpu_temp': '.dungen_value.esp32_cpu_temp',
+          'esp32_free_heap': '.dungen_value.esp32_free_heap',
+          'wifi_rssi': '.dungen_value.wifi_rssi',
+          // Аналитика
+          'dew_point': '.calculated_value.dew_point',
+          'absolute_humidity': '.calculated_value.absolute_humidity',
+          'heat_index': '.calculated_value.heat_index',
+          'feels_like': '.calculated_value.feels_like',
+          'dew_point_deficit': '.calculated_value.dew_point_deficit',
+          'comfort_index': '.calculated_value.comfort_index',
+          'mold_risk': '.calculated_value.mold_risk',
+          'pm25_aqi': '.calculated_value.pm25_aqi'
+        };
+        
+        const selector = sensorMap[key];
+        if (selector) {
+          const el = document.querySelector(selector);
+          if (el && value !== undefined && value !== null) {
+            // Форматируем значение
+            let displayValue = typeof value === 'number' ?
+              (Math.abs(value) > 100 ? Math.round(value) : value.toFixed(1)) : value;
+            el.textContent = displayValue;
+          }
+        }
+      });
     } catch (e) {
       // Тихая ошибка - не spamим в консоль
       pollingFailures++;
@@ -1814,118 +3249,426 @@ window.onload = function() {
   autoDarkMode();
   initAnalyticsTabs();
   initWebSocket();
-  
-  // Мгновенная загрузка данных при открытии страницы
-  fetchInitialData();
 };
+</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+</head>
+<body>
+<div class="header">
+  <div class="header-text">Мониторинг качества воздуха</div>
+  <div class="header-buttons">
+    <button class="charts-icon-button" onclick="location.href='settings.html'" title="Настройки">⚙️</button>
+    <button class="charts-icon-button" onclick="location.href='charts.html'" title="Графики и AQI">📊</button>
+    <img class="dark-mode-button" onclick='toggleDarkMode()' src="off_bubl.png" alt=""/>
+  </div>
+</div>
 
-// Мгновенная загрузка актуальных данных при открытии страницы
-async function fetchInitialData() {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch('/api/sensors', {
-      signal: controller.signal,
-      cache: 'no-store'
-    });
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      console.warn('[Initial] Failed to fetch initial data:', response.status);
-      return;
-    }
-    
-    const sensors = await response.json();
-    
-    // Обновляем все датчики мгновенно
-    updateSensorDisplay(sensors);
-    console.log('[Initial] Sensor data loaded successfully');
-  } catch (e) {
-    console.warn('[Initial] Failed to fetch initial data:', e.message);
-  }
-}
+<div class="board">
+  <div class="column column1">
+      <div class="column-header-text"> Датчики в помещении: </div>
+      <div class="data-box">
+        <div class="line">
+          <div class="text"> Темп(HTU): </div>
+          <div class="measured_value htu_temperature">---</div>
+          <div class="units"> °C</div>
+        </div>
+        <div class="line">
+          <div class="text"> Влаж (HTU): </div>
+          <div class="measured_value htu_humidity">---</div>
+          <div class="units"> %</div>
+        </div>
+        <div class="line">
+          <div class="text"> Давл (MS): </div>
+          <div class="measured_value ms5611_pressure">---</div>
+          <div class="units"> ГПа</div>
+        </div>
+        <div class="line">
+          <div class="text"> Темп (MS): </div>
+          <div class="measured_value ms5611_temperature">---</div>
+          <div class="units"> °C</div>
+        </div>
+        <div class="line">
+          <div class="text"> CO<sub>2</sub> (SCD): </div>
+          <div class="measured_value scd4x_co2">---</div>
+          <div class="units">ppm</div>
+        </div>
+        <div class="line">
+          <div class="text"> Темп(SCD): </div>
+          <div class="measured_value scd4x_temperature">---</div>
+          <div class="units">°C</div>
+        </div>
+        <div class="line">
+          <div class="text"> Влаж (SCD): </div>
+          <div class="measured_value scd4x_humidity">---</div>
+          <div class="units">%</div>
+        </div>
+        <div class="line">
+          <div class="text">Част. 1,0:</div>
+          <div class="measured_value pms_pm1">---</div>
+          <div class="units">мкг/м³</div>
+        </div>
+        <div class="line">
+          <div class="text">Част. 2,5:</div>
+          <div class="measured_value pms_pm2_5">---</div>
+          <div class="units">мкг/м³</div>
+        </div>
+        <div class="line">
+          <div class="text"> Част. 10,0:</div>
+          <div class="measured_value pms_pm10">---</div>
+          <div class="units">мкг/м³</div>
+        </div>
+        <div class="line">
+          <div class="text"> Свет (BH):</div>
+          <div class="measured_value bh1750_lighting">---</div>
+          <div class="units"> Люкс</div>
+        </div>
+        <div class="line">
+          <div class="text"> Форм (CH<sub>2</sub>O):</div>
+          <div class="measured_value ch2o_value">---</div>
+          <div class="units"> мг/м³</div>
+        </div>
+        <div class="line">
+          <div class="text"> Уровень шума:</div>
+          <div class="measured_value microphone_noise">---</div>
+          <div class="units">Дб</div>
+        </div>
+      </div>
+    </div>
 
-// Универсальная функция обновления отображения датчиков
-function updateSensorDisplay(sensors) {
-  const sensorMap = {
-    // Основные датчики
-    'bme_temperature': '.measured_value.bme_temperature',
-    'bme_pressure': '.measured_value.bme_pressure',
-    'bme_humidity': '.measured_value.bme_humidity',
-    'htu_temperature': '.measured_value.htu_temperature',
-    'htu_humidity': '.measured_value.htu_humidity',
-    'scd4x_co2': '.measured_value.scd4x_co2',
-    'scd4x_temperature': '.measured_value.scd4x_temperature',
-    'scd4x_humidity': '.measured_value.scd4x_humidity',
-    'pms_pm1': '.measured_value.pms_pm1',
-    'pms_pm2_5': '.measured_value.pms_pm2_5',
-    'pms_pm10': '.measured_value.pms_pm10',
-    'ms5611_pressure': '.measured_value.ms5611_pressure',
-    'ms5611_temperature': '.measured_value.ms5611_temperature',
-    'bh1750_lighting': '.measured_value.bh1750_lighting',
-    'veml_uv': '.measured_value.veml_uv',
-    'ch2o_value': '.measured_value.ch2o_value',
-    'microphone_noise': '.measured_value.microphone_noise',
-    'ina226_voltage': '.measured_value.ina226_voltage',
-    'ina226_current': '.measured_value.ina226_current',
-    'ina226_power': '.measured_value.ina226_power',
-    // Система
-    'esp32_cpu_temp': '.dungen_value.esp32_cpu_temp',
-    'esp32_free_heap': '.dungen_value.esp32_free_heap',
-    'esp32_cpu_freq': '.dungen_value.esp32_cpu_freq',
-    'wifi_rssi': '.dungen_value.wifi_rssi',
-    // Аналитика
-    'dew_point': '.calculated_value.dew_point',
-    'absolute_humidity': '.calculated_value.absolute_humidity',
-    'heat_index': '.calculated_value.heat_index',
-    'feels_like': '.calculated_value.feels_like',
-    'dew_point_deficit': '.calculated_value.dew_point_deficit',
-    'comfort_index': '.calculated_value.comfort_index',
-    'mold_risk': '.calculated_value.mold_risk',
-    'pm25_aqi': '.calculated_value.pm25_aqi',
-    'ventilation_recommendation': '.calculated_value.ventilation_recommendation'
-  };
+  <div class="column column2">
+      <div class="column-header-text"> Наружные датчики:</div>
+      <div class="data-box">
+        <div class="line">
+          <div class="text"> Темп (BME):</div>
+          <div class="measured_value bme_temperature">---</div>
+          <div class="units">°C</div>
+        </div>
+        <div class="line">
+          <div class="text"> Давл (BME):</div>
+          <div class="measured_value bme_pressure">---</div>
+          <div class="units">ГПа</div>
+        </div>
+        <div class="line">
+          <div class="text"> Влажн (BME):</div>
+          <div class="measured_value bme_humidity">---</div>
+          <div class="units">%</div>
+        </div>
+        <div class="line">
+          <div class="text"> Ультраф (VEML):</div>
+          <div class="measured_value veml_uv">---</div>
+          <div class="units">индекс</div>
+        </div>
+      </div>
+  </div>
+</div>
 
-  let updatedCount = 0;
+<!-- Секция расчётных показателей -->
+<div class="analytics-section">
+  <div class="column-header-text">Аналитика и рекомендации:</div>
   
-  Object.keys(sensors).forEach(key => {
-    const value = sensors[key];
-    const selector = sensorMap[key];
-    
-    if (selector) {
-      const el = document.querySelector(selector);
-      if (el && value !== undefined && value !== null) {
-        // Проверяем, было ли значение "---" или "⋯"
-        const wasLoading = el.textContent === '---' || el.textContent === '⋯';
-        
-        // Форматируем значение
-        let displayValue = typeof value === 'number' ?
-          (Math.abs(value) > 100 ? Math.round(value) : value.toFixed(1)) : value;
-        el.textContent = displayValue;
-        
-        // Убираем класс загрузки и добавляем анимацию появления
-        if (wasLoading) {
-          el.classList.remove('loading-placeholder');
-          el.classList.add('data-loaded');
-          // Убираем класс анимации после её завершения
-          setTimeout(() => el.classList.remove('data-loaded'), 300);
-        }
-        
-        updatedCount++;
-        
-        // Сохраняем в sensorData для расчётных показателей
-        if (key in sensorData) {
-          sensorData[key] = value;
-        }
-      }
-    }
-  });
-  
-  // Пересчитываем все производные показатели
-  if (updatedCount > 0) {
-    updateCalculatedValues();
-  }
-  
-  return updatedCount;
-}
+  <!-- Табы категорий -->
+  <div class="analytics-tabs">
+    <button class="tab-btn active" data-tab="comfort">🏠 Комфорт</button>
+    <button class="tab-btn" data-tab="safety">⚠️ Безопасность</button>
+    <button class="tab-btn" data-tab="health">💚 Здоровье</button>
+    <button class="tab-btn" data-tab="energy">⚡ Энергия</button>
+    <button class="tab-btn" data-tab="environment">🌍 Среда</button>
+  </div>
+
+  <!-- Категория: Комфорт -->
+  <div class="analytics-grid tab-content active" id="tab-comfort">
+    <div class="analytics-card" data-analytics="comfort">
+      <div class="line">
+        <div class="text">Индекс комфорта:</div>
+        <div class="calculated_value comfort_index">---</div>
+        <div class="units">%</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="feels_like">
+      <div class="line">
+        <div class="text">Ощущается как:</div>
+        <div class="calculated_value feels_like">---</div>
+        <div class="units">°C</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="dew_point">
+      <div class="line">
+        <div class="text">Точка росы:</div>
+        <div class="calculated_value dew_point">---</div>
+        <div class="units">°C</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="absolute_humidity">
+      <div class="line">
+        <div class="text">Абс. влажность:</div>
+        <div class="calculated_value absolute_humidity">---</div>
+        <div class="units">г/м³</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="discomfort_index">
+      <div class="line">
+        <div class="text">Индекс духоты:</div>
+        <div class="calculated_value discomfort_index">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="static_electricity">
+      <div class="line">
+        <div class="text">Стат. электричество:</div>
+        <div class="calculated_value static_electricity">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Категория: Безопасность -->
+  <div class="analytics-grid tab-content" id="tab-safety">
+    <div class="analytics-card" data-analytics="iaq">
+      <div class="line">
+        <div class="text">IAQ индекс:</div>
+        <div class="calculated_value iaq_index">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="pm25_aqi">
+      <div class="line">
+        <div class="text">AQI PM2.5:</div>
+        <div class="calculated_value pm25_aqi">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="pollution_index">
+      <div class="line">
+        <div class="text">Индекс загрязнения:</div>
+        <div class="calculated_value pollution_index">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="mold_risk">
+      <div class="line">
+        <div class="text">Риск плесени:</div>
+        <div class="calculated_value mold_risk">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="allergy_risk">
+      <div class="line">
+        <div class="text">Риск аллергии:</div>
+        <div class="calculated_value allergy_risk">---</div>
+        <div class="units">%</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="safe_exposure_time">
+      <div class="line">
+        <div class="text">Время безопасного пребывания:</div>
+        <div class="calculated_value safe_exposure_time">---</div>
+        <div class="units">мин</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Категория: Здоровье -->
+  <div class="analytics-grid tab-content" id="tab-health">
+    <div class="analytics-card" data-analytics="sleep_quality">
+      <div class="line">
+        <div class="text">Качество сна:</div>
+        <div class="calculated_value sleep_quality">---</div>
+        <div class="units">%</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="optimal_sleep_time">
+      <div class="line">
+        <div class="text">Оптимальное время для сна:</div>
+        <div class="calculated_value optimal_sleep_time">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="productivity_index">
+      <div class="line">
+        <div class="text">Индекс продуктивности:</div>
+        <div class="calculated_value productivity_index">---</div>
+        <div class="units">%</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="oxygen_balance">
+      <div class="line">
+        <div class="text">Баланс кислорода:</div>
+        <div class="calculated_value oxygen_balance">---</div>
+        <div class="units">%</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="ventilation">
+      <div class="line">
+        <div class="text">Проветривание:</div>
+        <div class="calculated_value ventilation_recommendation">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="ventilation_time">
+      <div class="line">
+        <div class="text">До проветривания:</div>
+        <div class="calculated_value ventilation_time">---</div>
+        <div class="units">мин</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Категория: Энергия -->
+  <div class="analytics-grid tab-content" id="tab-energy">
+    <div class="analytics-card" data-analytics="enthalpy">
+      <div class="line">
+        <div class="text">Энтальпия:</div>
+        <div class="calculated_value enthalpy">---</div>
+        <div class="units">кДж/кг</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="heat_index">
+      <div class="line">
+        <div class="text">Индекс жары:</div>
+        <div class="calculated_value heat_index">---</div>
+        <div class="units">°C</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="heat_stress_index">
+      <div class="line">
+        <div class="text">Тепловая нагрузка (WBGT):</div>
+        <div class="calculated_value heat_stress_index">---</div>
+        <div class="units">°C</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="freezing_point">
+      <div class="line">
+        <div class="text">Точка замерзания:</div>
+        <div class="calculated_value freezing_point">---</div>
+        <div class="units">°C</div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="ventilation_efficiency">
+      <div class="line">
+        <div class="text">Эффективность проветривания:</div>
+        <div class="calculated_value ventilation_efficiency">---</div>
+        <div class="units">ppm/мин</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Категория: Среда -->
+  <div class="analytics-grid tab-content" id="tab-environment">
+    <div class="analytics-card" data-analytics="pressure_trend">
+      <div class="line">
+        <div class="text">Δ Давление:</div>
+        <div class="calculated_value pressure_trend">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="uv">
+      <div class="line">
+        <div class="text">УФ-индекс:</div>
+        <div class="calculated_value uv_recommendation">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="lighting">
+      <div class="line">
+        <div class="text">Освещение:</div>
+        <div class="calculated_value lighting_recommendation">---</div>
+        <div class="units"></div>
+      </div>
+    </div>
+
+    <div class="analytics-card" data-analytics="dew_point_deficit">
+      <div class="line">
+        <div class="text">Дефицит точки росы:</div>
+        <div class="calculated_value dew_point_deficit">---</div>
+        <div class="units">°C</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="dungeon">
+  <div class="dungeon-header-text">
+    Дополнительная информация
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">IP адрес ESP32 сервера:</div>
+    <div class="dungen_value esp32-ip-adress">192.168.0.9</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Время:</div>
+    <div class="dungen_value time">00:00:00</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Дата:</div>
+    <div class="dungen_value date">21 января 2007</div>
+    <div class="dungeon-units">года</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Частота ЦП:</div>
+    <div class="dungen_value esp32_cpu_freq">---</div>
+    <div class="dungeon-units">МГц</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Свободная память:</div>
+    <div class="dungen_value esp32_free_heap">---</div>
+    <div class="dungeon-units">KB</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Загрузка CPU:</div>
+    <div class="dungen_value esp32_cpu_load">---</div>
+    <div class="dungeon-units">%</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Температура ESP32:</div>
+    <div class="dungen_value esp32_cpu_temp">---</div>
+    <div class="dungeon-units">°C</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">WiFi сигнал:</div>
+    <div class="dungen_value wifi_rssi">---</div>
+    <div class="dungeon-units">dBm</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Напряжение (INA226):</div>
+    <div class="dungen_value ina226_voltage">---</div>
+    <div class="dungeon-units">V</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Ток (INA226):</div>
+    <div class="dungen_value ina226_current">---</div>
+    <div class="dungeon-units">A</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Мощность (INA226):</div>
+    <div class="dungen_value ina226_power">---</div>
+    <div class="dungeon-units">W</div>
+  </div>
+  <div class="dungeon-line">
+    <div class="dungeon-text">Версия программы:</div>
+    <div class="dungen_value site_version">0.0.1</div>
+  </div>
+</div>
+
+</body>
+</html>

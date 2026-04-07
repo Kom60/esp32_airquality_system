@@ -99,19 +99,6 @@ public:
     // Constructor
     Meteo_data();
 
-    // Print methods
-    void print_values();
-    void print_bme_values();
-    void print_htu_values();
-    void print_scd4x_values();
-    void print_pms_values();
-    void print_ms5611_values();
-    void print_bh1750_values();
-    void print_veml_values();
-    void print_ch2o_values();
-    void print_microphone_values();
-    void print_ina226_values();
-
     // Update methods
     void update_bme_data(float temperature, float pressure, float humidity);
     void update_htu_data(float temperature, float humidity);
@@ -123,11 +110,6 @@ public:
     void update_ch2o_data(float ch2o_val);
     void update_microphone_data(float noise_val);
     void update_ina226_data(float voltage, float current, float power);
-
-    // Filtered/combined humidity methods (мгновенные значения с 3 датчиков)
-    float get_filtered_humidity();
-    float get_average_humidity();
-    float get_weighted_humidity();
 };
 
 // Класс для хранения истории измерений и расчёта скользящего среднего
@@ -167,10 +149,7 @@ public:
     float get_avg_ina226_voltage();
     float get_avg_ina226_current();
     float get_avg_ina226_power();
-    
-    // Комбинированная влажность (скользящее среднее + взвешивание датчиков)
-    float get_weighted_humidity();
-    
+
     // EMA (экспоненциальное скользящее среднее) для быстрых датчиков
     // alpha = 0.3 (новые значения имеют больший вес)
     void update_ema();

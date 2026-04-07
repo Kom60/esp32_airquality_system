@@ -89,16 +89,27 @@ if (Test-Path $configSource) {
 # Копирование SSL сертификатов если существуют
 $sslDir = Join-Path $DataDir "ssl"
 if (Test-Path $sslDir) {
+    Write-Host "Копирование SSL сертификатов..." -ForegroundColor Yellow
+    
     $sslDest = Join-Path $SdRoot "ssl"
     if (-not (Test-Path $sslDest)) {
         New-Item -ItemType Directory -Path $sslDest -Force | Out-Null
     }
     
     $sslFiles = Get-ChildItem -Path $sslDir -File
+    $sslCopied = 0
     foreach ($file in $sslFiles) {
         $destPath = Join-Path $sslDest $file.Name
         Copy-Item -Path $file.FullName -Destination $destPath -Force
         Write-Host "  Скопирован SSL: $($file.Name)" -ForegroundColor Gray
+        $sslCopied++
+    }
+    
+    if ($sslCopied -gt 0) {
+        Write-Host "  SSL сертификатов скопировано: $sslCopied" -ForegroundColor Green
+    } else {
+        Write-Host "  SSL сертификаты не найдены" -ForegroundColor Yellow
+        Write-Host "  Запустите: .\generate_ssl.ps1" -ForegroundColor Gray
     }
 }
 

@@ -9,16 +9,35 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍃</text></svg>">
   <link rel="apple-touch-icon" href="favicon.png">
+  <!-- Оптимизированная загрузка CSS: только локальные файлы -->
   <link rel="stylesheet" href="header_style.css" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="main_style.css" />
   <link rel="stylesheet" href="dungeon.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <!-- Откладываем загрузку шрифтов -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"></noscript>
+  <!-- JavaScript загружается асинхронно -->
   <script src="logic.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  
+  <style>
+    /* Критический CSS для индикатора загрузки */
+    .loading-placeholder {
+      animation: pulse-loading 1.5s ease-in-out infinite;
+      opacity: 0.6;
+    }
+    @keyframes pulse-loading {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+    .data-loaded {
+      animation: fade-in 0.3s ease-out;
+    }
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
 <div class="header">
@@ -36,67 +55,67 @@
       <div class="data-box">
         <div class="line">
           <div class="text"> Темп(HTU): </div>
-          <div class="measured_value htu_temperature">---</div>
+          <div class="measured_value htu_temperature loading-placeholder">⋯</div>
           <div class="units"> °C</div>
         </div>
         <div class="line">
           <div class="text"> Влаж (HTU): </div>
-          <div class="measured_value htu_humidity">---</div>
+          <div class="measured_value htu_humidity loading-placeholder">⋯</div>
           <div class="units"> %</div>
         </div>
         <div class="line">
           <div class="text"> Давл (MS): </div>
-          <div class="measured_value ms5611_pressure">---</div>
+          <div class="measured_value ms5611_pressure loading-placeholder">⋯</div>
           <div class="units"> ГПа</div>
         </div>
         <div class="line">
           <div class="text"> Темп (MS): </div>
-          <div class="measured_value ms5611_temperature">---</div>
+          <div class="measured_value ms5611_temperature loading-placeholder">⋯</div>
           <div class="units"> °C</div>
         </div>
         <div class="line">
           <div class="text"> CO<sub>2</sub> (SCD): </div>
-          <div class="measured_value scd4x_co2">---</div>
+          <div class="measured_value scd4x_co2 loading-placeholder">⋯</div>
           <div class="units">ppm</div>
         </div>
         <div class="line">
           <div class="text"> Темп(SCD): </div>
-          <div class="measured_value scd4x_temperature">---</div>
+          <div class="measured_value scd4x_temperature loading-placeholder">⋯</div>
           <div class="units">°C</div>
         </div>
         <div class="line">
           <div class="text"> Влаж (SCD): </div>
-          <div class="measured_value scd4x_humidity">---</div>
+          <div class="measured_value scd4x_humidity loading-placeholder">⋯</div>
           <div class="units">%</div>
         </div>
         <div class="line">
           <div class="text">Част. 1,0:</div>
-          <div class="measured_value pms_pm1">---</div>
+          <div class="measured_value pms_pm1 loading-placeholder">⋯</div>
           <div class="units">мкг/м³</div>
         </div>
         <div class="line">
           <div class="text">Част. 2,5:</div>
-          <div class="measured_value pms_pm2_5">---</div>
+          <div class="measured_value pms_pm2_5 loading-placeholder">⋯</div>
           <div class="units">мкг/м³</div>
         </div>
         <div class="line">
           <div class="text"> Част. 10,0:</div>
-          <div class="measured_value pms_pm10">---</div>
+          <div class="measured_value pms_pm10 loading-placeholder">⋯</div>
           <div class="units">мкг/м³</div>
         </div>
         <div class="line">
           <div class="text"> Свет (BH):</div>
-          <div class="measured_value bh1750_lighting">---</div>
+          <div class="measured_value bh1750_lighting loading-placeholder">⋯</div>
           <div class="units"> Люкс</div>
         </div>
         <div class="line">
           <div class="text"> Форм (CH<sub>2</sub>O):</div>
-          <div class="measured_value ch2o_value">---</div>
+          <div class="measured_value ch2o_value loading-placeholder">⋯</div>
           <div class="units"> мг/м³</div>
         </div>
         <div class="line">
           <div class="text"> Уровень шума:</div>
-          <div class="measured_value microphone_noise">---</div>
+          <div class="measured_value microphone_noise loading-placeholder">⋯</div>
           <div class="units">Дб</div>
         </div>
       </div>
@@ -107,22 +126,22 @@
       <div class="data-box">
         <div class="line">
           <div class="text"> Темп (BME):</div>
-          <div class="measured_value bme_temperature">---</div>
+          <div class="measured_value bme_temperature loading-placeholder">⋯</div>
           <div class="units">°C</div>
         </div>
         <div class="line">
           <div class="text"> Давл (BME):</div>
-          <div class="measured_value bme_pressure">---</div>
+          <div class="measured_value bme_pressure loading-placeholder">⋯</div>
           <div class="units">ГПа</div>
         </div>
         <div class="line">
           <div class="text"> Влажн (BME):</div>
-          <div class="measured_value bme_humidity">---</div>
+          <div class="measured_value bme_humidity loading-placeholder">⋯</div>
           <div class="units">%</div>
         </div>
         <div class="line">
           <div class="text"> Ультраф (VEML):</div>
-          <div class="measured_value veml_uv">---</div>
+          <div class="measured_value veml_uv loading-placeholder">⋯</div>
           <div class="units">индекс</div>
         </div>
       </div>
@@ -147,7 +166,7 @@
     <div class="analytics-card" data-analytics="comfort">
       <div class="line">
         <div class="text">Индекс комфорта:</div>
-        <div class="calculated_value comfort_index">---</div>
+        <div class="calculated_value comfort_index loading-placeholder">⋯</div>
         <div class="units">%</div>
       </div>
     </div>
@@ -155,7 +174,7 @@
     <div class="analytics-card" data-analytics="feels_like">
       <div class="line">
         <div class="text">Ощущается как:</div>
-        <div class="calculated_value feels_like">---</div>
+        <div class="calculated_value feels_like loading-placeholder">⋯</div>
         <div class="units">°C</div>
       </div>
     </div>
@@ -163,7 +182,7 @@
     <div class="analytics-card" data-analytics="dew_point">
       <div class="line">
         <div class="text">Точка росы:</div>
-        <div class="calculated_value dew_point">---</div>
+        <div class="calculated_value dew_point loading-placeholder">⋯</div>
         <div class="units">°C</div>
       </div>
     </div>
@@ -171,7 +190,7 @@
     <div class="analytics-card" data-analytics="absolute_humidity">
       <div class="line">
         <div class="text">Абс. влажность:</div>
-        <div class="calculated_value absolute_humidity">---</div>
+        <div class="calculated_value absolute_humidity loading-placeholder">⋯</div>
         <div class="units">г/м³</div>
       </div>
     </div>
@@ -179,7 +198,7 @@
     <div class="analytics-card" data-analytics="discomfort_index">
       <div class="line">
         <div class="text">Индекс духоты:</div>
-        <div class="calculated_value discomfort_index">---</div>
+        <div class="calculated_value discomfort_index loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -187,7 +206,7 @@
     <div class="analytics-card" data-analytics="static_electricity">
       <div class="line">
         <div class="text">Стат. электричество:</div>
-        <div class="calculated_value static_electricity">---</div>
+        <div class="calculated_value static_electricity loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -198,7 +217,7 @@
     <div class="analytics-card" data-analytics="iaq">
       <div class="line">
         <div class="text">IAQ индекс:</div>
-        <div class="calculated_value iaq_index">---</div>
+        <div class="calculated_value iaq_index loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -206,7 +225,7 @@
     <div class="analytics-card" data-analytics="pm25_aqi">
       <div class="line">
         <div class="text">AQI PM2.5:</div>
-        <div class="calculated_value pm25_aqi">---</div>
+        <div class="calculated_value pm25_aqi loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -214,7 +233,7 @@
     <div class="analytics-card" data-analytics="pollution_index">
       <div class="line">
         <div class="text">Индекс загрязнения:</div>
-        <div class="calculated_value pollution_index">---</div>
+        <div class="calculated_value pollution_index loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -222,7 +241,7 @@
     <div class="analytics-card" data-analytics="mold_risk">
       <div class="line">
         <div class="text">Риск плесени:</div>
-        <div class="calculated_value mold_risk">---</div>
+        <div class="calculated_value mold_risk loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -230,7 +249,7 @@
     <div class="analytics-card" data-analytics="allergy_risk">
       <div class="line">
         <div class="text">Риск аллергии:</div>
-        <div class="calculated_value allergy_risk">---</div>
+        <div class="calculated_value allergy_risk loading-placeholder">⋯</div>
         <div class="units">%</div>
       </div>
     </div>
@@ -238,7 +257,7 @@
     <div class="analytics-card" data-analytics="safe_exposure_time">
       <div class="line">
         <div class="text">Время безопасного пребывания:</div>
-        <div class="calculated_value safe_exposure_time">---</div>
+        <div class="calculated_value safe_exposure_time loading-placeholder">⋯</div>
         <div class="units">мин</div>
       </div>
     </div>
@@ -249,7 +268,7 @@
     <div class="analytics-card" data-analytics="sleep_quality">
       <div class="line">
         <div class="text">Качество сна:</div>
-        <div class="calculated_value sleep_quality">---</div>
+        <div class="calculated_value sleep_quality loading-placeholder">⋯</div>
         <div class="units">%</div>
       </div>
     </div>
@@ -257,7 +276,7 @@
     <div class="analytics-card" data-analytics="optimal_sleep_time">
       <div class="line">
         <div class="text">Оптимальное время для сна:</div>
-        <div class="calculated_value optimal_sleep_time">---</div>
+        <div class="calculated_value optimal_sleep_time loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -265,7 +284,7 @@
     <div class="analytics-card" data-analytics="productivity_index">
       <div class="line">
         <div class="text">Индекс продуктивности:</div>
-        <div class="calculated_value productivity_index">---</div>
+        <div class="calculated_value productivity_index loading-placeholder">⋯</div>
         <div class="units">%</div>
       </div>
     </div>
@@ -273,7 +292,7 @@
     <div class="analytics-card" data-analytics="oxygen_balance">
       <div class="line">
         <div class="text">Баланс кислорода:</div>
-        <div class="calculated_value oxygen_balance">---</div>
+        <div class="calculated_value oxygen_balance loading-placeholder">⋯</div>
         <div class="units">%</div>
       </div>
     </div>
@@ -281,7 +300,7 @@
     <div class="analytics-card" data-analytics="ventilation">
       <div class="line">
         <div class="text">Проветривание:</div>
-        <div class="calculated_value ventilation_recommendation">---</div>
+        <div class="calculated_value ventilation_recommendation loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -289,7 +308,7 @@
     <div class="analytics-card" data-analytics="ventilation_time">
       <div class="line">
         <div class="text">До проветривания:</div>
-        <div class="calculated_value ventilation_time">---</div>
+        <div class="calculated_value ventilation_time loading-placeholder">⋯</div>
         <div class="units">мин</div>
       </div>
     </div>
@@ -300,7 +319,7 @@
     <div class="analytics-card" data-analytics="enthalpy">
       <div class="line">
         <div class="text">Энтальпия:</div>
-        <div class="calculated_value enthalpy">---</div>
+        <div class="calculated_value enthalpy loading-placeholder">⋯</div>
         <div class="units">кДж/кг</div>
       </div>
     </div>
@@ -308,7 +327,7 @@
     <div class="analytics-card" data-analytics="heat_index">
       <div class="line">
         <div class="text">Индекс жары:</div>
-        <div class="calculated_value heat_index">---</div>
+        <div class="calculated_value heat_index loading-placeholder">⋯</div>
         <div class="units">°C</div>
       </div>
     </div>
@@ -316,7 +335,7 @@
     <div class="analytics-card" data-analytics="heat_stress_index">
       <div class="line">
         <div class="text">Тепловая нагрузка (WBGT):</div>
-        <div class="calculated_value heat_stress_index">---</div>
+        <div class="calculated_value heat_stress_index loading-placeholder">⋯</div>
         <div class="units">°C</div>
       </div>
     </div>
@@ -324,7 +343,7 @@
     <div class="analytics-card" data-analytics="freezing_point">
       <div class="line">
         <div class="text">Точка замерзания:</div>
-        <div class="calculated_value freezing_point">---</div>
+        <div class="calculated_value freezing_point loading-placeholder">⋯</div>
         <div class="units">°C</div>
       </div>
     </div>
@@ -332,7 +351,7 @@
     <div class="analytics-card" data-analytics="ventilation_efficiency">
       <div class="line">
         <div class="text">Эффективность проветривания:</div>
-        <div class="calculated_value ventilation_efficiency">---</div>
+        <div class="calculated_value ventilation_efficiency loading-placeholder">⋯</div>
         <div class="units">ppm/мин</div>
       </div>
     </div>
@@ -343,7 +362,7 @@
     <div class="analytics-card" data-analytics="pressure_trend">
       <div class="line">
         <div class="text">Δ Давление:</div>
-        <div class="calculated_value pressure_trend">---</div>
+        <div class="calculated_value pressure_trend loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -351,7 +370,7 @@
     <div class="analytics-card" data-analytics="uv">
       <div class="line">
         <div class="text">УФ-индекс:</div>
-        <div class="calculated_value uv_recommendation">---</div>
+        <div class="calculated_value uv_recommendation loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -359,7 +378,7 @@
     <div class="analytics-card" data-analytics="lighting">
       <div class="line">
         <div class="text">Освещение:</div>
-        <div class="calculated_value lighting_recommendation">---</div>
+        <div class="calculated_value lighting_recommendation loading-placeholder">⋯</div>
         <div class="units"></div>
       </div>
     </div>
@@ -367,7 +386,7 @@
     <div class="analytics-card" data-analytics="dew_point_deficit">
       <div class="line">
         <div class="text">Дефицит точки росы:</div>
-        <div class="calculated_value dew_point_deficit">---</div>
+        <div class="calculated_value dew_point_deficit loading-placeholder">⋯</div>
         <div class="units">°C</div>
       </div>
     </div>
@@ -393,42 +412,42 @@
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">Частота ЦП:</div>
-    <div class="dungen_value esp32_cpu_freq">---</div>
+    <div class="dungen_value esp32_cpu_freq loading-placeholder">⋯</div>
     <div class="dungeon-units">МГц</div>
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">Свободная память:</div>
-    <div class="dungen_value esp32_free_heap">---</div>
+    <div class="dungen_value esp32_free_heap loading-placeholder">⋯</div>
     <div class="dungeon-units">KB</div>
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">Загрузка CPU:</div>
-    <div class="dungen_value esp32_cpu_load">---</div>
+    <div class="dungen_value esp32_cpu_load loading-placeholder">⋯</div>
     <div class="dungeon-units">%</div>
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">Температура ESP32:</div>
-    <div class="dungen_value esp32_cpu_temp">---</div>
+    <div class="dungen_value esp32_cpu_temp loading-placeholder">⋯</div>
     <div class="dungeon-units">°C</div>
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">WiFi сигнал:</div>
-    <div class="dungen_value wifi_rssi">---</div>
+    <div class="dungen_value wifi_rssi loading-placeholder">⋯</div>
     <div class="dungeon-units">dBm</div>
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">Напряжение (INA226):</div>
-    <div class="dungen_value ina226_voltage">---</div>
+    <div class="dungen_value ina226_voltage loading-placeholder">⋯</div>
     <div class="dungeon-units">V</div>
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">Ток (INA226):</div>
-    <div class="dungen_value ina226_current">---</div>
+    <div class="dungen_value ina226_current loading-placeholder">⋯</div>
     <div class="dungeon-units">A</div>
   </div>
   <div class="dungeon-line">
     <div class="dungeon-text">Мощность (INA226):</div>
-    <div class="dungen_value ina226_power">---</div>
+    <div class="dungen_value ina226_power loading-placeholder">⋯</div>
     <div class="dungeon-units">W</div>
   </div>
   <div class="dungeon-line">
@@ -436,6 +455,9 @@
     <div class="dungen_value site_version">0.0.1</div>
   </div>
 </div>
+
+<!-- CDN ресурсы загружаются после основного контента -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js" defer></script>
 
 </body>
 </html>

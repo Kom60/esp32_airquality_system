@@ -1,4 +1,5 @@
 #include <WiFi.h>              // needed to connect to WiFi
+#include <WiFiClientSecure.h>  // needed for HTTPS
 #include <HTTPClient.h>        // needed for HTTP client requests
 #include <ESPAsyncWebServer.h> // needed to create a simple webserver
 #include <WebSocketsServer.h>  // needed for instant communication between client and server through Websockets
@@ -9,7 +10,7 @@
 extern int random_intensity;
 
 extern const int ARRAY_LENGTH;
-extern float sens_vals[];
+// sens_vals удалён - не используется
 
 extern AsyncWebServer server;                         // the server uses port 80 (standard port for websites
 extern WebSocketsServer webSocket; // the websocket uses port 81 (standard port for websockets*/
@@ -17,7 +18,7 @@ extern WebSocketsServer webSocket; // the websocket uses port 81 (standard port 
 void web_setup();
 void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length);
 void sendJson(String l_type, String l_value);
-void sendJsonArray(String l_type, float l_array_values[]);
+void broadcast_all_sensor_data();  // Общая функция для отправки всех данных датчиков
 
 // Обработчики API настроек
 void handleGetSettings(AsyncWebServerRequest *request);
@@ -40,3 +41,7 @@ void handleGetFirmwareStatus(AsyncWebServerRequest *request);
 void handleUploadFirmware(AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final);
 void handleFlashFirmware(AsyncWebServerRequest *request);
 void handleDeleteFirmware(AsyncWebServerRequest *request);
+
+// HTTPS/WSS серверы
+void web_setup_ssl();
+void webSocketSSLEvent(byte num, WStype_t type, uint8_t *payload, size_t length);

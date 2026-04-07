@@ -3,16 +3,20 @@
 #include "settings.h"
 #include "secrets.h"
 #include "sdcard.h"
+#include "https_server.h"
 #include <Update.h>
 
 // global variables of the LED selected and the intensity of that LED
 int random_intensity = 5;
 
 const int ARRAY_LENGTH=10;
-float sens_vals[ARRAY_LENGTH];
+// sens_vals удалён - не используется
 
 AsyncWebServer server(80);                         // the server uses port 80 (standard port for this website
 WebSocketsServer webSocket = WebSocketsServer(81); // the websocket uses port 81
+
+// HTTPS/WSS серверы
+// Реализованы в https_server.cpp через WiFiServerSecure
 
 // Инициализация веб-сервера и WebSocket
 void web_setup() {
@@ -172,30 +176,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t *payload, size_t length)
     LOG_INFO(WEBSOCKET, "Sending initial data...");
 
     // send variables to newly connected web client (используем скользящее среднее)
-    sendJson("bme_temperature", String(meteo_buffer.get_avg_bme_temperature()));
-    sendJson("bme_pressure", String(meteo_buffer.get_avg_bme_pressure()));
-    sendJson("bme_humidity", String(meteo_buffer.get_avg_bme_humidity()));
-    sendJson("htu_temperature", String(meteo_buffer.get_avg_htu_temperature()));
-    sendJson("htu_humidity", String(meteo_buffer.get_avg_htu_humidity()));
-    sendJson("scd4x_co2", String((int)meteo_buffer.get_avg_scd4x_co2()));
-    sendJson("scd4x_temperature", String(meteo_buffer.get_avg_scd4x_temperature()));
-    sendJson("scd4x_humidity", String(meteo_buffer.get_avg_scd4x_humidity()));
-    sendJson("pms_pm1", String(meteo_buffer.get_avg_pms_pm1()));
-    sendJson("pms_pm2_5", String(meteo_buffer.get_avg_pms_pm2_5()));
-    sendJson("pms_pm10", String(meteo_buffer.get_avg_pms_pm10()));
-    sendJson("ms5611_pressure", String(meteo_buffer.get_avg_ms5611_pressure()));
-    sendJson("ms5611_temperature", String(meteo_buffer.get_avg_ms5611_temperature()));
-    sendJson("bh1750_lighting", String(meteo_buffer.get_avg_bh1750_lighting()));
-    sendJson("veml_uv", String(meteo_buffer.get_avg_veml_uv()));
-    sendJson("ch2o_value", String(meteo_buffer.get_avg_ch2o_value()));
-    sendJson("microphone_noise", String(meteo_buffer.get_ema_microphone_noise()));
-    sendJson("ina226_voltage", String(meteo_buffer.get_avg_ina226_voltage()));
-    sendJson("ina226_current", String(meteo_buffer.get_avg_ina226_current()));
-    sendJson("ina226_power", String(meteo_buffer.get_avg_ina226_power()));
-    sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
-    sendJson("esp32_cpu_temp", String(temperatureRead()));
-    sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
-    sendJson("wifi_rssi", String(WiFi.RSSI()));
+    broadcast_all_sensor_data();
 
     LOG_INFO(WEBSOCKET, "Initial data sent!");
     break;
@@ -241,6 +222,56 @@ void sendJson(String l_type, String l_value)
   //Serial.println(jsonString);
 
   webSocket.broadcastTXT(jsonString);
+}
+
+// Общая функция для отправки всех данных датчиков через WebSocket (убирает дублирование)
+void broadcast_all_sensor_data()
+{
+    // BME280 sensor data
+    sendJson("bme_temperature", String(meteo_buffer.get_avg_bme_temperature()));
+    sendJson("bme_pressure", String(meteo_buffer.get_avg_bme_pressure()));
+    sendJson("bme_humidity", String(meteo_buffer.get_avg_bme_humidity()));
+
+    // HTU21DF sensor data
+    sendJson("htu_temperature", String(meteo_buffer.get_avg_htu_temperature()));
+    sendJson("htu_humidity", String(meteo_buffer.get_avg_htu_humidity()));
+
+    // SCD4X sensor data
+    sendJson("scd4x_co2", String((int)meteo_buffer.get_avg_scd4x_co2()));
+    sendJson("scd4x_temperature", String(meteo_buffer.get_avg_scd4x_temperature()));
+    sendJson("scd4x_humidity", String(meteo_buffer.get_avg_scd4x_humidity()));
+
+    // PMS sensor data
+    sendJson("pms_pm1", String(meteo_buffer.get_avg_pms_pm1()));
+    sendJson("pms_pm2_5", String(meteo_buffer.get_avg_pms_pm2_5()));
+    sendJson("pms_pm10", String(meteo_buffer.get_avg_pms_pm10()));
+
+    // MS5611 sensor data
+    sendJson("ms5611_pressure", String(meteo_buffer.get_avg_ms5611_pressure()));
+    sendJson("ms5611_temperature", String(meteo_buffer.get_avg_ms5611_temperature()));
+
+    // BH1750 sensor data
+    sendJson("bh1750_lighting", String(meteo_buffer.get_avg_bh1750_lighting()));
+
+    // VEML6070 sensor data
+    sendJson("veml_uv", String(meteo_buffer.get_avg_veml_uv()));
+
+    // CH2O sensor data
+    sendJson("ch2o_value", String(meteo_buffer.get_avg_ch2o_value()));
+
+    // Microphone data (EMA)
+    sendJson("microphone_noise", String(meteo_buffer.get_ema_microphone_noise()));
+
+    // INA226 sensor data
+    sendJson("ina226_voltage", String(meteo_buffer.get_avg_ina226_voltage()));
+    sendJson("ina226_current", String(meteo_buffer.get_avg_ina226_current()));
+    sendJson("ina226_power", String(meteo_buffer.get_avg_ina226_power()));
+
+    // System data
+    sendJson("esp32_cpu_freq", String(esp_clk_cpu_freq()));
+    sendJson("esp32_cpu_temp", String(temperatureRead()));
+    sendJson("esp32_free_heap", String(ESP.getFreeHeap()));
+    sendJson("wifi_rssi", String(WiFi.RSSI()));
 }
 
 // =====================================================
@@ -666,4 +697,17 @@ void handleDeleteFirmware(AsyncWebServerRequest *request) {
   } else {
     request->send(404, "application/json", "{\"error\":\"Firmware not found\"}");
   }
+}
+
+// ============================================================================
+// HTTPS сервер - обёртка
+// ============================================================================
+
+void web_setup_ssl() {
+  // HTTPS сервер инициализируется отдельно через https_server_init()
+  // см. https_server.cpp
+}
+
+void webSocketSSLEvent(byte num, WStype_t type, uint8_t *payload, size_t length) {
+  // WSS пока не поддерживается
 }

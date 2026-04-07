@@ -19,7 +19,7 @@ void display_setup() {
   xTaskCreatePinnedToCore(
     DISPLAY_measurementTaskFunction,   // Функция задачи
     "Display Task",        // Имя задачи
-    4096,                  // Размер стека
+    5096,                  // Размер стека
     NULL,                  // Параметры
     1,                     // Приоритет
     &DISPLAY_measurementTask,    // Дескриптор задачи

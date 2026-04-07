@@ -78,6 +78,7 @@ void bme_setup(){
     LOG_INFO(BME, "-- Default Test --");
     delayTime = 1000;
 
+    // Уменьшен стек до 2048 (простая задача)
     xTaskCreatePinnedToCore(BME_measurementTaskFunction, "BMEMeasurementTask", 2048, NULL, 1, &BME_measurementTask, 0);
 }
 
@@ -100,28 +101,42 @@ void htu_setup()
     }
 
     LOG_INFO(HTU, "Connected");
-    xTaskCreatePinnedToCore(HTU_measurementTaskFunction, "HTUMeasurementTask", 2048, NULL, 1, &HTU_measurementTask, 0);
+    // Увеличен стек до 3072 для I2C задач
+    xTaskCreatePinnedToCore(HTU_measurementTaskFunction, "HTUMeasurementTask", 3072, NULL, 1, &HTU_measurementTask, 0);
 }
 
 void BH1750_setup()
 {
     bool bh1750_ok = false;
-
-    // Захватываем mutex перед инициализацией
-    if (i2c_mutex != NULL) {
-        xSemaphoreTake(i2c_mutex, portMAX_DELAY);
-        bh1750_ok = lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE);
-        xSemaphoreGive(i2c_mutex);
-    } else {
-        bh1750_ok = lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE);
+    
+    // BH1750 требует задержку после включения питания (минимум 2ms)
+    delay(10);
+    
+    // Пробуем несколько раз с задержкой
+    for (int attempt = 0; attempt < 3; attempt++) {
+        // Захватываем mutex перед инициализацией
+        if (i2c_mutex != NULL) {
+            xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+            bh1750_ok = lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE);
+            xSemaphoreGive(i2c_mutex);
+        } else {
+            bh1750_ok = lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE);
+        }
+        
+        if (bh1750_ok) {
+            LOG_INFO(BH1750, "BH1750 Advanced begin");
+            break;
+        } else {
+            LOG_WARNING_FMT(BH1750, "BH1750 init attempt %d failed, retrying...", attempt + 1);
+            delay(50);  // Задержка перед повторной попыткой
+        }
     }
 
-    if (bh1750_ok) {
-        LOG_INFO(BH1750, "BH1750 Advanced begin");
-    } else {
-        LOG_ERROR(BH1750, "Error initialising BH1750");
+    if (!bh1750_ok) {
+        LOG_ERROR(BH1750, "Error initialising BH1750 after 3 attempts");
     }
 
+    // Уменьшен стек: BH1750 всё равно не работает, 2048 достаточно
     xTaskCreatePinnedToCore(BH1750_measurementTaskFunction, "BH1750MeasurementTask", 2048, NULL, 1, &BH1750_measurementTask, 0);
 }
 
@@ -130,13 +145,16 @@ void MS5611_setup()
     // Захватываем mutex перед инициализацией
     if (i2c_mutex != NULL) {
         xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+        Wire.setClock(400000);  // Увеличиваем скорость I2C до 400kHz (было 100kHz)
         ms5611.begin(MS5611_HIGH_RES);
         xSemaphoreGive(i2c_mutex);
     } else {
+        Wire.setClock(400000);  // Увеличиваем скорость I2C до 400kHz
         ms5611.begin(MS5611_HIGH_RES);
     }
 
     LOG_INFO(MS5611, "Connected");
+    // Уменьшен стек до 2048 (простая задача)
     xTaskCreatePinnedToCore(MS5611_measurementTaskFunction, "MS5611MeasurementTask", 2048, NULL, 1, &MS5611_measurementTask, 0);
 }
 
@@ -148,6 +166,7 @@ void SCD40_setup()
 
 void PMS_setup(){
     pms.init();
+    // Уменьшен стек до 2048 (простая задача, только Serial)
     xTaskCreatePinnedToCore(PMS_measurementTaskFunction, "PMSMeasurementTask", 2048, NULL, 1, &PMS_measurementTask, 0);
 }
 
@@ -166,6 +185,7 @@ void VEML_setup(){
     }
 
     LOG_INFO(VEML, "Connected");
+    // Уменьшен стек до 2048 (простая задача)
     xTaskCreatePinnedToCore(VEML_measurementTaskFunction, "VEMLMeasurementTask", 2048, NULL, 1, &VEML_measurementTask, 0);
 }
 
